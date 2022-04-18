@@ -20,6 +20,7 @@ int main(int argc, char** argv)
 	puerto = config_get_string_value(config,"PUERTO_KERNEL");
 	ip = config_get_string_value(config,"IP_KERNEL");
 
+
 	// Armamos y enviamos el paquete (depuramos)
 	t_paquete* paquete = makePaquete(conexion, argv[2], atoi(argv[1]));
 
@@ -33,8 +34,8 @@ int main(int argc, char** argv)
 
 t_log* iniciar_logger(void)
 {
-	char* fileLogName = "cliente.log";
-	char* programName = "Cliente Trace";
+	char* fileLogName = "consola.log";
+	char* programName = "Consola Trace";
 	t_log_level LEVEL_ENUM = LOG_LEVEL_TRACE;
 	t_log* nuevo_logger = log_create(fileLogName, programName, 1, LEVEL_ENUM);
 
@@ -70,7 +71,7 @@ t_paquete* makePaquete(int conexion, char* pathFile, int processSize)
 {
 	char* intructs = NULL;
 
-	_generateIntructs(pathFile, intructs);
+	generateInstructs(pathFile, intructs);
 
 	// Ahora toca lo divertido!
 	t_paquete* paquete = crear_paquete(processSize);
@@ -79,30 +80,33 @@ t_paquete* makePaquete(int conexion, char* pathFile, int processSize)
 	return paquete;
 }
 
-void _generateIntructs(char* pathFile, char* intructs){
-	FILE* pseudocodeFile = fopen(pathFile, "r+b");
+void generateInstructs(char* pathFile, char* intructs){
+	t_log* logger = iniciar_logger();
 
+	FILE* pseudocodeFile = fopen("consola.config", "r");
+	perror("fopen");
+	log_info(logger, pseudocodeFile);
 	while(!feof(pseudocodeFile)){
 		char* intructrRead  = NULL;
 		fread(intructrRead, sizeof(char), 1, pseudocodeFile);
 		strtok(intructrRead,"\n");   //con esto borro el \n que se lee
-		_checkCodeOperatition(intructrRead, intructs);
+		checkCodeOperation(intructrRead, intructs);
 	}
 
 	fclose(pseudocodeFile);
 }
 
-void _checkCodeOperatition(char* intructrRead,char* intructs){
+void checkCodeOperation(char* intructrRead,char* intructs){
 	char* opCode = strtok(intructrRead, " ");
 	const char* NO_OP = "NO_OP";
 
 	if(strcmp(opCode, NO_OP)){
 	  opCode = strtok(NULL, " ");
 	  for(int repeatIntruct = 1; repeatIntruct <= atoi(opCode); repeatIntruct++){
-		  string_append_with_format(intructs, "|", NO_OP);
+		  string_append_with_format(*intructs, "|", NO_OP);
 	  }
 	}else{
-		string_append_with_format(intructs, "|", intructrRead);
+		string_append_with_format(*intructs, "|", intructrRead);
 	}
 }
 
