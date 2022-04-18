@@ -5,6 +5,7 @@ typedef struct{
 	char* op_code;
 	int firstParam:
 	int secondParam:
-} t_serializable;
+} __attribute__((packed))
+t_serializable;
 
 #endif /* SERIALIZABLE_H_ */
