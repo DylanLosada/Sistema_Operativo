@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 
 
 	// Armamos y enviamos el paquete (depuramos)
-	t_paquete* paquete = makePaquete(conexion, argv[2], atoi(argv[1]));
+	t_paquete* paquete = makePaquete(conexion, argv[2], strtol(argv[1], &argv[1], 10));
 
 	// Creamos una conexión hacia el servidor
 	conexion = crear_conexion(ip, puerto);
@@ -69,29 +69,28 @@ t_config* iniciar_config(void)
 
 t_paquete* makePaquete(int conexion, char* pathFile, int processSize)
 {
-	char* intructs = NULL;
+	char* instructs = NULL;
 
-	generateInstructs(pathFile, intructs);
+	generateInstructs(pathFile, instructs);
 
 	// Ahora toca lo divertido!
 	t_paquete* paquete = crear_paquete(processSize);
-	agregar_a_paquete(paquete, intructs, sizeof(intructs));
-	free(intructs);
+	agregar_a_paquete(paquete, instructs, sizeof(instructs));
+	free(instructs);
 	return paquete;
 }
 
-void generateInstructs(char* pathFile, char* intructs){
+void generateInstructs(char* pathFile, char* instructs){
 	t_log* logger = iniciar_logger();
+    size_t len  = 0;
+    FILE* pseudocodeFile = fopen(pathFile, "r");
 
-	FILE* pseudocodeFile = fopen("consola.config", "r");
-	perror("fopen");
-	log_info(logger, pseudocodeFile);
-	while(!feof(pseudocodeFile)){
-		char* intructrRead  = NULL;
-		fread(intructrRead, sizeof(char), 1, pseudocodeFile);
-		strtok(intructrRead,"\n");   //con esto borro el \n que se lee
-		checkCodeOperation(intructrRead, intructs);
-	}
+    while(!feof(pseudocodeFile)){
+        char* instructRead = NULL;
+        getline(&instructRead, &len, pseudocodeFile);
+        strtok(instructRead,"\n");   //con esto borro el \n que se lee
+        checkCodeOperation(instructRead, instructs);
+    }
 
 	fclose(pseudocodeFile);
 }
@@ -102,11 +101,11 @@ void checkCodeOperation(char* intructrRead,char* intructs){
 
 	if(strcmp(opCode, NO_OP)){
 	  opCode = strtok(NULL, " ");
-	  for(int repeatIntruct = 1; repeatIntruct <= atoi(opCode); repeatIntruct++){
-		  string_append_with_format(*intructs, "|", NO_OP);
+	  for(int repeatIntruct = 1; repeatIntruct <= strtol(opCode, &opCode, 10); repeatIntruct++){
+		  string_append_with_format(intructs, "|", NO_OP);
 	  }
 	}else{
-		string_append_with_format(*intructs, "|", intructrRead);
+		string_append_with_format(intructs, "|", intructrRead);
 	}
 }
 
