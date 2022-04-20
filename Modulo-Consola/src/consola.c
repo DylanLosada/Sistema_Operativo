@@ -1,5 +1,4 @@
 #include "consola.h"
-
 #define NO_OP "NO_OP"
 
 int main(int argc, char** argv)
@@ -9,8 +8,6 @@ int main(int argc, char** argv)
 	int conexion;
 	char* ip;
 	char* puerto;
-	t_paquete* valor;
-
 	t_log* logger = iniciar_logger();
 	t_config* config = iniciar_config();
 	log_info(logger, "Preparando la Consola!!!");
@@ -26,14 +23,13 @@ int main(int argc, char** argv)
 
 	log_info(logger, "Leyendo archivo de Pseudocodigo.......");
 	// Armamos y enviamos el paquete (depuramos)
-	t_paquete* paquete = makePaquete(conexion, argv[2], strtol(argv[1], &argv[1], 10));
+	char* message = serializeInstruction(conexion, argv[2]);
 
 	// Creamos una conexión hacia el servidor
 	conexion = crear_conexion(ip, puerto);
-	enviar_paquete(paquete, conexion);
-	eliminar_paquete(paquete);
+	enviar_mensaje(message, conexion, strtol(argv[1], &argv[1], 10));
 
-	terminar_programa(conexion, logger, config);
+	waitForResponse(conexion, logger, config);
 }
 
 t_log* iniciar_logger(void)
@@ -53,33 +49,11 @@ t_config* iniciar_config(void)
 	return nuevo_config;
 }
 
-/*void leer_consola(t_log* logger)
-{
-	char* leido;
-
-	// La primera te la dejo de yapa
-	leido = readline("> ");
-
-	// El resto, las vamos leyendo y logueando hasta recibir un string vacío
-	while(strcmp(leido, "") != 0){
-			log_info(logger, leido);
-			free(leido);
-			leido = readline("> ");
-		}
-
-	// ¡No te olvides de liberar las lineas antes de regresar!
-	free(leido);
-}*/
-
-t_paquete* makePaquete(int conexion, char* pathFile, int processSize)
+char* serializeInstruction(int conexion, char* pathFile)
 {
 	char* instructs = string_new();
-
 	generateInstructs(pathFile, &instructs);
-	t_paquete* paquete = crear_paquete(processSize);
-	agregar_a_paquete(paquete, instructs, sizeof(instructs));
-	free(instructs);
-	return paquete;
+	return instructs;
 }
 
 void generateInstructs(char* pathFile, char** instructs){
@@ -110,10 +84,8 @@ void checkCodeOperation(char* intructrRead, char** instructs){
 	}
 }
 
-void terminar_programa(int conexion, t_log* logger, t_config* config)
+void waitForResponse(int conexion, t_log* logger, t_config* config)
 {
-	/* Y por ultimo, hay que liberar lo que utilizamos (conexion, log y config) 
-	  con las funciones de las commons y del TP mencionadas en el enunciado */
 	close(conexion);
 	log_destroy(logger);
 	config_destroy(config);

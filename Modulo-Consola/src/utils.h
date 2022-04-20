@@ -24,19 +24,20 @@ typedef struct
 
 typedef struct
 {
-	op_code codigo_operacion;
+	int processSize;
 	t_buffer* buffer;
 } t_paquete;
 
 
 
 int crear_conexion(char* ip, char* puerto);
-void enviar_mensaje(char* mensaje, int socket_cliente);
+void enviar_mensaje(char*, int , int);
 t_paquete* crear_paquete(int);
-t_paquete* crear_super_paquete(void);
+t_paquete* crear_super_paquete(int);
 void agregar_a_paquete(t_paquete* paquete, void* valor, int tamanio);
 void enviar_paquete(t_paquete* paquete, int socket_cliente);
 void liberar_conexion(int socket_cliente);
+void* serializar_paquete(t_paquete* , int);
 void eliminar_paquete(t_paquete* paquete);
 
 #endif /* UTILS_H_ */

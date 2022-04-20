@@ -1,28 +1,23 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<signal.h>
-#include<unistd.h>
-#include<sys/socket.h>
-#include<netdb.h>
-#include<string.h>
-#include<commons/log.h>
+#include "utils.h"
 
-typedef enum
+void enviar_mensaje(char* mensaje, int socket_cliente, int processSize)
 {
-	NO_OP
-}op_code;
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	paquete->processSize = processSize;
+	paquete->buffer = malloc(sizeof(t_buffer));
+	paquete->buffer->size = strlen(mensaje) + 1;
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+	memcpy(paquete->buffer->stream, mensaje, paquete->buffer->size);
 
-typedef struct
-{
-	int size;
-	void* stream;
-} t_buffer;
+	int bytes = paquete->buffer->size + 2*sizeof(int);
 
-typedef struct
-{
-	int processSize;
-	t_buffer* buffer;
-} t_paquete;
+	void* a_enviar = serializar_paquete(paquete, bytes);
+
+	send(socket_cliente, a_enviar, bytes, 0);
+
+	free(a_enviar);
+	eliminar_paquete(paquete);
+}
 
 void* serializar_paquete(t_paquete* paquete, int bytes)
 {
