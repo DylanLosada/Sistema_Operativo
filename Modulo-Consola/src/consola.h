@@ -23,6 +23,7 @@ void leer_consola(t_log*);
 void paquete(int);
 void terminar_programa(int, t_log*, t_config*);
 t_paquete* makePaquete(int, char*, int);
-void generateInstructs(char* , char*);
+void generateInstructs(char* , char**);
+void checkCodeOperation(char* ,char**);
 
 #endif /*CONSOLA_H_*/

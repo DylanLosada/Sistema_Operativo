@@ -7,3 +7,8 @@
 [INFO] 00:30:11:126 Consola Trace/(13513:13513): ˆ$­û
 [INFO] 00:46:38:760 Consola Trace/(14647:14647): ˆ$­û
 [INFO] 00:47:48:453 Consola Trace/(14764:14764): ˆ$­û
+[INFO] 20:33:23:790 Consola Trace/(14042:14042): ˜È
+[INFO] 20:34:11:238 Consola Trace/(14199:14199): NO_OP|NO_OP|NO_OP|NO_OP|NO_OP|I/O 3000|READ 0|WRITE 4 42|COPY 0 4|EXIT|
+[INFO] 21:59:34:181 Consola Trace/(7455:7455): Preparando Consola!!!
+[INFO] 21:59:34:182 Consola Trace/(7455:7455): Leyendo archivo de Pseudocodigo.......
+[INFO] 21:59:34:183 Consola Trace/(7455:7455): NO_OP|NO_OP|NO_OP|NO_OP|NO_OP|I/O 3000|READ 0|WRITE 4 42|COPY 0 4|EXIT|
