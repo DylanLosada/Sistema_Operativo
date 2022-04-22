@@ -37,7 +37,7 @@ t_paquete* crear_super_paquete(int);
 void agregar_a_paquete(t_paquete* paquete, void* valor, int tamanio);
 void enviar_paquete(t_paquete* paquete, int socket_cliente);
 void liberar_conexion(int socket_cliente);
-void* serializar_paquete(t_paquete* , int);
+void serializar_paquete(char* , int, int);
 void eliminar_paquete(t_paquete* paquete);
 
 #endif /* UTILS_H_ */

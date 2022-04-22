@@ -20,7 +20,6 @@ int main(int argc, char** argv)
 	puerto = config_get_string_value(config,"PUERTO_KERNEL");
 	ip = config_get_string_value(config,"IP_KERNEL");
 
-
 	log_info(logger, "Leyendo archivo de Pseudocodigo.......");
 	// Armamos y enviamos el paquete (depuramos)
 	char* message = serializeInstruction(conexion, argv[2]);

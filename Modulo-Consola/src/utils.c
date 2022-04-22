@@ -2,34 +2,48 @@
 
 void enviar_mensaje(char* mensaje, int socket_cliente, int processSize)
 {
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete->processSize = processSize;
-	paquete->buffer = malloc(sizeof(t_buffer));
-	paquete->buffer->size = strlen(mensaje) + 1;
-	paquete->buffer->stream = malloc(paquete->buffer->size);
-	memcpy(paquete->buffer->stream, mensaje, paquete->buffer->size);
-
-	int bytes = paquete->buffer->size + 2*sizeof(int);
-
-	void* a_enviar = serializar_paquete(paquete, bytes);
-
-	send(socket_cliente, a_enviar, bytes, 0);
-
-	free(a_enviar);
-	eliminar_paquete(paquete);
+	serializar_paquete(mensaje, processSize, socket_cliente);
 }
 
-void* serializar_paquete(t_paquete* paquete, int bytes)
+void serializar_paquete(char* mensaje, int processSize, int socket_cliente)
 {
-	void * magic = malloc(bytes);
-	int desplazamiento = 0;
+	t_paquete* paquete = malloc(sizeof(t_paquete));
+	int size_mensaje = strlen(mensaje)+ 1;
 
-	memcpy(magic + desplazamiento, &(paquete->buffer->size), sizeof(int));
-	desplazamiento+= sizeof(int);
-	memcpy(magic + desplazamiento, paquete->buffer->stream, paquete->buffer->size);
-	desplazamiento+= paquete->buffer->size;
+	// Primero completo la estructura buffer interna del paquete.
+	t_buffer* buffer = malloc(sizeof(t_buffer));
 
-	return magic;
+	buffer->size = size_mensaje + sizeof(int); // La longitud del string nombre. Le sumamos 1 para enviar tambien el caracter centinela '\0'. Esto se podría obviar, pero entonces deberíamos agregar el centinela en el receptor.
+
+	void* stream = malloc(buffer->size);
+	int offset = 0; // Desplazamiento
+
+	memcpy(stream, &size_mensaje, sizeof(int));
+	offset += sizeof(int);
+	memcpy(stream + offset, mensaje, size_mensaje);
+
+	buffer->stream = stream;
+
+	// Segundo: completo el paquete.
+	paquete->processSize = processSize;
+	paquete->buffer = buffer;
+
+	void* a_enviar = malloc(buffer->size + sizeof(int) + sizeof(int));
+	offset = 0;
+
+	memcpy(a_enviar + offset, &paquete->processSize, sizeof(int));
+	offset += sizeof(int);
+	memcpy(a_enviar + offset, &paquete->buffer->size, sizeof(int));
+	offset += sizeof(int);
+	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
+
+	send(socket_cliente, paquete, buffer->size + sizeof(int) + sizeof(int), 0);
+
+	free(a_enviar);
+	free(mensaje);
+	free(paquete->buffer->stream);
+	free(paquete->buffer);
+	free(paquete);
 }
 
 int crear_conexion(char *ip, char* puerto)
@@ -93,16 +107,6 @@ void agregar_a_paquete(t_paquete* paquete, void* valor, int tamanio)
 	memcpy(paquete->buffer->stream + paquete->buffer->size + sizeof(int), valor, tamanio);
 
 	paquete->buffer->size += tamanio + sizeof(int);
-}
-
-void enviar_paquete(t_paquete* paquete, int socket_cliente)
-{
-	int bytes = paquete->buffer->size + 2*sizeof(int);
-	void* a_enviar = serializar_paquete(paquete, bytes);
-
-	send(socket_cliente, a_enviar, bytes, 0);
-
-	free(a_enviar);
 }
 
 void eliminar_paquete(t_paquete* paquete)
