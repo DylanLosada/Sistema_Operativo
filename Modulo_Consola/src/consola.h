@@ -8,17 +8,13 @@
 #include<commons/config.h>
 #include<readline/readline.h>
 
-typedef struct{
-	char* op_code;
-	int* firstParam;
-	int* secondParam;
-} __attribute__((packed))
-t_serializable;
-
 t_log* iniciar_logger(void);
 t_config* iniciar_config(void);
 char* serializeInstruction(int ,char*);
 void leer_consola(t_log*);
-void paquete(int);
+void checkCodeOperation(char*, char**);
+char* generateInstructiosnString(char*);
+void appendOperationToInstructionsString(char*, char**);
+void appendNoOpToInstructionsString(char**,char**);
 
 #endif /*CONSOLA_H_*/

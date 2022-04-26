@@ -12,32 +12,27 @@
 
 typedef enum
 {
-	MENSAJE,
-	PAQUETE
+	CONSOLA,
 }op_code;
 
-typedef struct
-{
-	int size;
+typedef struct{
+	int processSize;
+	int streamLength;
 	void* stream;
-} t_buffer;
+} t_consola;
 
 typedef struct
 {
-	int processSize;
-	t_buffer* buffer;
+	int op_code;
+	t_consola* consola;
 } t_paquete;
 
 
 
 int crear_conexion(char* ip, char* puerto);
-void enviar_mensaje(char*, int , int);
-t_paquete* crear_paquete(int);
-t_paquete* crear_super_paquete(int);
-void agregar_a_paquete(t_paquete* paquete, void* valor, int tamanio);
-void enviar_paquete(t_paquete* paquete, int socket_cliente);
+void send_instructions(char*, int , int);
 void liberar_conexion(int socket_cliente);
-void serializar_paquete(char* , int, int);
+void* serializate_instructions(char*, int, t_paquete*);
 void eliminar_paquete(t_paquete* paquete);
 
 #endif /* UTILS_H_ */

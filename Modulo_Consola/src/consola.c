@@ -1,11 +1,10 @@
 #include "consola.h"
 #define NO_OP "NO_OP"
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv){
 	/*---------------------------------------------------PARTE 2-------------------------------------------------------------*/
 
-	int conexion;
+	int connection;
 	char* ip;
 	char* puerto;
 	t_log* logger = iniciar_logger();
@@ -17,18 +16,21 @@ int main(int argc, char** argv)
 
 	// Usando el config creado previamente, leemos los valores del config y los 
 	// dejamos en las variables 'ip', 'puerto' y 'valor'
-	puerto = config_get_string_value(config,"PUERTO_KERNEL");
-	ip = config_get_string_value(config,"IP_KERNEL");
+	// puerto = config_get_string_value(config,"PUERTO_KERNEL");
+	// ip = config_get_string_value(config,"IP_KERNEL");
+
+	puerto = "8000";
+	ip = "127.0.0.1";
 
 	log_info(logger, "Leyendo archivo de Pseudocodigo.......");
 	// Armamos y enviamos el paquete (depuramos)
-	char* message = serializeInstruction(conexion, argv[2]);
+	char* instructions = generateInstructiosnString(argv[2]);
 
 	// Creamos una conexión hacia el servidor
-	conexion = crear_conexion(ip, puerto);
-	enviar_mensaje(message, conexion, strtol(argv[1], &argv[1], 10));
+	connection = crear_conexion(ip, puerto);
+	send_instructions(instructions, connection, strtol(argv[1], &argv[1], 10));
 
-	waitForResponse(conexion, logger, config);
+	waitForResponse(connection, logger, config);
 }
 
 t_log* iniciar_logger(void)
@@ -48,38 +50,40 @@ t_config* iniciar_config(void)
 	return nuevo_config;
 }
 
-char* serializeInstruction(int conexion, char* pathFile)
+char* generateInstructiosnString(char* pathFile)
 {
 	char* instructs = string_new();
-	generateInstructs(pathFile, &instructs);
+	size_t len  = 0;
+	FILE* pseudocodeFile = fopen(pathFile, "r");
+
+	while(!feof(pseudocodeFile)){
+		char* instructRead = NULL;
+		getline(&instructRead, &len, pseudocodeFile);
+		strtok(instructRead,"\n");   //con esto borro el \n que se lee
+		checkCodeOperation(instructRead, &instructs);
+	}
+	fclose(pseudocodeFile);
 	return instructs;
 }
 
-void generateInstructs(char* pathFile, char** instructs){
-	t_log* logger = iniciar_logger();
-    size_t len  = 0;
-    FILE* pseudocodeFile = fopen(pathFile, "r");
-
-    while(!feof(pseudocodeFile)){
-        char* instructRead = NULL;
-        getline(&instructRead, &len, pseudocodeFile);
-        strtok(instructRead,"\n");   //con esto borro el \n que se lee
-        checkCodeOperation(instructRead, instructs);
-    }
-    log_info(logger, *instructs);
-	fclose(pseudocodeFile);
+void appendNoOpToInstructionsString(char** intructrReadSplitBySpaces,char** instructs) {
+	int endCondition = strtol(intructrReadSplitBySpaces[1], &intructrReadSplitBySpaces[1], 10);
+	for (int repeatIntruct = 1; repeatIntruct <= endCondition; repeatIntruct++) {
+		string_append_with_format(instructs, "%s|", NO_OP);
+	}
 }
 
-void checkCodeOperation(char* intructrRead, char** instructs){
-	char** intructrReadSplitBySpaces = string_split(intructrRead, " ");
+void appendOperationToInstructionsString(char* intructrRead, char** instructs) {
+	string_append_with_format(instructs, "%s|", intructrRead);
+}
+
+void checkCodeOperation(char* instructRead, char** instructs){
+	char** intructrReadSplitBySpaces = string_split(instructRead, " ");
 
 	if(strcmp(intructrReadSplitBySpaces[0], NO_OP) == 0){
-	  int endCondition = strtol(intructrReadSplitBySpaces[1], &intructrReadSplitBySpaces[1], 10);
-	  for(int repeatIntruct = 1; repeatIntruct <= endCondition; repeatIntruct++){
-		  string_append_with_format(instructs, "%s|", NO_OP);
-	  }
+		appendNoOpToInstructionsString(intructrReadSplitBySpaces, instructs);
 	}else{
-		string_append_with_format(instructs, "%s|", intructrRead);
+		appendOperationToInstructionsString(instructRead, instructs);
 	}
 }
 
