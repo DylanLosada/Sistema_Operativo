@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 typedef enum {
-    REALIZAR_INSTRUCCIONES,
+    CONSOLA,
 } op_code;
 
 

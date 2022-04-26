@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 
 	puerto_kernel = config_get_string_value(config, "PUERTO_ESCUCHA");
 
-	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
+	logger = iniciar_logger("kernel.log", "Kernel Trace");
 
 	int kernel_fd = start_kernel(logger, "Kernel", puerto_kernel);
 

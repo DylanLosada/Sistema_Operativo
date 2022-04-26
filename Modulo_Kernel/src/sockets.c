@@ -117,32 +117,42 @@ t_instructions separate_instuctions(t_list* lista){
 }
 */
 
-char* recibir_buffer(int socket_cliente, t_paquete* paquete)
+t_log* iniciar_logger(char* fileLogname, char* programName)
 {
-    int size;
-    paquete->buffer = malloc(sizeof(t_buffer));
+	t_log_level LEVEL_ENUM = LOG_LEVEL_TRACE;
+	t_log* nuevo_logger = log_create(fileLogname, programName, 1, LEVEL_ENUM);
 
-    if(recv(socket_cliente, &paquete->buffer->size, sizeof(int), MSG_WAITALL) < 0)
+	return nuevo_logger;
+}
+
+char* recibir_buffer(int socket_cliente, t_consola* consolaRecv)
+{
+	int instructions_size;
+
+    if(recv(socket_cliente, &consolaRecv->streamLength, sizeof(int), MSG_WAITALL) < 0)
         return -1;
-    paquete->buffer->stream = malloc(paquete->buffer->size);
-    recv(socket_cliente, paquete->buffer->stream, paquete->buffer->size, MSG_WAITALL);
-
-    memcpy(&size, paquete->buffer->stream, sizeof(int));
-    paquete->buffer->stream += sizeof(int);
-    char* mensaje = malloc(size);
-    memcpy(mensaje, paquete->buffer->stream, size);
+    consolaRecv->stream = malloc(consolaRecv->streamLength);
+    recv(socket_cliente, consolaRecv->stream, consolaRecv->streamLength, MSG_WAITALL);
+    memcpy(&consolaRecv->processSize, consolaRecv->stream, sizeof(int));
+    consolaRecv->stream += sizeof(int);
+    memcpy(&instructions_size, consolaRecv->stream, sizeof(int));
+	consolaRecv->stream += sizeof(int);
+    char* mensaje = malloc(instructions_size);
+    memcpy(mensaje, consolaRecv->stream, consolaRecv->streamLength);
 
     return mensaje;
 }
 
-void recibir_operacion(int socket_cliente, t_paquete* paquete, t_log* logger)
+int recibir_operacion(int socket_cliente, t_log* logger)
 {
-    if(recv(socket_cliente, &paquete->processSize, sizeof(int), MSG_WAITALL) > 0)
+	int cod_op;
+    if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
         log_info(logger, "INFORMACION RECIBIDA CORRECTAMENTE");
     else
     {
         log_info(logger, "INFORMACION RECIBIDA INCORRECTAMENTE");
     }
+    return cod_op;
 }
 
 
