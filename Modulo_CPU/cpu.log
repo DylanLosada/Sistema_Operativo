@@ -12,3 +12,25 @@
 [INFO] 23:27:20:357 CPU_MAIN/(17683:17683): PC luego de instruccion 0: 1
 [INFO] 23:27:42:653 CPU_FETCH/(17747:17747): PC 0, instruccion encontrada: 0 (parametros 1 2)
 [INFO] 23:27:42:658 CPU_MAIN/(17747:17747): PC luego de instruccion 0: 1
+[INFO] 10:51:42:836 CPU_FETCH/(4346:4346): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 10:51:42:837 CPU_MAIN/(4346:4346): PC luego de instruccion 0: 1
+[INFO] 11:21:09:689 CPU_FETCH/(7064:7064): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 11:21:09:690 CPU_MAIN/(7064:7064): PC luego de instruccion 0: 1
+[INFO] 11:26:05:147 CPU_FETCH/(7617:7617): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 11:26:05:152 CPU_MAIN/(7617:7617): PC luego de instruccion 0: 1
+[INFO] 11:27:08:728 CPU_FETCH/(7762:7762): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 11:27:08:728 CPU_MAIN/(7762:7762): PC luego de instruccion 0: 1
+[INFO] 11:27:37:588 CPU_FETCH/(7832:7832): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 11:27:37:588 CPU_MAIN/(7832:7832): PC luego de instruccion 0: 1
+[INFO] 11:27:52:935 CPU_FETCH/(7891:7891): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 11:28:05:733 CPU_FETCH/(7945:7945): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 11:29:36:651 CPU_FETCH/(8174:8174): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 11:29:36:652 CPU_MAIN/(8174:8174): INSTRUCCION EN MAIN: -1217435728 (parametros -1217435728 0)
+[INFO] 11:29:36:652 CPU_MAIN/(8174:8174): PC luego de instruccion 0: 1
+[INFO] 15:51:26:578 CPU_FETCH/(29225:29225): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 15:51:26:590 CPU_MAIN/(29225:29225): INSTRUCCION EN MAIN: 0 (parametros 1 2)
+[INFO] 15:51:26:590 CPU_MAIN/(29225:29225): PC luego de instruccion 0: 1
+[INFO] 16:18:13:242 CPU_FETCH/(31551:31551): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 16:18:15:243 CPU_EXECUTE/(31551:31551): Executed 0 (parametros 1 2)
+[INFO] 16:32:44:598 CPU_FETCH/(321:321): PC 0, instruccion encontrada: 0 (parametros 1 2)
+[INFO] 16:32:46:598 CPU_EXECUTE/(321:321): Executed 0 (parametros 1 2)

@@ -6,6 +6,7 @@ int main() {
 
 	t_log* logger = log_create("cpu.log", "CPU_MAIN", 1, LOG_LEVEL_DEBUG);
 	t_config* config = iniciar_config();
+	int no_op_time = config_get_int_value(config, "RETARDO_NOOP");
 
 
 
@@ -24,7 +25,7 @@ int main() {
 
 
 
-	// Handle pcb (decode, fetch operands, execute, check interrupt)
+	// Handle pcb (fetch, decode, fetch operands, execute, check interrupt)
 	t_pcb* pcb = malloc(sizeof(t_pcb));
 	pcb->id = 1;
 	pcb->tamanio = 10;
@@ -47,8 +48,10 @@ int main() {
 	//pcb.tabla_paginas????
 	pcb->rafaga = 0;
 
-	fetch(pcb);
-	log_info(logger, "PC luego de instruccion 0: %d", pcb->pc);
+	t_instruct* current_instruct = malloc(sizeof(t_instruct));
+	fetch_and_decode(pcb, current_instruct);
+	execute(current_instruct, no_op_time / 1000);
+
 
 	//list_destroy(pcb->instrucciones);
 	free(pcb);
