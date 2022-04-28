@@ -81,22 +81,28 @@ void release_connection(int* socket_cliente){
     *socket_cliente = -1;
 }
 
+t_log* iniciar_logger(char* fileLogname, char* programName)
+{
+	t_log_level LEVEL_ENUM = LOG_LEVEL_TRACE;
+	t_log* nuevo_logger = log_create(fileLogname, programName, 1, LEVEL_ENUM);
 
-char* recibir_buffer(int socket_cliente, t_consola* consolaRecv){
+	return nuevo_logger;
+}
+
+char* recibir_buffer(int socket_cliente, t_consola* consolaRecv)
+{
 	int instructions_size;
 
     if(recv(socket_cliente, &consolaRecv->streamLength, sizeof(int), MSG_WAITALL) < 0)
         return -1;
-
-    size_t size_string = consolaRecv->streamLength;
     consolaRecv->stream = malloc(consolaRecv->streamLength);
     recv(socket_cliente, consolaRecv->stream, consolaRecv->streamLength, MSG_WAITALL);
     memcpy(&consolaRecv->processSize, consolaRecv->stream, sizeof(int));
     consolaRecv->stream += sizeof(int);
     memcpy(&instructions_size, consolaRecv->stream, sizeof(int));
 	consolaRecv->stream += sizeof(int);
-    char* mensaje = malloc(size_string);
-    memcpy(mensaje, consolaRecv->stream, size_string);
+    char* mensaje = malloc(instructions_size);
+    memcpy(mensaje, consolaRecv->stream, consolaRecv->streamLength);
 
     return mensaje;
 }

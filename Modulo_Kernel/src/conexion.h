@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <inttypes.h>
 #include <commons/log.h>
+#include <commons/collections/queue.h>
 
 #include "sockets.h"
 #include "protocolo.h"
