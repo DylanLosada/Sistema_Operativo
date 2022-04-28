@@ -11,8 +11,4 @@
 #include "conexion.h"
 
 
-
-void iterator(char* value);
-t_config* iniciar_config(void);
-
 #endif /* KERNEL_H_ */

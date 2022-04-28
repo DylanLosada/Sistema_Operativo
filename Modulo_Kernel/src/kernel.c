@@ -1,23 +1,24 @@
 #include "kernel.h"
 
+
 int main(int argc, char** argv) {
+	t_config_kernel* KERNEL_CONFIG;
+	t_log* kernel_logger;
 
-	char* puerto_kernel;
+	kernel_logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
 
-	t_log* logger;
-	t_config* config;
+	int config_kernel = create_config(KERNEL_CONFIG, kernel_logger);
 
-	config = iniciar_config();
+	int kernel_fd = start_kernel(KERNEL_CONFIG->PUERTO_ESCUCHA, kernel_logger);
 
-	puerto_kernel = config_get_string_value(config, "PUERTO_ESCUCHA");
+	/*if(!kernel_fd || !config_kernel){
 
-	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
+		return EXIT_FAILURE;
+	}*/
 
-	int kernel_fd = start_kernel(logger, "Kernel", puerto_kernel);
 
-	log_info(logger, "Kernel listo para recibir instrucciones");
 
-	while(bind_kernel(logger, "Kernel", kernel_fd));
+	while(bind_kernel(kernel_fd, kernel_logger));
 
 	release_connection(&kernel_fd);
 
@@ -28,14 +29,5 @@ int main(int argc, char** argv) {
 	return EXIT_SUCCESS;
 }
 
-t_config* iniciar_config(void){
-	t_config* nuevo_config = config_create("kernel.config");
 
-	return nuevo_config;
-}
 
-/*
-void iterator(char* value) {
-	log_info(logger,"%s", value);
-}
-*/
