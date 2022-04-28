@@ -2,9 +2,10 @@
 #define SRC_FETCH_H_
 
 #include "pcb.h"
-#include "fetch.c"
+#include <commons/log.h>
+#include <commons/collections/list.h>
 
-void fetch(t_pcb pcb);
+void fetch(t_pcb* pcb);
 
 
 #endif /* SRC_FETCH_H_ */
