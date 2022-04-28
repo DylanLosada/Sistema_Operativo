@@ -11,10 +11,10 @@
 #include "pcb.h"
 
 #include "fetch.h"
-//#include "decode.h"
-//#include "fetch_operands.h"
-//#include "execute.h"
-//#include "check_interrupt.h"
+#include "decode.h"
+#include "fetch_operands.h"
+#include "execute.h"
+#include "check_interrupt.h"
 
 
 t_config* iniciar_config(void);
