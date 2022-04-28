@@ -4,7 +4,15 @@ typedef struct {
     t_log* log;
     int fd;
     char* server_name;
+    pthread_mutex_t* semaforo;
+    t_queue* cola_pre_pcb;
 } t_process_conexion;
+
+typedef struct {
+    int processSize;
+    char* instructions;
+    int ppid;
+} t_pre_pcb;
 
 void process_connection(void* void_args) {
 
@@ -12,7 +20,6 @@ void process_connection(void* void_args) {
 	t_log* logger = args->log;
     int console_socket = args->fd;
     char* kernel_name = args->server_name;
-    free(args);
 
     op_code cod_op = recibir_operacion(console_socket, logger);
 
@@ -23,8 +30,11 @@ void process_connection(void* void_args) {
             case CONSOLA:{
             	t_consola* consolaRecv = malloc(sizeof(t_consola));
 				char* mensaje = recibir_buffer(console_socket, consolaRecv);
-				log_info(logger, "Tamanio de proceso %d", consolaRecv->processSize);
-				log_info(logger, "Me llego el mensaje %s", mensaje);
+				// funcion para crear pre pcb
+				pthread_mutex_lock(args->semaforo);
+				// agregamos a la cola
+				pthread_mutex_unlock(args->semaforo);
+				close(console_socket);
 				free(consolaRecv->stream);
 				free(consolaRecv);
                 break;
@@ -41,6 +51,7 @@ void process_connection(void* void_args) {
     }
 
     log_warning(logger, "La consola se desconecto del %s ", kernel_name);
+    free(args);
     return;
 }
 
@@ -59,6 +70,7 @@ int bind_kernel(t_log* logger, char* kernel_name, int kernel_socket) {
         // SE PROCESA LA CONEXION //
         pthread_create(&hilo, NULL, process_connection, args);
         pthread_detach(hilo);
+
         return 1;
     }
     return 0;
