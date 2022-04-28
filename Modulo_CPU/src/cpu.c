@@ -4,7 +4,7 @@
 
 int main() {
 
-	t_log* logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
+	t_log* logger = log_create("cpu.log", "CPU_MAIN", 1, LOG_LEVEL_DEBUG);
 	t_config* config = iniciar_config();
 
 
@@ -28,10 +28,19 @@ int main() {
 	t_pcb* pcb = malloc(sizeof(t_pcb));
 	pcb->id = 1;
 	pcb->tamanio = 10;
-	pcb->instrucciones = create_list();
+	pcb->instrucciones = list_create();
 
-	t_link_element head;
-	// TODO: test instructions
+
+	// Test instructions:
+	t_instruct* instruct = malloc(sizeof(t_instruct));
+	instruct->op_code = NO_OP;
+	instruct->param1 = 1;
+	instruct->param2 = 2;
+
+
+	t_link_element* head = malloc(sizeof(t_link_element));
+	head->data = instruct;
+
 
 	pcb->instrucciones->head = head;
 	pcb->pc = 0;
@@ -39,8 +48,9 @@ int main() {
 	pcb->rafaga = 0;
 
 	fetch(pcb);
+	log_info(logger, "PC luego de instruccion 0: %d", pcb->pc);
 
-	list_destroy(pcb->instrucciones);
+	//list_destroy(pcb->instrucciones);
 	free(pcb);
 
 
