@@ -15,5 +15,6 @@ typedef struct{
 
 void planificador_largo_plazo(char* tipo_planificador, t_queue* cola_nuevo, t_queue* cola_salidas);
 void ordenar_cola(char* tipo_planificador, t_queue* cola_a_ordenar);
+void manejador_planificadores(void* void_args);
 
 #endif;

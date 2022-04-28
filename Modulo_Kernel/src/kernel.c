@@ -1,53 +1,37 @@
 #include "kernel.h"
 
+
 int main(int argc, char** argv) {
-	pthread_mutex_t binary = malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init(binary, NULL);
+	pthread_mutex_t binary;
+	pthread_mutex_init(&binary, NULL);
 	t_queue* cola_pre_pcb = malloc(sizeof(t_queue));
-	char* puerto_kernel;
-	char* algoritmo_planificacion;
+	t_config_kernel* KERNEL_CONFIG = malloc(sizeof(t_config_kernel));
+	t_log* kernel_logger;
 
-	t_log* logger;
-	t_config* config = iniciar_config();
+	kernel_logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
 
-	puerto_kernel = config_get_string_value(config, "PUERTO_ESCUCHA");
-	algoritmo_planificacion = config_get_string_value(config, "ALGORITMO_PLANIFICACION");
+	int config_kernel = create_config(KERNEL_CONFIG, kernel_logger);
 
-	logger = iniciar_logger("kernel.log", "Kernel Trace");
-
-	int kernel_fd = start_kernel(logger, "Kernel", puerto_kernel);
+	int kernel_fd = start_kernel(KERNEL_CONFIG->PUERTO_ESCUCHA, kernel_logger);
 
 	// CREACION DE HILO //
 	pthread_t hilo_planificador;
 	t_args_planificador* args = malloc(sizeof(t_args_planificador));
 	args->cola_pre_pcb = cola_pre_pcb;
-	args->tipo_planificador = algoritmo_planificacion;
+	args->tipo_planificador = KERNEL_CONFIG->ALGORITMO_PLANIFICACION;
 
 	// SE PROCESA LA CONEXION //
 	pthread_create(&hilo_planificador, NULL, manejador_planificadores, args);
 	pthread_detach(hilo_planificador);
 
-	log_info(logger, "Kernel listo para recibir instrucciones");
-
-	while(bind_kernel(logger, "Kernel", kernel_fd));
+	while(bind_kernel(kernel_fd, kernel_logger));
 
 	release_connection(&kernel_fd);
 
 	//close_program(logger);
 
-
-
 	return EXIT_SUCCESS;
 }
 
-t_config* iniciar_config(void){
-	t_config* nuevo_config = config_create("kernel.config");
 
-	return nuevo_config;
-}
 
-/*
-void iterator(char* value) {
-	log_info(logger,"%s", value);
-}
-*/

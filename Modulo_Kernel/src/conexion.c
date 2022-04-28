@@ -22,10 +22,7 @@ void process_connection(void* void_args) {
     char* kernel_name = args->server_name;
 
     op_code cod_op = recibir_operacion(console_socket, logger);
-
-    while (console_socket != -1) {
-
-
+	while (console_socket != -1) {
         switch (cod_op) {
             case CONSOLA:{
             	t_consola* consolaRecv = malloc(sizeof(t_consola));
@@ -52,20 +49,21 @@ void process_connection(void* void_args) {
 
     log_warning(logger, "La consola se desconecto del %s ", kernel_name);
     free(args);
+
     return;
 }
 
-int bind_kernel(t_log* logger, char* kernel_name, int kernel_socket) {
-    int socket_consola = wait_console(logger, kernel_name, kernel_socket);
+int bind_kernel(int kernel_socket, t_log* kernel_logger) {
+
+    int socket_consola = wait_console(kernel_socket, kernel_logger);
 
     if (socket_consola > 0) {
 
     	// CREACION DE HILO //
         pthread_t hilo;
         t_process_conexion* args = malloc(sizeof(t_process_conexion));
-        args->log = logger;
+        args->log = kernel_logger;
         args->fd = socket_consola;
-        args->server_name = kernel_name;
 
         // SE PROCESA LA CONEXION //
         pthread_create(&hilo, NULL, process_connection, args);

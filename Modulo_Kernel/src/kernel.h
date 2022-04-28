@@ -11,7 +11,4 @@
 #include "conexion.h"
 #include "planificadores/planificadores.h"
 
-void iterator(char* value);
-t_config* iniciar_config(void);
-
 #endif /* KERNEL_H_ */

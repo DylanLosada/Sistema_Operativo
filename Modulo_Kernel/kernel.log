@@ -68,3 +68,47 @@
 [INFO] 00:09:28:954 Kernel/(32417:32445): INFORMACION RECIBIDA CORRECTAMENTE
 [INFO] 00:09:28:954 Kernel/(32417:32445): Me llego el mensaje Q
 [INFO] 00:09:28:954 Kernel/(32417:32445): Tamanio de proceso 100
+[INFO] 14:37:25:827 Kernel/(7347:7347): Kernel listo para recibir instrucciones
+[INFO] 14:39:07:456 Kernel/(7347:7347): Consola conectada (a Kernel)
+
+[INFO] 14:39:07:464 Kernel/(7347:7433): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:40:59:342 Kernel/(7504:7504): Kernel listo para recibir instrucciones
+[INFO] 14:41:33:797 Kernel/(7504:7504): Consola conectada (a Kernel)
+
+[INFO] 14:41:33:812 Kernel/(7504:7527): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:43:33:853 Kernel/(7621:7621): Kernel listo para recibir instrucciones
+[INFO] 14:43:37:319 Kernel/(7621:7621): Consola conectada (a Kernel)
+
+[INFO] 14:43:37:330 Kernel/(7621:7645): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:50:11:858 Kernel/(8031:8031): Kernel listo para recibir instrucciones
+[INFO] 14:50:17:788 Kernel/(8031:8031): Consola conectada (a Kernel)
+
+[INFO] 14:50:17:801 Kernel/(8031:8053): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:50:17:801 Kernel/(8031:8053): Socket 5
+[INFO] 14:52:00:173 Kernel/(8143:8143): Kernel listo para recibir instrucciones
+[INFO] 14:52:02:496 Kernel/(8143:8143): Consola conectada (a Kernel)
+
+[INFO] 14:52:02:499 Kernel/(8143:8164): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:52:02:499 Kernel/(8143:8164): Socket 5
+[INFO] 14:55:42:918 Kernel/(8287:8287): Kernel listo para recibir instrucciones
+[INFO] 14:55:47:064 Kernel/(8287:8287): Consola conectada (a Kernel)
+
+[INFO] 14:55:47:065 Kernel/(8287:8307): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:55:47:065 Kernel/(8287:8307): Socket 5
+[INFO] 14:59:31:325 Kernel/(8425:8425): Kernel listo para recibir instrucciones
+[INFO] 14:59:33:873 Kernel/(8425:8425): Consola conectada (a Kernel)
+
+[INFO] 14:59:33:888 Kernel/(8425:8448): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:59:33:888 Kernel/(8425:8448): Socket 5
+[INFO] 15:01:21:233 Kernel/(8517:8517): Kernel listo para recibir instrucciones
+[INFO] 15:01:24:549 Kernel/(8517:8517): Consola conectada (a Kernel)
+
+[INFO] 15:01:24:560 Kernel/(8517:8539): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:01:24:561 Kernel/(8517:8539): Socket 5
+[ERROR] 14:31:57:800 Kernel/(21586:21586): No se ha encontrado kernel.config
+[INFO] 14:36:49:163 Kernel/(21984:21984): Archivo de configuracion cargado con exito
+[INFO] 14:40:34:089 Kernel/(22259:22259): Archivo de configuracion cargado con exito
+[INFO] 14:40:59:880 Kernel/(22311:22311): Archivo de configuracion cargado con exito
+[INFO] 14:43:44:371 Kernel/(22446:22446): Archivo de configuracion cargado con exito
+[INFO] 14:45:39:192 Kernel/(22573:22573): Archivo de configuracion cargado con exito
+[INFO] 14:45:51:327 Kernel/(22573:22573): Kernel listo para recibir instrucciones
