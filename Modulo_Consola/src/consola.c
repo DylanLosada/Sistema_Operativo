@@ -13,14 +13,8 @@ int main(int argc, char** argv){
 
 
 	/* ---------------- ARCHIVOS DE CONFIGURACION ---------------- */
-
-	// Usando el config creado previamente, leemos los valores del config y los 
-	// dejamos en las variables 'ip', 'puerto' y 'valor'
-	// puerto = config_get_string_value(config,"PUERTO_KERNEL");
-	// ip = config_get_string_value(config,"IP_KERNEL");
-
-	puerto = "8000";
-	ip = "127.0.0.1";
+	ip = config_get_string_value(config,"IP_KERNEL");
+	puerto = config_get_string_value(config,"PUERTO_KERNEL");
 
 	log_info(logger, "Leyendo archivo de Pseudocodigo.......");
 	// Armamos y enviamos el paquete (depuramos)
@@ -30,6 +24,7 @@ int main(int argc, char** argv){
 	connection = crear_conexion(ip, puerto);
 	send_instructions(instructions, connection, strtol(argv[1], &argv[1], 10));
 
+	// Esperamos por la terminacion del proceso
 	waitForResponse(connection, logger, config);
 }
 
@@ -89,6 +84,9 @@ void checkCodeOperation(char* instructRead, char** instructs){
 
 void waitForResponse(int conexion, t_log* logger, t_config* config)
 {
+	int signal;
+	recv(conexion, &signal, sizeof(int), 0);
+	log_info(logger, "Proceso finalizado, cerrando consola........");
 	close(conexion);
 	log_destroy(logger);
 	config_destroy(config);
