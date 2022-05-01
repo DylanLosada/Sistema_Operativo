@@ -1,8 +1,8 @@
 #ifndef PCB_H_
 #define PCB_H_
-
+/*
+#include "funciones.h"
 #include "kernel.h";
-#include "sockets.h";
 
 
 typedef struct t_pcb{
@@ -10,9 +10,9 @@ typedef struct t_pcb{
 	int tamanio;
 	t_list instrucciones;
 	int pc;
-	void* tabla_paginas;
+	int tabla_paginas;
 	int rafaga;
 }t_pcb;
 
-
+*/
 #endif /* PCB_H_ */

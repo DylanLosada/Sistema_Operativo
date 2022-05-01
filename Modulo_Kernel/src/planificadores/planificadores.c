@@ -1,6 +1,6 @@
 #include "planificadores.h"
 
-void manejador_planificadores(void* void_args){
+void handler_planners(void* void_args){
 	t_args_planificador* args = (t_args_planificador*) void_args;
 	t_queue* new;
 
