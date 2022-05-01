@@ -8,12 +8,6 @@ typedef struct {
     t_queue* cola_pre_pcb;
 } t_process_conexion;
 
-typedef struct {
-    int processSize;
-    char* instructions;
-    int ppid;
-} t_pre_pcb;
-
 void process_connection(void* void_args) {
 
 	t_process_conexion* args = (t_process_conexion*) void_args;

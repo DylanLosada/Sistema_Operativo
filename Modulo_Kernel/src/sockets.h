@@ -36,6 +36,16 @@ typedef struct{
 	t_consola* consola;
 } t_paquete;
 
+typedef struct {
+	int size;
+	void* stream;
+}t_buffer;
+
+typedef struct{
+	int op_code;
+	t_buffer* buffer;
+} t_cpu_paquete;
+
 
 typedef struct{
 	char* op_code;

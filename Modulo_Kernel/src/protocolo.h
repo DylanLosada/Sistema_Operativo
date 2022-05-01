@@ -10,10 +10,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef enum {
-    CONSOLA,
-} op_code;
-
 
 bool recv_instructions(int fd, char* instructions);
 

@@ -42,8 +42,6 @@ void* serializate_instructions(char* instructions, int processSize, t_paquete* p
 
 	free(instructions);
 	return a_enviar;
-
-
 }
 
 int crear_conexion(char *ip, char* puerto)
