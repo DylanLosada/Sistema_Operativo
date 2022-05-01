@@ -1,13 +1,10 @@
 #ifndef PLANIFICADORES_H_
 #define PLANIFICADORES_H_
 
-#include <stdio.h>
+#include "../conexion.h"
 #include <stdbool.h>
 #include <time.h>
-#include <commons/collections/queue.h>
 #include "shared_funtions/conexion_cliente.h"
-#include "../sockets.h"
-#include "../pcb.h"
 
 typedef enum{
 	FIFO,
@@ -20,6 +17,16 @@ typedef struct{
 	t_config_kernel* config_kernel;
 	pthread_mutex_t* mutex;
 } t_args_planificador;
+
+typedef struct {
+	int size;
+	void* stream;
+}t_buffer;
+
+typedef struct{
+	int op_code;
+	t_buffer* buffer;
+} t_cpu_paquete;
 
 typedef struct{
 	int interrupt;

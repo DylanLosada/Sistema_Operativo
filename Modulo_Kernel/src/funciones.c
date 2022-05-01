@@ -1,38 +1,8 @@
-#include "sockets.h"
-
-
-int create_config(t_config_kernel* config, t_log* kernel_logger){
-	t_config* cfg = config_create("kernel.config");
-
-	if(cfg == NULL){
-		log_error(kernel_logger, "No se ha encontrado kernel.config");
-		return 0;
-	}
-
-
-	config->IP_MEMORIA = config_get_string_value(cfg, "IP_MEMORIA");
-	config->PUERTO_MEMORIA = config_get_string_value(cfg, "PUERTO_MEMORIA");
-	config->IP_CPU = config_get_string_value(cfg, "IP_CPU");
-	config->PUERTO_CPU_DISPATCH = config_get_string_value(cfg, "PUERTO_CPU_DISPATCH");
-	config->PUERTO_CPU_INTERRUPT = config_get_string_value(cfg, "PUERTO_CPU_INTERRUPT");
-	config->PUERTO_ESCUCHA = config_get_string_value(cfg, "PUERTO_ESCUCHA");
-	config->ALGORITMO_PLANIFICACION = config_get_string_value(cfg, "ALGORITMO_PLANIFICACION");
-	config->ESTIMACION_INICIAL = config_get_string_value(cfg, "ESTIMACION_INICIAL");
-	config->ALFA = config_get_string_value(cfg, "ALFA");
-	config->GRADO_MULTIPROGRAMACION = config_get_string_value(cfg, "GRADO_MULTIPROGRAMACION");
-	config->TIEMPO_MAXIMO_BLOQUEADO = config_get_string_value(cfg, "TIEMPO_MAXIMO_BLOQUEADO");
-
-	//determinar planificacion
-
-	log_info(kernel_logger, "Archivo de configuracion cargado con exito");
-
-	return 1;
-
-}
+#include "funciones.h"
 
 
 // INICIA SERVER ESCUCHANDO EN IP:PUERTO
-int start_kernel(char* puerto, t_log* kernel_logger){
+int start_kernel(t_kernel* kernel){
 	int socket_servidor;
 
 	    struct addrinfo hints, *servinfo, *p;
@@ -42,7 +12,7 @@ int start_kernel(char* puerto, t_log* kernel_logger){
 	    hints.ai_socktype = SOCK_STREAM;
 	    hints.ai_flags = AI_PASSIVE;
 
-	    getaddrinfo(NULL, puerto, &hints, &servinfo);
+	    getaddrinfo(NULL, kernel->kernel_config->PUERTO_ESCUCHA, &hints, &servinfo);
 
 	    // Creamos el socket de escucha del servidor
 	    socket_servidor = socket(servinfo->ai_family,
@@ -57,19 +27,19 @@ int start_kernel(char* puerto, t_log* kernel_logger){
 
 	    freeaddrinfo(servinfo);
 
-	    log_info(kernel_logger, "Kernel listo para recibir instrucciones");
+	    log_info(kernel->kernel_log, "Kernel listo para recibir instrucciones");
 
 	    return socket_servidor;
 }
 
 
 // ESPERAR CONEXION DE CLIENTE A UN SERVER ABIERTO
-int wait_console(int socket_kernel, t_log* kernel_logger){
+int wait_console(t_kernel* kernel){
 	// Aceptamos un nuevo cliente
 
-	int socket_consola = accept(socket_kernel, NULL, NULL);
+	int socket_consola = accept(kernel->kernel_socket, NULL, NULL);
 
-	log_info(kernel_logger, "Consola conectada a kernel");
+	log_info(kernel->kernel_log, "Consola conectada a kernel");
 
 	return socket_consola;
 }
@@ -89,7 +59,7 @@ t_log* iniciar_logger(char* fileLogname, char* programName)
 	return nuevo_logger;
 }
 
-char* recibir_buffer(int socket_cliente, t_consola* consolaRecv)
+char* recive_buffer(int socket_cliente, t_consola* consolaRecv)
 {
 	int instructions_size;
 
@@ -107,7 +77,7 @@ char* recibir_buffer(int socket_cliente, t_consola* consolaRecv)
     return mensaje;
 }
 
-int recibir_operacion(int socket_cliente, t_log* logger){
+int recive_operation(int socket_cliente, t_log* logger){
 	int cod_op;
     if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
         log_info(logger, "INFORMACION RECIBIDA CORRECTAMENTE");

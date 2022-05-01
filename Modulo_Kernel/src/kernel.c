@@ -2,31 +2,46 @@
 
 
 int main(int argc, char** argv) {
-	pthread_mutex_t binary;
-	pthread_mutex_init(&binary, NULL);
+	pthread_mutex_t* mutex;
+	pthread_mutex_init(&mutex, NULL);
+
+	t_kernel* kernel = malloc(sizeof(t_kernel));
+	t_log* kernel_logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
 	t_queue* cola_pre_pcb = malloc(sizeof(t_queue));
-	t_config_kernel* KERNEL_CONFIG = malloc(sizeof(t_config_kernel));
-	t_log* kernel_logger;
 
-	kernel_logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
+	kernel->kernel_log = kernel_logger;
 
-	int config_kernel = create_config(KERNEL_CONFIG, kernel_logger);
+	kernel->kernel_config = malloc(sizeof(t_config_kernel));
 
-	int kernel_fd = start_kernel(KERNEL_CONFIG->PUERTO_ESCUCHA, kernel_logger);
+	kernel->kernel_config = create_config(kernel_logger);
 
-	// CREACION DE HILO //
+	kernel->kernel_socket = start_kernel(kernel);
+
+
+	t_args_planificador* args_planificador = malloc(sizeof(t_args_planificador));
+
+	log_info(kernel_logger, "Grado: %s",kernel->kernel_config->GRADO_MULTIPROGRAMACION);
+
+	args_planificador->pre_pcbs = malloc(sizeof(t_queue));
+	args_planificador->pre_pcbs = cola_pre_pcb;
+	args_planificador->config_kernel = kernel->kernel_config;
+	args_planificador->mutex = mutex;
+
 	pthread_t hilo_planificador;
-	t_args_planificador* args = malloc(sizeof(t_args_planificador));
-	args->cola_pre_pcb = cola_pre_pcb;
-	args->tipo_planificador = KERNEL_CONFIG->ALGORITMO_PLANIFICACION;
 
 	// SE PROCESA LA CONEXION //
-	pthread_create(&hilo_planificador, NULL, manejador_planificadores, args);
+	pthread_create(&hilo_planificador, NULL, handler_planners, args_planificador);
 	pthread_detach(hilo_planificador);
 
-	while(bind_kernel(kernel_fd, kernel_logger));
+	t_process_conexion* process_conecction = malloc(sizeof(t_process_conexion));
+	process_conecction->cola_pre_pcb = malloc(sizeof(t_queue));
+	process_conecction->cola_pre_pcb = cola_pre_pcb;
+	process_conecction->kernel = kernel;
+	process_conecction->semaforo = mutex;
 
-	release_connection(&kernel_fd);
+	while(bind_kernel(kernel, process_conecction));
+
+	//release_connection(&kernel_fd);
 
 	//close_program(logger);
 

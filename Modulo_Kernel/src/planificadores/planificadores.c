@@ -1,7 +1,5 @@
 #include "planificadores.h"
 
-#define SIG_INTERRUP_CPU -1
-
 void handler_planners(void* void_args){
 	t_args_planificador* args = (t_args_planificador*) void_args;
 	pthread_mutex_t* mutex = args->mutex;

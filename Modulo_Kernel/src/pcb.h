@@ -1,9 +1,7 @@
 #ifndef PCB_H_
 #define PCB_H_
 
-#include "kernel.h";
-#include "sockets.h";
-#include <time.h>
+#include "commons/collections/list.h"
 
 typedef struct {
     int processSize;
@@ -23,6 +21,5 @@ typedef struct{
 	clock_t time_blocked;
 	int time_excecuted_rafaga;
 }t_pcb; */
-
 
 #endif /* PCB_H_ */

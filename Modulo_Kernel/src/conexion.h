@@ -1,14 +1,17 @@
 #ifndef CONEXION_H_
 #define CONEXION_H_
 
-#include <stdint.h>
-#include <string.h>
-#include <pthread.h>
-#include <inttypes.h>
-#include <commons/log.h>
-#include <commons/collections/queue.h>
-#include "protocolo.h"
+#include "funciones.h"
+#include "pcb.h"
 
-int server_escuchar(t_log* logger, char* server_name, int server_socket);
+typedef struct {
+    t_kernel* kernel;
+    int fd;
+    char* server_name;
+    pthread_mutex_t* semaforo;
+    t_queue* cola_pre_pcb;
+} t_process_conexion;
+
+void create_thread(t_queue* cola_pre_pcb, char* algoritmo_planificacion);
 
 #endif
