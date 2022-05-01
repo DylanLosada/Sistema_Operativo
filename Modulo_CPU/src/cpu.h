@@ -9,11 +9,8 @@
 #include <commons/collections/list.h>
 
 #include "pcb.h"
-
-#include "fetch.h"
-//#include "decode.h"
-//#include "fetch_operands.h"
-//#include "execute.h"
+#include "fetch_and_decode.h"
+#include "execute.h"
 //#include "check_interrupt.h"
 
 
