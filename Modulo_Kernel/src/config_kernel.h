@@ -12,9 +12,10 @@
 #include<pthread.h>
 #include<commons/log.h>
 #include<commons/config.h>
+#include<commons/string.h>
 #include<commons/collections/list.h>
 #include<commons/collections/queue.h>
-#include "shared_funtions/estructuras.h"
+#include <estructuras.h>
 
 typedef struct {
 	char* IP_MEMORIA;

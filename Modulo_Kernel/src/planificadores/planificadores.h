@@ -4,7 +4,6 @@
 #include "../conexion.h"
 #include <stdbool.h>
 #include <time.h>
-#include "shared_funtions/conexion_cliente.h"
 
 typedef enum{
 	FIFO,
@@ -49,7 +48,7 @@ void order_queue(char* planner_type, t_queue* queue_to_oreder);
 void handler_planners(void* void_args);
 int connect_to_interrupt_cpu(t_config_kernel* config_kernel);
 bool hasCalculateRafaga(t_pcb* pcb);
-bool hasRunningPcb(t_queue* state_ready);
+bool hasRunningPcb(t_list* state_ready);
 t_pcb* create_pcb(t_pre_pcb* pre_pcb);
 void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete);
 int interrupt_cpu(int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted);

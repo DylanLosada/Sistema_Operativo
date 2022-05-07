@@ -1,4 +1,5 @@
 #include "conexion.h"
+#define EXIT "EXIT"
 
 t_pre_pcb* create_pre_pcb(t_list* list_intructions, int process_size, int console_socket){
 	t_pre_pcb* pre_pcb = malloc(sizeof(t_pre_pcb));
@@ -10,20 +11,13 @@ t_pre_pcb* create_pre_pcb(t_list* list_intructions, int process_size, int consol
 	return pre_pcb;
 }
 
-
 t_list* destokenizar_instructions(char* message){
 	t_list* list_instructions = malloc(sizeof(t_list));
-
-	list_add(list_instructions, strtok(message, "|"));
-
 	char** vec = string_split(message, "|");
 
-	for(int i = 0; i < string_array_size(vec); i++){
-
-		list_add(list_instructions, vec[i]);
-
-		if(strcmp(vec[i], "EXIT") == 0){
-			break;
+	for(int index = 0; index < string_array_size(vec); index++){
+		if(strcmp(vec[index], EXIT) != 0){
+			list_add(list_instructions, vec[index]);
 		}
 	}
 

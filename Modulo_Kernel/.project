@@ -3,6 +3,7 @@
 	<name>Modulo_Kernel</name>
 	<comment></comment>
 	<projects>
+		<project>Shared</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -190,3 +190,131 @@
 [INFO] 23:44:33:504 Kernel/(14047:14047): Grado: 4
 [INFO] 23:45:05:619 Kernel/(14047:14047): Consola conectada a kernel
 [INFO] 23:45:46:597 Kernel/(14047:14112): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 21:49:46:742 Kernel/(10297:10297): Archivo de configuracion cargado con exito
+[INFO] 21:49:46:744 Kernel/(10297:10297): Grado: 4
+[INFO] 21:49:46:745 Kernel/(10297:10297): Kernel listo para recibir instrucciones
+[INFO] 21:49:46:746 Kernel/(10297:10297): Grado: 4
+[INFO] 21:58:17:488 Kernel/(10716:10716): Archivo de configuracion cargado con exito
+[INFO] 21:58:17:488 Kernel/(10716:10716): Grado: 4
+[INFO] 21:58:17:488 Kernel/(10716:10716): Kernel listo para recibir instrucciones
+[INFO] 22:58:39:402 Kernel/(13831:13831): Archivo de configuracion cargado con exito
+[INFO] 22:58:39:404 Kernel/(13831:13831): Grado: 4
+[INFO] 22:58:39:405 Kernel/(13831:13831): Kernel listo para recibir instrucciones
+[INFO] 22:58:42:590 Kernel/(13831:13831): Grado: 4
+[INFO] 23:01:06:463 Kernel/(13831:13831): Consola conectada a kernel
+[INFO] 23:02:41:288 Kernel/(14492:14492): Archivo de configuracion cargado con exito
+[INFO] 23:02:41:288 Kernel/(14492:14492): Grado: 4
+[INFO] 23:02:41:290 Kernel/(14492:14492): Kernel listo para recibir instrucciones
+[INFO] 23:02:42:623 Kernel/(14492:14492): Grado: 4
+[INFO] 23:03:27:328 Kernel/(14492:14492): Consola conectada a kernel
+[INFO] 23:05:51:800 Kernel/(14959:14959): Archivo de configuracion cargado con exito
+[INFO] 23:05:51:800 Kernel/(14959:14959): Grado: 4
+[INFO] 23:05:51:801 Kernel/(14959:14959): Kernel listo para recibir instrucciones
+[INFO] 23:05:51:801 Kernel/(14959:14959): Grado: 4
+[INFO] 23:07:36:236 Kernel/(15235:15235): Archivo de configuracion cargado con exito
+[INFO] 23:07:36:237 Kernel/(15235:15235): Grado: 4
+[INFO] 23:07:36:237 Kernel/(15235:15235): Kernel listo para recibir instrucciones
+[INFO] 23:07:36:237 Kernel/(15235:15235): Grado: 4
+[INFO] 23:16:28:856 Kernel/(16447:16447): Archivo de configuracion cargado con exito
+[INFO] 23:16:28:858 Kernel/(16447:16447): Grado: 4
+[INFO] 23:16:28:858 Kernel/(16447:16447): Kernel listo para recibir instrucciones
+[INFO] 23:16:28:858 Kernel/(16447:16447): Grado: 4
+[INFO] 23:17:15:805 Kernel/(16447:16447): Consola conectada a kernel
+[INFO] 23:19:13:840 Kernel/(16774:16774): Archivo de configuracion cargado con exito
+[INFO] 23:19:13:840 Kernel/(16774:16774): Grado: 4
+[INFO] 23:19:13:840 Kernel/(16774:16774): Kernel listo para recibir instrucciones
+[INFO] 23:19:13:840 Kernel/(16774:16774): Grado: 4
+[INFO] 23:21:55:134 Kernel/(17302:17302): Archivo de configuracion cargado con exito
+[INFO] 23:21:55:135 Kernel/(17302:17302): Grado: 4
+[INFO] 23:21:55:137 Kernel/(17302:17302): Kernel listo para recibir instrucciones
+[INFO] 23:21:55:137 Kernel/(17302:17302): Grado: 4
+[INFO] 23:22:26:922 Kernel/(17302:17302): Consola conectada a kernel
+[INFO] 23:22:44:905 Kernel/(17302:17432): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:24:09:917 Kernel/(17585:17585): Archivo de configuracion cargado con exito
+[INFO] 23:24:09:917 Kernel/(17585:17585): Grado: 4
+[INFO] 23:24:09:919 Kernel/(17585:17585): Kernel listo para recibir instrucciones
+[INFO] 23:24:09:919 Kernel/(17585:17585): Grado: 4
+[INFO] 23:26:43:710 Kernel/(17894:17894): Archivo de configuracion cargado con exito
+[INFO] 23:26:43:712 Kernel/(17894:17894): Grado: 4
+[INFO] 23:26:43:715 Kernel/(17894:17894): Kernel listo para recibir instrucciones
+[INFO] 23:26:43:715 Kernel/(17894:17894): Grado: 4
+[INFO] 20:32:17:508 Kernel/(21880:21880): Archivo de configuracion cargado con exito
+[INFO] 20:32:17:509 Kernel/(21880:21880): Grado: 4
+[INFO] 20:32:17:511 Kernel/(21880:21880): Kernel listo para recibir instrucciones
+[INFO] 20:32:17:511 Kernel/(21880:21880): Grado: 4
+[INFO] 20:35:35:872 Kernel/(22067:22067): Archivo de configuracion cargado con exito
+[INFO] 20:35:35:873 Kernel/(22067:22067): Grado: 4
+[INFO] 20:35:35:875 Kernel/(22067:22067): Kernel listo para recibir instrucciones
+[INFO] 20:35:35:875 Kernel/(22067:22067): Grado: 4
+[INFO] 20:39:17:657 Kernel/(22333:22333): Archivo de configuracion cargado con exito
+[INFO] 20:39:17:659 Kernel/(22333:22333): Grado: 4
+[INFO] 20:39:17:660 Kernel/(22333:22333): Kernel listo para recibir instrucciones
+[INFO] 20:39:17:660 Kernel/(22333:22333): Grado: 4
+[INFO] 20:39:27:845 Kernel/(22333:22333): Consola conectada a kernel
+[INFO] 20:39:27:989 Kernel/(22333:22523): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 20:40:57:387 Kernel/(22669:22669): Archivo de configuracion cargado con exito
+[INFO] 20:40:57:388 Kernel/(22669:22669): Grado: 4
+[INFO] 20:40:57:390 Kernel/(22669:22669): Kernel listo para recibir instrucciones
+[INFO] 20:40:57:390 Kernel/(22669:22669): Grado: 4
+[INFO] 20:41:04:326 Kernel/(22669:22669): Consola conectada a kernel
+[INFO] 20:41:04:334 Kernel/(22669:22702): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 20:43:39:838 Kernel/(22863:22863): Archivo de configuracion cargado con exito
+[INFO] 20:43:39:838 Kernel/(22863:22863): Grado: 4
+[INFO] 20:43:39:838 Kernel/(22863:22863): Kernel listo para recibir instrucciones
+[INFO] 20:43:39:838 Kernel/(22863:22863): Grado: 4
+[INFO] 20:44:22:158 Kernel/(22948:22948): Archivo de configuracion cargado con exito
+[INFO] 20:44:22:158 Kernel/(22948:22948): Grado: 4
+[INFO] 20:44:22:158 Kernel/(22948:22948): Kernel listo para recibir instrucciones
+[INFO] 20:44:22:158 Kernel/(22948:22948): Grado: 4
+[INFO] 20:45:44:455 Kernel/(23055:23055): Archivo de configuracion cargado con exito
+[INFO] 20:45:44:456 Kernel/(23055:23055): Grado: 4
+[INFO] 20:45:44:456 Kernel/(23055:23055): Kernel listo para recibir instrucciones
+[INFO] 20:45:44:456 Kernel/(23055:23055): Grado: 4
+[INFO] 20:46:04:027 Kernel/(23055:23055): Consola conectada a kernel
+[INFO] 20:46:09:687 Kernel/(23055:23112): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 20:58:14:882 Kernel/(23892:23892): Archivo de configuracion cargado con exito
+[INFO] 20:58:14:882 Kernel/(23892:23892): Grado: 4
+[INFO] 20:58:14:883 Kernel/(23892:23892): Kernel listo para recibir instrucciones
+[INFO] 20:58:14:883 Kernel/(23892:23892): Grado: 4
+[INFO] 20:58:28:097 Kernel/(23892:23892): Consola conectada a kernel
+[INFO] 20:58:42:375 Kernel/(23892:23962): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 21:05:03:986 Kernel/(24472:24472): Archivo de configuracion cargado con exito
+[INFO] 21:05:03:986 Kernel/(24472:24472): Grado: 4
+[INFO] 21:05:03:987 Kernel/(24472:24472): Kernel listo para recibir instrucciones
+[INFO] 21:05:03:987 Kernel/(24472:24472): Grado: 4
+[INFO] 21:05:38:100 Kernel/(24560:24560): Archivo de configuracion cargado con exito
+[INFO] 21:05:38:100 Kernel/(24560:24560): Grado: 4
+[INFO] 21:05:38:100 Kernel/(24560:24560): Kernel listo para recibir instrucciones
+[INFO] 21:05:38:101 Kernel/(24560:24560): Grado: 4
+[INFO] 21:06:24:516 Kernel/(24649:24649): Archivo de configuracion cargado con exito
+[INFO] 21:06:24:516 Kernel/(24649:24649): Grado: 4
+[INFO] 21:06:24:516 Kernel/(24649:24649): Kernel listo para recibir instrucciones
+[INFO] 21:06:24:516 Kernel/(24649:24649): Grado: 4
+[INFO] 21:06:37:162 Kernel/(24649:24649): Consola conectada a kernel
+[INFO] 21:06:41:616 Kernel/(24649:24706): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 21:11:55:747 Kernel/(25019:25019): Archivo de configuracion cargado con exito
+[INFO] 21:11:55:747 Kernel/(25019:25019): Grado: 4
+[INFO] 21:11:55:748 Kernel/(25019:25019): Kernel listo para recibir instrucciones
+[INFO] 21:11:55:748 Kernel/(25019:25019): Grado: 4
+[INFO] 21:12:12:320 Kernel/(25019:25019): Consola conectada a kernel
+[INFO] 21:12:14:342 Kernel/(25019:25078): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 21:15:01:656 Kernel/(25232:25232): Archivo de configuracion cargado con exito
+[INFO] 21:15:01:656 Kernel/(25232:25232): Grado: 4
+[INFO] 21:15:01:657 Kernel/(25232:25232): Kernel listo para recibir instrucciones
+[INFO] 21:15:01:657 Kernel/(25232:25232): Grado: 4
+[INFO] 21:16:54:762 Kernel/(25443:25443): Archivo de configuracion cargado con exito
+[INFO] 21:16:54:763 Kernel/(25443:25443): Grado: 4
+[INFO] 21:16:54:763 Kernel/(25443:25443): Kernel listo para recibir instrucciones
+[INFO] 21:16:54:763 Kernel/(25443:25443): Grado: 4
+[INFO] 21:17:09:577 Kernel/(25443:25443): Consola conectada a kernel
+[INFO] 21:17:19:440 Kernel/(25443:25512): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 21:20:30:736 Kernel/(25811:25811): Archivo de configuracion cargado con exito
+[INFO] 21:20:30:736 Kernel/(25811:25811): Grado: 4
+[INFO] 21:20:30:736 Kernel/(25811:25811): Kernel listo para recibir instrucciones
+[INFO] 21:20:30:736 Kernel/(25811:25811): Grado: 4
+[INFO] 21:21:19:616 Kernel/(26007:26007): Archivo de configuracion cargado con exito
+[INFO] 21:21:19:617 Kernel/(26007:26007): Grado: 4
+[INFO] 21:21:19:617 Kernel/(26007:26007): Kernel listo para recibir instrucciones
+[INFO] 21:21:19:617 Kernel/(26007:26007): Grado: 4
+[INFO] 21:21:28:538 Kernel/(26007:26007): Consola conectada a kernel
+[INFO] 21:21:37:986 Kernel/(26007:26103): INFORMACION RECIBIDA CORRECTAMENTE

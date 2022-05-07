@@ -125,8 +125,13 @@ void short_term_planner(t_sockets_cpu* sockets_cpu, t_config_kernel* config_kern
 		order_state(states->state_ready, config_kernel);
 	}
 
-	// es responsabilidad de la CPU enviarnos el clock del proceso, la siguiente instruccion y.
-	send_pcb_to_cpu(list_remove(states->state_ready, 0), sockets_cpu->dispatch);
+	// es responsabilidad de la CPU enviarnos el clock del proceso, la siguiente instruccion y.......
+	if(!list_is_empty(states->state_ready)){
+		// introducimos logger para avisar que va aempezar a correr cierto pcb
+		send_pcb_to_cpu(list_remove(states->state_ready, 0), sockets_cpu->dispatch);
+	}else{
+		// introducimos logger para avisar que no existen mas pcbs
+	}
 }
 
 void check_and_update_blocked_to_ready(int empty_space, t_states* states){
@@ -138,8 +143,8 @@ void check_and_update_blocked_to_ready(int empty_space, t_states* states){
 	}
 }
 
-bool hasRunningPcb(t_queue* state_ready){
-	return !queue_is_empty(state_ready);
+bool hasRunningPcb(t_list* state_ready){
+	return !list_size(state_ready);
 }
 
 void check_time_in_blocked_and_pass_to_suspended_blocked(t_list* state_suspended_blocked, t_list* state_blocked, int TIEMPO_MAXIMO_BLOQUEADO){
