@@ -3,13 +3,6 @@
 
 #include "config_kernel.h"
 
-
-typedef struct{
-	int processSize;
-	int streamLength;
-	void* stream;
-} t_consola;
-
 typedef struct{
 	int op_code;
 	t_consola* consola;

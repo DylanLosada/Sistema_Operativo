@@ -10,8 +10,6 @@ int main(void) {
 
 	kernel->kernel_log = kernel_logger;
 
-	kernel->kernel_config = malloc(sizeof(t_config_kernel));
-
 	kernel->kernel_config = create_config(kernel_logger);
 
 	kernel->kernel_socket = start_kernel(kernel);

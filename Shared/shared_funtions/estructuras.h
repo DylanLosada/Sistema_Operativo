@@ -9,6 +9,12 @@
 #define SHARED_FUNTIONS_ESTRUCTURAS_H_
 #include <commons/collections/list.h>
 
+typedef struct{
+	int processSize;
+	int streamLength;
+	void* stream;
+} t_consola;
+
 typedef struct t_pcb{
 	int id;
 	int processSize;

@@ -1,5 +1,4 @@
 #include "conexion.h"
-#define EXIT "EXIT"
 
 t_pre_pcb* create_pre_pcb(t_list* list_intructions, int process_size, int console_socket){
 	t_pre_pcb* pre_pcb = malloc(sizeof(t_pre_pcb));
@@ -12,11 +11,11 @@ t_pre_pcb* create_pre_pcb(t_list* list_intructions, int process_size, int consol
 }
 
 t_list* destokenizar_instructions(char* message){
-	t_list* list_instructions = malloc(sizeof(t_list));
+	t_list* list_instructions = list_create();
 	char** vec = string_split(message, "|");
 
 	for(int index = 0; index < string_array_size(vec); index++){
-		if(strcmp(vec[index], EXIT) != 0){
+		if(strcmp(vec[index], NULL) != 0){
 			list_add(list_instructions, vec[index]);
 		}
 	}
@@ -31,8 +30,8 @@ void process_connection(t_process_conexion* args) {
 	switch (cod_op) {
 		case CONSOLA:{
 			t_consola* consolaRecv = malloc(sizeof(t_consola));
-
-			t_list* list_instructions = destokenizar_instructions(recive_buffer(args->fd, consolaRecv));
+			char* instructions = recive_buffer(args->fd, consolaRecv);
+			t_list* list_instructions = destokenizar_instructions(instructions);
 
 			t_pre_pcb* pre_pcb = create_pre_pcb(list_instructions, consolaRecv->processSize, args->fd);
 
@@ -71,13 +70,13 @@ void create_pthread(t_process_conexion* args){
 	pthread_detach(hilo);
 }
 
-int bind_kernel(t_kernel* kernel, t_process_conexion* process_conecction) {
+int bind_kernel(t_kernel* kernel, t_process_conexion* args) {
 
     int console_socket = wait_console(kernel);
 
     if (console_socket > 0) {
-    	process_conecction->fd = console_socket;
-		create_pthread(process_conecction);
+    	args->fd = console_socket;
+		create_pthread(args);
         return 1;
     }
     return 0;

@@ -9,25 +9,13 @@
 #include<netdb.h>
 #include<string.h>
 #include<commons/log.h>
-
-typedef enum
-{
-	CONSOLA,
-}op_code;
-
-typedef struct{
-	int processSize;
-	int streamLength;
-	void* stream;
-} t_consola;
+#include <estructuras.h>
 
 typedef struct
 {
 	int op_code;
 	t_consola* consola;
 } t_paquete;
-
-
 
 int crear_conexion(char* ip, char* puerto);
 void send_instructions(char*, int , int);

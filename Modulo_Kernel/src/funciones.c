@@ -19,6 +19,9 @@ int start_kernel(t_kernel* kernel){
 	                                 servinfo->ai_socktype,
 	                                 servinfo->ai_protocol);
 
+	    int yes = 1;
+	    setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+
 	    // Asociamos el socket a un puerto
 	    bind(socket_servidor, servinfo->ai_addr, servinfo->ai_addrlen);
 
@@ -72,7 +75,8 @@ char* recive_buffer(int socket_cliente, t_consola* consolaRecv)
     memcpy(&instructions_size, consolaRecv->stream, sizeof(int));
 	consolaRecv->stream += sizeof(int);
     char* mensaje = malloc(instructions_size);
-    memcpy(mensaje, consolaRecv->stream, consolaRecv->streamLength);
+    memcpy(mensaje, consolaRecv->stream, instructions_size);
+    consolaRecv->stream =+ instructions_size;
 
     return mensaje;
 }

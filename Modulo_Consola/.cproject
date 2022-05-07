@@ -22,8 +22,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.186073816" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.575343891" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1657252344" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Sahred}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Shared}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Shared/shared_funtions}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.277698498" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
