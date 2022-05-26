@@ -7,7 +7,6 @@ typedef struct {
     int processSize;
     t_list* instructions;
     int pcb_id;
-    int* initial_burst;
 } t_pre_pcb;
 /*
 typedef struct{

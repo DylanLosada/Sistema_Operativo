@@ -15,7 +15,7 @@ t_list* destokenizar_instructions(char* message){
 	char** vec = string_split(message, "|");
 
 	for(int index = 0; index < string_array_size(vec); index++){
-		if(strcmp(vec[index], NULL) != 0){
+		if(vec[index] != NULL && strcmp(vec[index], "") != 0){
 			list_add(list_instructions, vec[index]);
 		}
 	}
@@ -23,8 +23,8 @@ t_list* destokenizar_instructions(char* message){
 	return list_instructions;
 }
 
-void process_connection(t_process_conexion* args) {
-
+void process_connection(void* void_args) {
+	t_process_conexion* args = (t_process_conexion*) void_args;
     op_code cod_op = recive_operation(args->fd, args->kernel->kernel_log);
 
 	switch (cod_op) {
@@ -42,8 +42,8 @@ void process_connection(t_process_conexion* args) {
 			pthread_mutex_unlock(args->semaforo);
 
 
-			free(consolaRecv->stream);
-			free(consolaRecv);
+			//free(consolaRecv->stream);
+			//free(consolaRecv);
 			break;
 		}
 		// Errores

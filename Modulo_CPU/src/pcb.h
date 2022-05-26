@@ -13,18 +13,6 @@ typedef struct {
 	int rafaga;
 } t_pcb;
 
-
-typedef enum
-{
-	NO_OP,
-	I_O,
-	READ,
-	COPY,
-	WRITE,
-	EXIT
-} op_code;
-
-
 typedef struct {
 	op_code op_code;
 	int param1;

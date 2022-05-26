@@ -15,12 +15,22 @@ typedef struct{
 	void* stream;
 } t_consola;
 
+typedef enum
+{
+	NO_OP,
+	I_O,
+	READ,
+	COPY,
+	WRITE,
+	EXIT
+} op_instructions_code;
+
 typedef struct t_pcb{
 	int id;
 	int processSize;
-	int* program_counter;
-	int* tabla_paginas;
-	int* rafaga;
+	int program_counter;
+	int tabla_paginas;
+	int rafaga;
 	int time_io;
 	int time_excecuted_rafaga;
 	clock_t time_blocked;
