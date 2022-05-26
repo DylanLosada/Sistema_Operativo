@@ -34,3 +34,46 @@
 [INFO] 16:18:15:243 CPU_EXECUTE/(31551:31551): Executed 0 (parametros 1 2)
 [INFO] 16:32:44:598 CPU_FETCH/(321:321): PC 0, instruccion encontrada: 0 (parametros 1 2)
 [INFO] 16:32:46:598 CPU_EXECUTE/(321:321): Executed 0 (parametros 1 2)
+[INFO] 14:12:50:650 CPU_MAIN/(7630:7630): Archivo de configuracion cargado con exito
+[INFO] 14:12:56:177 CPU_MAIN/(7630:7630): Kernel listo para recibir instrucciones
+[INFO] 14:12:58:181 CPU_MAIN/(7630:7630): Kernel listo para recibir instrucciones
+[INFO] 14:20:44:193 CPU_MAIN/(7900:7900): Archivo de configuracion cargado con exito
+[INFO] 14:20:44:202 CPU_MAIN/(7900:7900): CPU DISPATCH a la espera de PCB para ejecutar..
+[INFO] 14:20:44:202 CPU_MAIN/(7900:7900): CPU INTERRUPT a la espera de mensajes de interrupcion..
+[INFO] 16:26:25:053 CPU_MAIN/(10814:10814): Archivo de configuracion cargado con exito
+[INFO] 16:32:14:377 CPU_MAIN/(11084:11084): Archivo de configuracion cargado con exito
+[INFO] 16:35:00:713 CPU_MAIN/(11202:11202): Archivo de configuracion cargado con exito
+[INFO] 16:35:48:051 CPU_MAIN/(11280:11280): Archivo de configuracion cargado con exito
+[INFO] 16:37:11:833 CPU_MAIN/(11359:11359): Archivo de configuracion cargado con exito
+[INFO] 16:37:33:339 CPU_MAIN/(11407:11407): Archivo de configuracion cargado con exito
+[INFO] 16:38:32:140 CPU_MAIN/(11455:11455): Archivo de configuracion cargado con exito
+[INFO] 16:40:05:974 CPU_MAIN/(11544:11544): Archivo de configuracion cargado con exito
+[INFO] 16:40:49:706 CPU_MAIN/(11634:11634): Archivo de configuracion cargado con exito
+[INFO] 16:41:05:872 CPU_MAIN/(11679:11679): Archivo de configuracion cargado con exito
+[INFO] 16:43:25:676 CPU_MAIN/(11779:11779): Archivo de configuracion cargado con exito
+[INFO] 19:08:58:890 CPU_MAIN/(4333:4333): Archivo de configuracion cargado con exito
+[INFO] 19:11:42:842 CPU_MAIN/(4829:4829): Archivo de configuracion cargado con exito
+[INFO] 19:48:43:327 CPU_MAIN/(6053:6053): Archivo de configuracion cargado con exito
+[INFO] 19:50:11:795 CPU_MAIN/(6122:6122): Archivo de configuracion cargado con exito
+[INFO] 19:51:03:734 CPU_MAIN/(6160:6160): Archivo de configuracion cargado con exito
+[INFO] 19:52:25:736 CPU_MAIN/(6244:6244): Archivo de configuracion cargado con exito
+[INFO] 19:57:21:568 CPU_MAIN/(6560:6560): Archivo de configuracion cargado con exito
+[INFO] 19:58:24:525 CPU_MAIN/(6674:6674): Archivo de configuracion cargado con exito
+[INFO] 19:59:00:426 CPU_MAIN/(6720:6720): Archivo de configuracion cargado con exito
+[INFO] 19:59:32:088 CPU_MAIN/(6772:6772): Archivo de configuracion cargado con exito
+[INFO] 19:59:44:073 CPU_MAIN/(6807:6807): Archivo de configuracion cargado con exito
+[INFO] 19:59:51:460 CPU_MAIN/(6846:6846): Archivo de configuracion cargado con exito
+[INFO] 19:59:58:191 CPU_MAIN/(6878:6878): Archivo de configuracion cargado con exito
+[INFO] 20:01:50:199 CPU_MAIN/(6984:6984): Archivo de configuracion cargado con exito
+[INFO] 20:01:56:316 CPU_MAIN/(6984:6984): CPU escuchando en puerto 8001
+[INFO] 20:04:08:241 CPU_MAIN/(7095:7095): Archivo de configuracion cargado con exito
+[INFO] 20:04:13:872 CPU_MAIN/(7095:7095): CPU escuchando en puerto °
+[INFO] 20:05:13:760 CPU_MAIN/(7181:7181): Archivo de configuracion cargado con exito
+[INFO] 20:05:16:489 CPU_MAIN/(7181:7181): °
+[INFO] 20:07:27:918 CPU_MAIN/(7369:7369): Archivo de configuracion cargado con exito
+[INFO] 20:07:27:918 CPU_MAIN/(7369:7369): °
+[INFO] 20:08:45:328 CPU_MAIN/(7369:7369): CPU escuchando en puerto °
+[INFO] 20:09:47:534 CPU_MAIN/(7684:7684): Archivo de configuracion cargado con exito
+[INFO] 20:09:51:931 CPU_MAIN/(7684:7684): CPU escuchando en puerto 8001
+[INFO] 20:11:27:550 CPU_MAIN/(7792:7792): Archivo de configuracion cargado con exito
+[INFO] 20:11:31:772 CPU_MAIN/(7792:7792): CPU escuchando en puerto 8001

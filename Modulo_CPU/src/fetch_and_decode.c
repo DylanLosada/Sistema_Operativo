@@ -1,5 +1,5 @@
 #include "fetch_and_decode.h"
-
+/*
 void fetch_and_decode(t_pcb* pcb, t_instruct* instruction){
 	t_log* logger = log_create("cpu.log", "CPU_FETCH", 1, LOG_LEVEL_DEBUG);
 
@@ -16,4 +16,4 @@ void fetch_and_decode(t_pcb* pcb, t_instruct* instruction){
 	}
 
 
-}
+}*/

@@ -1,30 +1,40 @@
 #include "cpu.h"
 
-
-
 int main() {
 
-	t_log* logger = log_create("cpu.log", "CPU_MAIN", 1, LOG_LEVEL_DEBUG);
-	t_config* config = iniciar_config();
-	int no_op_time = config_get_int_value(config, "RETARDO_NOOP");
+
+	t_cpu* cpu = malloc(sizeof(t_cpu));
+	t_log* cpu_logger = log_create("cpu.log", "CPU_MAIN", 1, LOG_LEVEL_DEBUG);
+	cpu->cpu_log = cpu_logger;
+	cpu->cpu_config = create_config_cpu(cpu_logger);
+
+	pthread_t hilo_dispatch;
+
+	t_info* args_dispatch = malloc(sizeof(t_info));
+
+	args_dispatch->puerto = cpu->cpu_config->PUERTO_ESCUCHA_DISPATCH;
+	args_dispatch->texto = "CPU DISPATCH a la espera de PCB para ejecutar..";
+	args_dispatch->logger = cpu_logger;
+
+	execute_cpu(args_dispatch);
+
+	//pthread_create(&hilo_dispatch, NULL, execute_cpu, args_dispatch);
+	//pthread_detach(hilo_dispatch);
 
 
+/*
+	pthread_t hilo_interrupt;
 
+	t_info* args_interrupt = malloc(sizeof(t_info));
 
-	// Handshake con memoria para conseguir config cantidad entradas por tabla de paginas y tamaño de pagina.
-	char* ip_memoria = config_get_string_value(config, "IP_MEMORIA");
-	char* puerto_memoria = config_get_string_value(config, "PUERTO_MEMORIA");
-	// TODO: connection
+	args_interrupt->puerto = cpu->cpu_config->PUERTO_ESCUCHA_INTERRUPT;
+	args_interrupt->texto = "CPU INTERRUPT a la espera de mensajes de interrupcion..";
+	args_interrupt->logger = cpu_logger;
 
-
-
-	// Conexion puerto dispatch kernel para recibir pcb a ejecutar.
-	char* puerto_escucha_dispatch = config_get_string_value(config, "PUERTO_ESCUCHA_DISPATCH");
-	// TODO: connection
-
-
-
-
+	pthread_create(&hilo_interrupt, NULL, execute_cpu , args_interrupt);
+	pthread_detach(hilo_interrupt);
+*/
+/*
 	// Handle pcb (fetch, decode, fetch operands, execute, check interrupt)
 	t_pcb* pcb = malloc(sizeof(t_pcb));
 	pcb->id = 1;
@@ -70,11 +80,7 @@ int main() {
 
 
 
-
+*/
    return 0;
 }
 
-
-t_config* iniciar_config(void){
-	return config_create("cpu.config");
-}
