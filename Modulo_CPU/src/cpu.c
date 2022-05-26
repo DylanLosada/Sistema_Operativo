@@ -18,6 +18,9 @@ int main() {
 
 	execute_cpu(args_dispatch);
 
+	while(bind_cpu(cpu, args_dispatch));
+
+
 	//pthread_create(&hilo_dispatch, NULL, execute_cpu, args_dispatch);
 	//pthread_detach(hilo_dispatch);
 

@@ -36,3 +36,28 @@ int start_cpu(char* puerto){
 
 	return socket_cpu;
 }
+
+
+int wait_kernel(t_cpu* cpu){
+	// Aceptamos un nuevo cliente
+
+	int socket_consola = accept(cpu->socket, NULL, NULL);
+
+
+
+	return socket_consola;
+}
+
+int bind_cpu(t_cpu* cpu, t_info* args){
+	int kernel_socket = wait_kernel(cpu);
+
+	if (kernel_socket > 0) {
+		log_info(cpu->cpu_log, "Kernel conectado a CPU");
+		while(1){
+
+		}
+	}
+	return 1;
+}
+
+

@@ -37,6 +37,7 @@ typedef struct{
 
 typedef struct{
 	t_log* cpu_log;
+	int socket;
 	t_config_cpu* cpu_config;
 }t_cpu;
 
