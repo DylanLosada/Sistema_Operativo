@@ -16,6 +16,13 @@
 #include<netdb.h>
 #include<string.h>
 #include "commons/log.h"
+#include<unistd.h>
+#include<netdb.h>
+#include<commons/collections/list.h>
+#include<commons/collections/queue.h>
+#include<commons/config.h>
+#include <dirent.h>
+#include <errno.h>
 
 int create_server_connection(char* puerto, t_log* kernel_logger);
 int wait_client(int socket_server, t_log* logger, char* client, char* server);

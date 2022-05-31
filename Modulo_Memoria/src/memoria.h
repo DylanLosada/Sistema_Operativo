@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "conexion_servidor.h"
+#include <stdbool.h>
 
 typedef struct{
 	int puerto;
@@ -20,6 +22,7 @@ typedef struct{
 t_config_memoria config_memoria;
 
 char * memoria_principal;
+bool funcionando;
 
 
 #endif

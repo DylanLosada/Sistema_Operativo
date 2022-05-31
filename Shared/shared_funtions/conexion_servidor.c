@@ -37,6 +37,15 @@ int create_server_connection(char* puerto, t_log* kernel_logger){
 	return socket_servidor;
 }
 
+void* recibir_buffer(int* size, int socket_cliente){
+    void * buffer;
+    recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
+    buffer = malloc(*size);
+    recv(socket_cliente, buffer, *size, MSG_WAITALL);
+
+    return buffer;
+}
+
 int wait_client(int socket_server, t_log* logger, char* client, char* server){
 	// Aceptamos un nuevo cliente
 
