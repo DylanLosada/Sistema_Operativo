@@ -3,8 +3,16 @@
 
 void execute_cpu(void* void_args){
 	t_info* args = (t_info*) void_args;
-	args->socket = start_cpu(args->puerto);
-	log_info(args->logger, "CPU escuchando en puerto %s", args->puerto);
+	int kernel_socket = wait_kernel(args->socket);
+	while(1){
+		if(kernel_socket > 0){
+			log_info(args->log,"Kernel conectado al puerto %s",args->puerto);
+			break;
+		}
+	}
+
+
+
 }
 
 
@@ -38,26 +46,43 @@ int start_cpu(char* puerto){
 }
 
 
-int wait_kernel(t_cpu* cpu){
+int wait_kernel(int socket){
 	// Aceptamos un nuevo cliente
+	int socket_kernel = accept(socket, NULL, NULL);
 
-	int socket_consola = accept(cpu->socket, NULL, NULL);
-
-
-
-	return socket_consola;
+	return socket_kernel;
 }
+/*
+int bind_cpu(t_cpu* cpu){
 
-int bind_cpu(t_cpu* cpu, t_info* args){
-	int kernel_socket = wait_kernel(cpu);
+	switch(cpu->dispatch->code){
 
-	if (kernel_socket > 0) {
-		log_info(cpu->cpu_log, "Kernel conectado a CPU");
-		while(1){
+		case DISPATCH:
+			cpu->dispatch->socket = start_cpu(cpu->dispatch->puerto);
+			//kernel_socket = wait_kernel(cpu->socket_dispatch);
+			break;
 
-		}
+
+		case INTERRUPT:
+			cpu->interrupt->socket = start_cpu(cpu->interrupt->puerto);
+			//kernel_socket = wait_kernel(cpu->socket_interrupt);
+			break;
+
+		default:
+			break;
+	}
+
+	for(int i=0; i < 2; i++){
+
+	}
+	if (cpu->dispatch->socket > 0 || cpu->interrupt->socket > 0) {
+
+
+		//log_info(cpu->cpu_log, "Kernel conectado a CPU");
+
 	}
 	return 1;
-}
+}*/
+
 
 

@@ -9,22 +9,30 @@ int main() {
 	cpu->cpu_config = create_config_cpu(cpu_logger);
 
 	pthread_t hilo_dispatch;
+	t_info* dispatch = malloc(sizeof(t_info));
 
-	t_info* args_dispatch = malloc(sizeof(t_info));
+	dispatch->puerto = cpu->cpu_config->PUERTO_ESCUCHA_DISPATCH;
+	dispatch->code = 1;
+	dispatch->socket = start_cpu(dispatch->puerto);
+	dispatch->log = cpu_logger;
 
-	args_dispatch->puerto = cpu->cpu_config->PUERTO_ESCUCHA_DISPATCH;
-	args_dispatch->texto = "CPU DISPATCH a la espera de PCB para ejecutar..";
-	args_dispatch->logger = cpu_logger;
-
-	execute_cpu(args_dispatch);
-
-	while(bind_cpu(cpu, args_dispatch));
+	pthread_create(&hilo_dispatch, NULL, (void*)execute_cpu, (void*)dispatch);
 
 
-	//pthread_create(&hilo_dispatch, NULL, execute_cpu, args_dispatch);
-	//pthread_detach(hilo_dispatch);
+	pthread_t hilo_interrupt;
+	t_info* interrupt = malloc(sizeof(t_info));
 
+	interrupt->puerto = cpu->cpu_config->PUERTO_ESCUCHA_INTERRUPT;
+	interrupt->code = 2;
+	interrupt->socket = start_cpu(interrupt->puerto);
+	interrupt->log = cpu_logger;
 
+	pthread_create(&hilo_interrupt, NULL, (void*)execute_cpu, (void*)interrupt);
+
+	while(1);
+
+	pthread_detach(hilo_dispatch);
+	pthread_detach(hilo_interrupt);
 /*
 	pthread_t hilo_interrupt;
 

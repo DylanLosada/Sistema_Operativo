@@ -474,3 +474,21 @@
 [INFO] 13:16:58:603 Kernel/(11206:11206): Consola conectada a kernel
 [INFO] 13:17:04:367 Kernel/(11206:11311): INFORMACION RECIBIDA CORRECTAMENTE
 [INFO] 13:17:20:053 Kernel/(11206:11311): NO_OP|NO_OP|NO_OP|NO_OP|NO_OP|I/O 3000|READ 0|WRITE 4 42|COPY 0 4|EXIT|
+[INFO] 20:51:07:750 Kernel/(4299:4299): Archivo de configuracion cargado con exito
+[INFO] 20:51:07:750 Kernel/(4299:4299): Grado: 4
+[INFO] 20:51:07:750 Kernel/(4299:4299): Kernel listo para recibir instrucciones
+[INFO] 20:51:07:750 Kernel/(4299:4299): Grado: 4
+[INFO] 20:55:09:219 Kernel/(4464:4464): Archivo de configuracion cargado con exito
+[INFO] 20:55:09:219 Kernel/(4464:4464): Grado: 4
+[INFO] 20:55:09:220 Kernel/(4464:4464): Kernel listo para recibir instrucciones
+[INFO] 20:55:09:220 Kernel/(4464:4464): Grado: 4
+[INFO] 20:56:12:364 Kernel/(4595:4595): Archivo de configuracion cargado con exito
+[INFO] 20:56:12:364 Kernel/(4595:4595): Grado: 4
+[INFO] 20:56:12:365 Kernel/(4595:4595): Kernel listo para recibir instrucciones
+[INFO] 20:56:12:365 Kernel/(4595:4595): Grado: 4
+[INFO] 20:57:04:384 Kernel/(4663:4663): Archivo de configuracion cargado con exito
+[INFO] 20:57:04:385 Kernel/(4663:4663): Grado: 4
+[INFO] 20:57:04:385 Kernel/(4663:4663): Kernel listo para recibir instrucciones
+[INFO] 20:57:04:385 Kernel/(4663:4663): Grado: 4
+[INFO] 20:57:38:271 Kernel/(4663:4663): Consola conectada a kernel
+[INFO] 20:58:15:862 Kernel/(4663:4708): INFORMACION RECIBIDA CORRECTAMENTE

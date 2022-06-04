@@ -28,22 +28,19 @@ typedef struct {
 	char* PUERTO_ESCUCHA_INTERRUPT;
 } t_config_cpu;
 
+
 typedef struct{
 	char* puerto;
-	char* texto;
 	int socket;
-	t_log* logger;
+	op_code code;
+	t_log* log;
 }t_info;
+
 
 typedef struct{
 	t_log* cpu_log;
-	int socket;
 	t_config_cpu* cpu_config;
 }t_cpu;
-
-
-
-
 
 
 #endif
