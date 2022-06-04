@@ -25,7 +25,7 @@ typedef enum
 	EXIT
 } op_instructions_code;
 
-typedef struct t_pcb{
+typedef struct{
 	int id;
 	int processSize;
 	int program_counter;
@@ -35,7 +35,7 @@ typedef struct t_pcb{
 	int time_excecuted_rafaga;
 	clock_t time_blocked;
 	t_list* instrucciones;
-} t_pcb;
+} __attribute__((packed)) t_pcb;
 
 typedef enum {
     CONSOLA,

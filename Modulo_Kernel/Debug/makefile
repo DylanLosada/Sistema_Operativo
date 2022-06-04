@@ -27,13 +27,13 @@ endif
 all: Modulo_Kernel
 
 dependents:
-	-cd /home/utnso/Escritorio/tp-2022-1c-SanguchitOS/Shared/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug && $(MAKE) clean all
 
 # Tool invocations
-Modulo_Kernel: $(OBJS) $(USER_OBJS) /home/utnso/Escritorio/tp-2022-1c-SanguchitOS/Shared/Debug/libShared.so
+Modulo_Kernel: $(OBJS) $(USER_OBJS) /home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug/libShared.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/Escritorio/tp-2022-1c-SanguchitOS/Shared/Debug" -o "Modulo_Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug" -o "Modulo_Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -43,6 +43,6 @@ clean:
 	-@echo ' '
 
 .PHONY: all clean dependents
-/home/utnso/Escritorio/tp-2022-1c-SanguchitOS/Shared/Debug/libShared.so:
+/home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug/libShared.so:
 
 -include ../makefile.targets

@@ -56,7 +56,7 @@ void process_connection(void* void_args) {
 			break;
 	}
 
-    free(args);
+    //free(args);
 
     return;
 }

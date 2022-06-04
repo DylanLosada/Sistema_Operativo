@@ -1,6 +1,5 @@
 #include "funciones.h"
 
-
 void execute_cpu(void* void_args){
 	t_info* args = (t_info*) void_args;
 	int kernel_socket = wait_kernel(args->socket);
@@ -10,9 +9,6 @@ void execute_cpu(void* void_args){
 			break;
 		}
 	}
-
-
-
 }
 
 
@@ -52,37 +48,5 @@ int wait_kernel(int socket){
 
 	return socket_kernel;
 }
-/*
-int bind_cpu(t_cpu* cpu){
-
-	switch(cpu->dispatch->code){
-
-		case DISPATCH:
-			cpu->dispatch->socket = start_cpu(cpu->dispatch->puerto);
-			//kernel_socket = wait_kernel(cpu->socket_dispatch);
-			break;
-
-
-		case INTERRUPT:
-			cpu->interrupt->socket = start_cpu(cpu->interrupt->puerto);
-			//kernel_socket = wait_kernel(cpu->socket_interrupt);
-			break;
-
-		default:
-			break;
-	}
-
-	for(int i=0; i < 2; i++){
-
-	}
-	if (cpu->dispatch->socket > 0 || cpu->interrupt->socket > 0) {
-
-
-		//log_info(cpu->cpu_log, "Kernel conectado a CPU");
-
-	}
-	return 1;
-}*/
-
 
 

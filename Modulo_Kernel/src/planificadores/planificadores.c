@@ -12,10 +12,11 @@ void handler_planners(void* void_args){
 
 	// conexiones a los demas modulos.
 	t_sockets_cpu* sockets_cpu = malloc(sizeof(t_sockets_cpu));
-	sockets_cpu->check_state_instructions = connect_to_check_state_instructions_cpu(config_kernel, "9000");
-	sockets_cpu->interrupt = connect_to_interrupt_cpu(config_kernel);
+	//sockets_cpu->check_state_instructions = connect_to_check_state_instructions_cpu(config_kernel, "9000");
+	//sockets_cpu->interrupt = connect_to_interrupt_cpu(config_kernel);
 	sockets_cpu->dispatch= connect_to_dispatch_cpu(config_kernel);
-	int socket_kernel_memoria = connect_to_memoria(config_kernel);
+	//int socket_kernel_memoria = connect_to_memoria(config_kernel);
+	int socket_kernel_memoria = 0;
 
 	// Hilos de apoyo a los planificadores
 	t_args_check_instructions* args_instruction_thread = malloc(sizeof(t_args_check_instructions));
@@ -95,7 +96,7 @@ void mid_term_planner(int TIEMPO_MAXIMO_BLOQUEADO, t_states* states){
 }
 
 void short_term_planner(t_sockets_cpu* sockets_cpu, t_config_kernel* config_kernel, t_args_check_instructions* args_check_instructions,int ALFA,int GRADO_MULTIPROGRAMCION, int TIEMPO_MAXIMO_BLOQUEADO, t_states* states){
-	bool running_state_is_not_free = hasRunningPcb(states->state_ready);
+	bool hasRunning = hasRunningPcb(states->state_running);
 
 	int pre_evaluate_add_pcb_to_ready_size = list_size(states->state_ready);
 	int empty_space = total_pcbs_short_mid_term(states);
@@ -135,26 +136,27 @@ void short_term_planner(t_sockets_cpu* sockets_cpu, t_config_kernel* config_kern
 		}
 	}
 
-	//TODO revisar este condicional, creo que esta preguntando cuando running esta libre.
+	bool hasNewPcbIntoReady = isNewPcbIntoReady(pre_evaluate_add_pcb_to_ready_size, states->state_ready);
 	pthread_mutex_lock(args_check_instructions->mutex_check_instruct);
-	if(running_state_is_not_free && args_check_instructions->hasUpdateState){
-		// pcb_excecuted->time_blocked = clock();
+	//TODO: args_check_instructions->hasUpdateState, lo remplazo por un true momentaneo para evaluar el interrupt
+	if(hasRunning && true){
+		t_pcb* pcb_excecuted = queue_pop(states->state_running);
 		if(args_check_instructions->isExitInstruction){
-			queue_push(states->state_exit, args_check_instructions->pcb->id);
+			queue_push(states->state_exit, pcb_excecuted->id);
 		}else{
-			t_pcb* pcb_excecuted = queue_pop(states->state_running);
+			pcb_excecuted->time_blocked = clock();
 			pcb_excecuted->time_io = args_check_instructions->pcb->time_io;
 			pcb_excecuted->time_excecuted_rafaga += args_check_instructions->pcb->time_excecuted_rafaga;
 			pcb_excecuted->instrucciones = args_check_instructions->pcb->instrucciones;
-			list_add_in_index(states->state_ready, 0, pcb_excecuted);
+			list_add(states->state_blocked, pcb_excecuted);
 		}
 		args_check_instructions->pcb = NULL;
-		running_state_is_not_free = false;
+		hasRunning = false;
 	}
 
-	if(pre_evaluate_add_pcb_to_ready_size < list_size(states->state_ready)){
+	if(hasNewPcbIntoReady){
 		// desalojamos al proceso en CPU.
-		if(!running_state_is_not_free){
+		if(hasRunning){
 			t_pcb* pcb_excecuted = queue_pop(states->state_running);
 			/*pcb_excecuted->time_io = args_check_instructions->pcb->time_io;
 			pcb_excecuted->time_excecuted_rafaga += args_check_instructions->pcb->time_excecuted_rafaga;
@@ -170,12 +172,19 @@ void short_term_planner(t_sockets_cpu* sockets_cpu, t_config_kernel* config_kern
 	pthread_mutex_unlock(args_check_instructions->mutex_check_instruct);
 
 	// es responsabilidad de la CPU enviarnos el clock del proceso, la siguiente instruccion y.......
-	if(!list_is_empty(states->state_ready)){
+	if(!list_is_empty(states->state_ready) && hasNewPcbIntoReady){
+		t_pcb* pcb_ready_to_run = list_remove(states->state_ready,0);
+		queue_push(states->state_running, pcb_ready_to_run);
 		// introducimos logger para avisar que va aempezar a correr cierto pcb
-		//send_pcb_to_cpu(list_remove(states->state_ready, 0), sockets_cpu->dispatch);
+		send_pcb_to_cpu(pcb_ready_to_run, sockets_cpu->dispatch);
+		//TODO funcion para liberar memoria del pcb.
 	}else{
 		// introducimos logger para avisar que no existen mas pcbs
 	}
+}
+
+bool isNewPcbIntoReady(int pre_evaluate_add_pcb_to_ready_size, t_list* state_ready){
+	return pre_evaluate_add_pcb_to_ready_size < list_size(state_ready);
 }
 
 void check_and_update_blocked_to_ready(int empty_space, t_states* states){
@@ -189,17 +198,19 @@ void check_and_update_blocked_to_ready(int empty_space, t_states* states){
 	}
 }
 
-bool hasRunningPcb(t_list* state_ready){
-	return !list_size(state_ready);
+bool hasRunningPcb(t_queue* state_ready){
+	return !queue_is_empty(state_ready);
 }
 
 void check_time_in_blocked_and_pass_to_suspended_blocked(t_list* state_suspended_blocked, t_list* state_blocked, int TIEMPO_MAXIMO_BLOQUEADO){
 	t_list* pos_pcbs_with_time_out = list_create();
 
+	// TODO falta saber que pasa cunado se termina su tiempo en blocked
 	for(int index = 0; index < list_size(state_blocked); index++){
 		t_pcb* pcb_blocked = list_get(state_blocked, index);
+		int time_blocked = abs(pcb_blocked->time_blocked - clock());
 
-		if(pcb_blocked->time_blocked >= TIEMPO_MAXIMO_BLOQUEADO){
+		if(time_blocked >= TIEMPO_MAXIMO_BLOQUEADO){
 			add_pcb_to_suspended_blocked(pcb_blocked, state_suspended_blocked);
 			// enviamos mensaje a memoria y esperamos confirmacion.
 			list_add(pos_pcbs_with_time_out, index);
@@ -266,10 +277,10 @@ t_pcb* create_pcb(bool* isFirstPcb, t_pre_pcb* pre_pcb){
 
 void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 	if(pcb != NULL){
-		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
+		//t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 		//error aca.
-		void* pcb_serializate = serializate_pcb(pcb, paquete);
-		send_data_to_server(socket_cpu_dispatch, pcb_serializate, paquete->buffer->size + sizeof(int) + sizeof(int));
+		//void* pcb_serializate = serializate_pcb(pcb, paquete);
+		//send_data_to_server(socket_cpu_dispatch, pcb, sizeof(int) + sizeof(int) + sizeof(t_list) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(clock_t) + sizeof(int));
 	}
 }
 
@@ -297,6 +308,7 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete){
 	offset += sizeof(int);
 	memcpy(buffer->stream + offset, &pcb->time_blocked, sizeof(clock_t));
 	offset += sizeof(clock_t);
+	//char** instrucctions = getAllInstructions(pcb->instrucciones);
 	memcpy(buffer->stream + offset, &pcb->instrucciones, sizeof(t_list));
 	offset += sizeof(t_list);
 
@@ -320,6 +332,15 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete){
 	return a_enviar;
 }
 
+/*char** getAllInstructions(t_list* instructions){
+	char** array_instructions = string_array_new();
+	for(int index = 0; index < list_size(instructions); index++){
+		char* instruction = list_get(instructions,index);
+
+	}
+	return
+}*/
+
 void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb_excecuted){
 	int time_excecute_pcb;
 	int count_instructions_excecute;
@@ -342,19 +363,27 @@ int interrupt_cpu(int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb
 }
 
 int connect_to_interrupt_cpu(t_config_kernel* config_kernel){
-	return create_client_connection(config_kernel->IP_CPU, config_kernel->PUERTO_CPU_INTERRUPT);
+	return realize_connection(config_kernel->IP_CPU, config_kernel->PUERTO_CPU_INTERRUPT);
 }
 
 int connect_to_check_state_instructions_cpu(t_config_kernel* config_kernel, char* port){
-	return create_client_connection(config_kernel->IP_CPU, port);
+	return realize_connection(config_kernel->IP_CPU, port);
 }
 
 int connect_to_dispatch_cpu(t_config_kernel* config_kernel){
-	return create_client_connection(config_kernel->IP_CPU, config_kernel->PUERTO_CPU_DISPATCH);
+	return realize_connection(config_kernel->IP_CPU, config_kernel->PUERTO_CPU_DISPATCH);
+}
+
+int realize_connection(char* ip, char* puerto) {
+	int connection = 0;
+	do{
+		connection = create_client_connection(ip,puerto);
+	}while(connection <= 0);
+	return connection;
 }
 
 int connect_to_memoria(t_config_kernel* config_kernel){
-	return create_client_connection(config_kernel->IP_MEMORIA, config_kernel->PUERTO_MEMORIA);
+	return realize_connection(config_kernel->IP_MEMORIA, config_kernel->PUERTO_MEMORIA);
 }
 
 void check_state_of_pcb(void* void_args){
