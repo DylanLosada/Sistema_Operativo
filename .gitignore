@@ -83,3 +83,5 @@ Modulo_Memoria/.project/
 Shared/.project/
 
 .DS_Store
+
+*.log

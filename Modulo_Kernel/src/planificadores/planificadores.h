@@ -17,15 +17,6 @@ typedef struct{
 	pthread_mutex_t* mutex;
 } t_args_planificador;
 
-typedef struct {
-	int size;
-	void* stream;
-}t_buffer;
-
-typedef struct{
-	int op_code;
-	t_buffer* buffer;
-} t_cpu_paquete;
 
 typedef struct{
 	int check_state_instructions;
@@ -60,7 +51,6 @@ bool hasCalculateRafaga(t_pcb* pcb);
 bool hasRunningPcb(t_queue* state_ready);
 bool isNewPcbIntoReady(int pre_evaluate_add_pcb_to_ready_size, t_list* state_ready);
 t_pcb* create_pcb(bool* isFirstPcb, t_pre_pcb* pre_pcb);
-void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete);
 int interrupt_cpu(int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted);
 
 #endif;

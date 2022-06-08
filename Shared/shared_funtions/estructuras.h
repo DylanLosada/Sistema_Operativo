@@ -1,13 +1,8 @@
-/*
- * estructuras.h
- *
- *  Created on: Apr 30, 2022
- *      Author: dlosada
- */
-
 #ifndef SHARED_FUNTIONS_ESTRUCTURAS_H_
 #define SHARED_FUNTIONS_ESTRUCTURAS_H_
 #include <commons/collections/list.h>
+#include <commons/log.h>
+#include <commons/string.h>
 
 typedef struct{
 	int processSize;
@@ -35,12 +30,26 @@ typedef struct{
 	int time_excecuted_rafaga;
 	clock_t time_blocked;
 	t_list* instrucciones;
-} __attribute__((packed)) t_pcb;
+} t_pcb;
 
 typedef enum {
     CONSOLA,
 	DISPATCH,
 	INTERRUPT
 } op_code;
+
+typedef struct {
+	int size;
+	void* stream;
+}t_buffer;
+
+typedef struct{
+	int op_code;
+	t_buffer* buffer;
+} t_cpu_paquete;
+
+void loggear_pcb(t_pcb* pcb);
+t_pcb* deserializate_pcb(t_buffer* buffer);
+void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete);
 
 #endif /* SHARED_FUNTIONS_ESTRUCTURAS_H_ */

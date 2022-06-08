@@ -277,60 +277,14 @@ t_pcb* create_pcb(bool* isFirstPcb, t_pre_pcb* pre_pcb){
 
 void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 	if(pcb != NULL){
-		//t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
+		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 		//error aca.
-		//void* pcb_serializate = serializate_pcb(pcb, paquete);
+		void* pcb_serializate = serializate_pcb(pcb, paquete);
 		//send_data_to_server(socket_cpu_dispatch, pcb, sizeof(int) + sizeof(int) + sizeof(t_list) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(clock_t) + sizeof(int));
 	}
 }
 
-void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete){
-	t_buffer* buffer = malloc(sizeof(t_buffer));
 
-	// Primero completo la estructura buffer interna del paquete.
-	buffer->size = sizeof(int) + sizeof(int) + sizeof(t_list) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(clock_t) + sizeof(int);
-	buffer->stream = malloc(buffer->size);
-	int offset = 0; // Desplazamiento
-
-	memcpy(buffer->stream, &pcb->id, sizeof(int));
-	offset += sizeof(int);
-	memcpy(buffer->stream + offset, &pcb->processSize, sizeof(int));
-	offset += sizeof(int);
-	memcpy(buffer->stream + offset, pcb->program_counter, sizeof(int));
-	offset += sizeof(int);
-	memcpy(buffer->stream + offset, pcb->tabla_paginas, sizeof(int));
-	offset += sizeof(int);
-	memcpy(buffer->stream + offset, pcb->rafaga, sizeof(int));
-	offset += sizeof(int);
-	memcpy(buffer->stream + offset, &pcb->time_io, sizeof(int));
-	offset += sizeof(int);
-	memcpy(buffer->stream + offset, &pcb->time_excecuted_rafaga, sizeof(int));
-	offset += sizeof(int);
-	memcpy(buffer->stream + offset, &pcb->time_blocked, sizeof(clock_t));
-	offset += sizeof(clock_t);
-	//char** instrucctions = getAllInstructions(pcb->instrucciones);
-	memcpy(buffer->stream + offset, &pcb->instrucciones, sizeof(t_list));
-	offset += sizeof(t_list);
-
-	// Segundo: completo el paquete.
-	paquete->op_code = DISPATCH;
-	paquete->buffer = buffer;
-
-	void* a_enviar = malloc(buffer->size + sizeof(int) + sizeof(int));
-	offset = 0;
-
-	memcpy(a_enviar, &paquete->op_code, sizeof(int));
-	offset += sizeof(int);
-	memcpy(a_enviar + offset, &paquete->buffer->size, sizeof(int));
-	offset += sizeof(int);
-	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
-	offset += paquete->buffer->size;
-
-	free(paquete->buffer->stream);
-	free(paquete->buffer);
-	free(paquete);
-	return a_enviar;
-}
 
 /*char** getAllInstructions(t_list* instructions){
 	char** array_instructions = string_array_new();
