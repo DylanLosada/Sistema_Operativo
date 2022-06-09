@@ -17,10 +17,17 @@
 #include<dirent.h>
 #include<errno.h>
 
+
+
+//Funciones que sirven para memoria tales como estructuras o funciones
+
+/* These values may be used as exit status codes.
+ */
 #define MEMORIA_PRINCIPAL 0
 #define MEMORIA_VIRTUAL 1
 
-//Funciones que sirven para memoria tales como estructuras o funciones
+#define CLOCL-M 1
+#define CLOCK 2
 
 typedef enum{
 	MENSAJE,
@@ -45,7 +52,8 @@ typedef struct{
 } t_paquete;
 
 typedef struct{
-	int puerto;
+	char * puerto;
+	char * ip_memoria;
 	int tamanio_memoria;
 	int tamanio_pagina;
 	int entradas_por_tabla;
@@ -53,7 +61,7 @@ typedef struct{
 	char * algoritmo_reemplazo;
 	int marcos_proceso;
 	int retardo_swap;
-	char * path;
+	char * path_swap;
 }t_config_memoria;
 
 typedef struct{
@@ -80,50 +88,15 @@ t_config_memoria config_memoria;
 
 char * memoria_principal;
 
-bool funcionando;
+//**************************FUNCIONES********************+
+int iniciar_memoria(void);
+void manejar_conexion(int server_fd);
+int administrar_cliente(int cliente_fd);
+void iniciar_proceso(int cliente_fd);
+int guardar_proceso_en_paginacion(int idProceso, char * instrucciones, int tamanio_proceso);
+t_list* guardar_proceso(int idProceso, int tamanio_proceso);
+t_list* guardar_proceso_en_paginas(int idProceso, int tamanio);
 
-int cant_frames_principal;
-int cant_frames_virtual;
-
-
-int puedo_guardar_n_paginas(int paginas){
-    int cantidadFramesLibresMP = frames_disponibles_en(MEMORIA_PRINCIPAL);
-    int cantidadFramesLibresMV = frames_disponibles_en(MEMORIA_VIRTUAL);
-
-    if((cantidadFramesLibresMP + cantidadFramesLibresMV) >= paginas){
-        return 1;
-    }else{
-        return 0;
-    }
-}
-
-//Ver funcion robada
-int frames_disponibles_en(int memoria){
-    int espaciosLibres = 0;
-    int desplazamiento = 0;
-
-    if(memoria == MEMORIA_PRINCIPAL){
-        while(desplazamiento < cant_frames_principal){
-            pthread_mutex_lock(&mutex_memoria_principal_bitmap);
-            if(bitarray_test_bit(frames_ocupados_principal,desplazamiento) == 0){
-                espaciosLibres++;
-            }
-            pthread_mutex_unlock(&mutex_memoria_principal_bitmap);
-            desplazamiento++;
-        }
-    }else if(memoria == MEMORIA_VIRTUAL){
-        while(desplazamiento < cant_frames_virtual){
-
-            pthread_mutex_lock(&mutex_memoria_virtual_bitmap);
-            if(bitarray_test_bit(frames_ocupados_virtual, desplazamiento) == 0){
-                espaciosLibres++;
-            }
-            pthread_mutex_unlock(&mutex_memoria_virtual_bitmap);
-            desplazamiento++;
-        }
-    }
-    return espaciosLibres;
-}
 
 //////////////////////////////SEMAFOROS////////////////////////////
 
