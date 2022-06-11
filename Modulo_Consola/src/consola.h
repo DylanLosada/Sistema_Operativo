@@ -13,9 +13,9 @@ t_log* iniciar_logger(void);
 t_config* iniciar_config(void);
 char* serializeInstruction(int ,char*);
 void leer_consola(t_log*);
-void checkCodeOperation(char*, char**);
-char* generateInstructiosnString(char*);
-void appendOperationToInstructionsString(char*, char**);
-void appendNoOpToInstructionsString(char**,char**);
+void checkCodeOperation(char*, char**, t_log* logger);
+char* generateInstructiosnString(char*, t_log* logger);
+void appendOperationToInstructionsString(char*, char**, t_log* logger);
+void appendNoOpToInstructionsString(char**,char**, t_log* logger);
 
 #endif /*CONSOLA_H_*/

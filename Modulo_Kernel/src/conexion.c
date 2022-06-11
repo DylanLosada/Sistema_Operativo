@@ -36,11 +36,9 @@ void process_connection(void* void_args) {
 			t_pre_pcb* pre_pcb = create_pre_pcb(list_instructions, consolaRecv->processSize, args->fd);
 
 			pthread_mutex_lock(args->semaforo);
-
 			queue_push(args->cola_pre_pcb, pre_pcb);
-
 			pthread_mutex_unlock(args->semaforo);
-
+			pthread_mutex_unlock(args->hasNewConsole);
 
 			//free(consolaRecv->stream);
 			//free(consolaRecv);

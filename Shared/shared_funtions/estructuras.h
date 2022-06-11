@@ -20,11 +20,20 @@ typedef enum
 	EXIT
 } op_instructions_code;
 
+typedef enum{
+	OK,
+	ERROR,
+	SWAP,
+	RE_SWAP,
+	CREATE,
+	FREE_GRADO
+} op_memoria_message;
+
 typedef struct{
 	int id;
 	int processSize;
 	int program_counter;
-	int tabla_paginas;
+	int* tabla_paginas;
 	int rafaga;
 	int time_io;
 	int time_excecuted_rafaga;
@@ -50,6 +59,6 @@ typedef struct{
 
 void loggear_pcb(t_pcb* pcb);
 t_pcb* deserializate_pcb(t_buffer* buffer);
-void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete);
+void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE);
 
 #endif /* SHARED_FUNTIONS_ESTRUCTURAS_H_ */

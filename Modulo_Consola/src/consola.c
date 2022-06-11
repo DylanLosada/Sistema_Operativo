@@ -9,20 +9,25 @@ int main(int argc, char** argv){
 	char* puerto;
 	t_log* logger = iniciar_logger();
 	t_config* config = iniciar_config();
-	log_info(logger, "Preparando la Consola!!!");
 
+	log_info(logger, "INICIANDO CONSOLA.....");
 
 	/* ---------------- ARCHIVOS DE CONFIGURACION ---------------- */
 	ip = config_get_string_value(config,"IP_KERNEL");
 	puerto = config_get_string_value(config,"PUERTO_KERNEL");
 
-	log_info(logger, "Leyendo archivo de Pseudocodigo.......");
+	log_info(logger, "CONSOLA INICIADA");
+	log_info(logger, "LEYENDO ARCHIVO DE PSEUDOCIDIGO.......");
 	// Armamos y enviamos el paquete (depuramos)
-	char* instructions = generateInstructiosnString(argv[2]);
+	log_info(logger, "INSTRUCCIONES CREADAS");
+	char* instructions = generateInstructiosnString(argv[2], logger);
 
 	// Creamos una conexión hacia el servidor
 	connection = crear_conexion(ip, puerto);
+	log_info(logger, "CONSOLA CONECTADA A KERNEL");
+
 	send_instructions(instructions, connection, strtol(argv[1], &argv[1], 10));
+	log_info(logger, "INSTRUCCIONES ENVIADAS CORRECTAMENTE, ESPERANDO FINALIZACION DEL PROCESO.......");
 
 	// Esperamos por la terminacion del proceso
 	waitForResponse(connection, logger, config);
@@ -45,40 +50,44 @@ t_config* iniciar_config(void)
 	return nuevo_config;
 }
 
-char* generateInstructiosnString(char* pathFile)
+char* generateInstructiosnString(char* pathFile, t_log* logger)
 {
 	char* instructs = string_new();
 	size_t len  = 0;
 	FILE* pseudocodeFile = fopen(pathFile, "r");
 
+	log_info(logger, "-------------------------------");
 	while(!feof(pseudocodeFile)){
 		char* instructRead = NULL;
 		getline(&instructRead, &len, pseudocodeFile);
 		strtok(instructRead,"\n");   //con esto borro el \n que se lee
-		checkCodeOperation(instructRead, &instructs);
+		checkCodeOperation(instructRead, &instructs, logger);
 	}
 	fclose(pseudocodeFile);
+	log_info(logger, "-------------------------------");
 	return instructs;
 }
 
-void appendNoOpToInstructionsString(char** intructrReadSplitBySpaces,char** instructs) {
+void appendNoOpToInstructionsString(char** intructrReadSplitBySpaces,char** instructs, t_log* logger) {
 	int endCondition = strtol(intructrReadSplitBySpaces[1], &intructrReadSplitBySpaces[1], 10);
 	for (int repeatIntruct = 1; repeatIntruct <= endCondition; repeatIntruct++) {
 		string_append_with_format(instructs, "%s|", NO_OP);
+		log_info(logger, NO_OP);
 	}
 }
 
-void appendOperationToInstructionsString(char* intructrRead, char** instructs) {
+void appendOperationToInstructionsString(char* intructrRead, char** instructs, t_log* logger) {
 	string_append_with_format(instructs, "%s|", intructrRead);
+	log_info(logger, intructrRead);
 }
 
-void checkCodeOperation(char* instructRead, char** instructs){
+void checkCodeOperation(char* instructRead, char** instructs, t_log* logger){
 	char** intructrReadSplitBySpaces = string_split(instructRead, " ");
 
 	if(strcmp(intructrReadSplitBySpaces[0], NO_OP) == 0){
-		appendNoOpToInstructionsString(intructrReadSplitBySpaces, instructs);
+		appendNoOpToInstructionsString(intructrReadSplitBySpaces, instructs, logger);
 	}else{
-		appendOperationToInstructionsString(instructRead, instructs);
+		appendOperationToInstructionsString(instructRead, instructs, logger);
 	}
 }
 
@@ -86,7 +95,8 @@ void waitForResponse(int conexion, t_log* logger, t_config* config)
 {
 	int signal;
 	recv(conexion, &signal, sizeof(int), 0);
-	log_info(logger, "Proceso finalizado, cerrando consola........");
+	log_info(logger, "PROCESO FINALIZANDO, CERRANDO CONSOLA...");
+	log_info(logger, "CONSOLA CERRADA.");
 	close(conexion);
 	log_destroy(logger);
 	config_destroy(config);

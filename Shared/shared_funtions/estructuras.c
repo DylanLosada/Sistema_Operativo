@@ -51,7 +51,7 @@ t_pcb* deserializate_pcb(t_buffer* buffer){
 
 
 	// tabla_paginas
-	memcpy(&pcb->tabla_paginas, buffer->stream + offset, sizeof(int));
+	memcpy(pcb->tabla_paginas, buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
@@ -103,12 +103,13 @@ t_pcb* deserializate_pcb(t_buffer* buffer){
 	return pcb;
 }
 
-void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete){
+void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 
 	loggear_pcb(pcb);
 
 	const int pcb_list_size = list_size(pcb->instrucciones);
 	int size = 0;
+	int* tabla_paginas = malloc(sizeof(int));
 
 
 
@@ -160,7 +161,10 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete){
 
 
 	// tabla_paginas
-	memcpy(buffer->stream + offset, &pcb->tabla_paginas, sizeof(int));
+	if(pcb->tabla_paginas != NULL){
+		tabla_paginas = pcb->tabla_paginas;
+	}
+	memcpy(buffer->stream + offset, tabla_paginas, sizeof(int));
 	offset += sizeof(int);
 
 
@@ -203,13 +207,8 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete){
 
 
 
-
-
-
-
-
 	// Segundo: completo el paquete.
-	paquete->op_code = DISPATCH;
+	paquete->op_code = MENSSAGE;
 	paquete->buffer = buffer;
 
 	void* a_enviar = malloc(buffer->size + sizeof(int) + sizeof(int));

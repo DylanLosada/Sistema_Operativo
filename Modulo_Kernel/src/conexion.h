@@ -9,6 +9,7 @@ typedef struct {
     int fd;
     char* server_name;
     pthread_mutex_t* semaforo;
+    pthread_mutex_t* hasNewConsole;
     t_queue* cola_pre_pcb;
 } t_process_conexion;
 

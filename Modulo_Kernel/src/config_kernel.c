@@ -22,8 +22,6 @@ t_config_kernel* create_config(t_log* log){
 	kernel_config->TIEMPO_MAXIMO_BLOQUEADO = config_get_string_value(cfg, "TIEMPO_MAXIMO_BLOQUEADO");
 
 	log_info(log, "Archivo de configuracion cargado con exito");
-	log_info(log, "Grado: %s", kernel_config->GRADO_MULTIPROGRAMACION);
-
 
 	return kernel_config;
 
