@@ -34,8 +34,6 @@ typedef struct{
 
 typedef struct{
 	int socket;
-	t_pcb* pcb;
-	bool isExitInstruction;
 	bool hasUpdateState;
 	pthread_mutex_t* mutex_check_instruct;
 	pthread_mutex_t* hasPcb;

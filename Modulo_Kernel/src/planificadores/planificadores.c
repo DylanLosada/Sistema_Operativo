@@ -196,6 +196,9 @@ void mid_term_planner(void* args_mid_term_planner){
 }
 
 void short_term_planner(void* args_short_planner){
+	bool* isExitInstruction = malloc(sizeof(bool));
+	*isExitInstruction = false;
+
 	t_args_short_term_planner* args = (t_args_short_term_planner*) args_short_planner;
 
 	t_state_list_hanndler* ready = args->states->state_ready;
@@ -293,18 +296,16 @@ void short_term_planner(void* args_short_planner){
 		//TODO: args_check_instructions->hasUpdateState, lo remplazo por un true momentaneo para evaluar el interrupt
 		if(hasRunning && true){
 			t_pcb* pcb_excecuted = queue_pop(running->state);
-			if(args_instruction_thread->isExitInstruction){
+			update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction);
+			if(*isExitInstruction){
 				queue_push(exit->state, pcb_excecuted->id);
 			}else{
 				pcb_excecuted->time_blocked = clock();
-				//pcb_excecuted->time_io = args_instruction_thread->pcb->time_io;
-				//pcb_excecuted->time_excecuted_rafaga += args_instruction_thread->pcb->time_excecuted_rafaga;
-				//pcb_excecuted->instrucciones = args_instruction_thread->pcb->instrucciones;
 				pthread_mutex_lock(args->states->state_blocked->mutex);
 				list_add(args->states->state_blocked->state, pcb_excecuted);
 				pthread_mutex_unlock(args->states->state_blocked->mutex);
 			}
-			args_instruction_thread->pcb = NULL;
+			args_instruction_thread->hasUpdateState = false;
 			hasRunning = false;
 		}
 
@@ -525,24 +526,34 @@ void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 	if(pcb != NULL){
 		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 		void* pcb_serializate = serializate_pcb(pcb, paquete, DISPATCH);
-		send_data_to_server(socket_cpu_dispatch, pcb, paquete->buffer->size + sizeof(int));
+		int code_operation = send_data_to_server(socket_cpu_dispatch, pcb, paquete->buffer + sizeof(int));
+
+		if(code_operation < 0){
+			error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON La CPU, ERROR: IMPOSIBLE CONECTAR");
+			//exit(1);
+		}
 	}
 }
 
-void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb_excecuted){
+void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool* isExitInstruction){
 	// TODO pasarlo a "funcion de deserializacion de Facu"
-	int time_excecute_pcb;
-	int count_instructions_excecute;
-	int time_io;
-	recv(socket_kernel_interrupt_cpu, &time_excecute_pcb, sizeof(int), 0);
-	recv(socket_kernel_interrupt_cpu, &count_instructions_excecute, sizeof(int), 0);
-	recv(socket_kernel_interrupt_cpu, &time_io, sizeof(int), 0);
+	int* op_code;
+	t_pcb* pcb_excecuted = deserializate_pcb(socket_kernel_interrupt_cpu, op_code);
 
-	pcb_excecuted->time_excecuted_rafaga += time_excecute_pcb;
-	pcb_excecuted->time_io = time_io;
-	// La CPU me retorna cuantas instrucciones logro correr, asi las puedo sacar de la lista de instrucciones
-	// y dejo la siguiente instruccion lista para correr.
-	list_take_and_remove(pcb_excecuted->instrucciones, count_instructions_excecute);
+	if(*op_code < 0){
+		error_show("NO SE PUDO EXTRAER INFOIRMACION ENVIADA POR LA CPU");
+		exit(1);
+	} else if (op_code == FINISHED){
+		isExitInstruction = true;
+	} else {
+		pcb->time_excecuted_rafaga += pcb_excecuted->time_excecuted_rafaga;
+
+		if(*op_code == BLOCKED){
+			pcb->time_io = pcb_excecuted->time_io;
+		}
+
+		pcb->instrucciones = pcb_excecuted->instrucciones;
+	}
 }
 
 int interrupt_cpu(int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted){
@@ -581,19 +592,13 @@ int has_tabla_paginas(t_pcb* pcb_to_add){
 
 void check_state_of_pcb(void* void_args){
 	t_args_check_instructions* args = (t_args_check_instructions*) void_args;
-	op_instructions_code code = -1;
+	op_code code = -1;
 	while(1){
 		pthread_mutex_lock(args->hasPcbRunning);
-		args->pcb = malloc(sizeof(t_pcb));
-		args->pcb->time_io = 0;
-		args->isExitInstruction = false;
 		recv(args->socket, &code, sizeof(int), 0);
 		pthread_mutex_lock(args->mutex_check_instruct);
-		if(code >= 0){
-			update_pcb_with_cpu_data(args->socket,args->pcb);
-			if(code == EXIT){
-				args->isExitInstruction = true;
-			}
+		if(code == IO){
+			args->hasUpdateState = true;
 		}
 		pthread_mutex_unlock(args->mutex_check_instruct);
 		pthread_mutex_unlock(args->hasPcb);

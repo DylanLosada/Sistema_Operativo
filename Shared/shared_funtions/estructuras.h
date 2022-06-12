@@ -45,6 +45,8 @@ typedef enum {
     CONSOLA,
 	DISPATCH,
 	INTERRUPT,
+	BLOCKED,
+	FINISHED,
 	IO
 } op_code;
 

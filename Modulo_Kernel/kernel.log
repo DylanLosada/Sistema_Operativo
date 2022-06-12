@@ -184,3 +184,237 @@
 [INFO] 20:04:31:679 Kernel/(8499:8499): Kernel listo para recibir instrucciones
 [INFO] 20:04:47:691 Kernel/(8499:8499): Consola conectada a kernel
 [INFO] 20:05:19:761 Kernel/(8499:8625): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 20:13:08:424 Kernel/(9397:9397): Archivo de configuracion cargado con exito
+[INFO] 20:13:08:425 Kernel/(9397:9397): Grado: 4
+[INFO] 20:13:08:426 Kernel/(9397:9397): Kernel listo para recibir instrucciones
+[INFO] 20:13:54:129 Kernel/(9397:9397): Consola conectada a kernel
+[INFO] 20:15:16:496 Kernel/(9397:9572): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 21:23:05:092 Kernel/(12815:12815): Archivo de configuracion cargado con exito
+[INFO] 21:23:05:093 Kernel/(12815:12815): Grado: 4
+[INFO] 21:23:05:094 Kernel/(12815:12815): Kernel listo para recibir instrucciones
+[INFO] 21:26:18:936 Kernel/(13016:13016): Archivo de configuracion cargado con exito
+[INFO] 21:26:18:937 Kernel/(13016:13016): Grado: 4
+[INFO] 21:26:18:938 Kernel/(13016:13016): Kernel listo para recibir instrucciones
+[INFO] 21:28:24:944 Kernel/(13016:13016): Consola conectada a kernel
+[INFO] 21:28:34:961 Kernel/(13016:13298): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 21:58:32:095 Kernel/(5532:5532): Archivo de configuracion cargado con exito
+[INFO] 21:58:32:097 Kernel/(5532:5532): Grado: 4
+[INFO] 21:58:32:099 Kernel/(5532:5532): Kernel listo para recibir instrucciones
+[INFO] 22:02:51:697 Kernel/(5532:5532): Consola conectada a kernel
+[INFO] 22:03:05:512 Kernel/(5532:6334): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 18:00:50:918 Kernel/(4063:4063): Archivo de configuracion cargado con exito
+[INFO] 18:00:50:919 Kernel/(4063:4063): Grado: 4
+[INFO] 18:00:50:920 Kernel/(4063:4063): Kernel listo para recibir instrucciones
+[INFO] 18:01:40:093 Kernel/(4063:4063): Consola conectada a kernel
+[INFO] 18:02:04:936 Kernel/(4063:4358): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:45:22:052 Kernel/(16526:16526): Archivo de configuracion cargado con exito
+[INFO] 23:45:22:054 Kernel/(16526:16526): Grado: 4
+[INFO] 23:45:22:065 Kernel/(16526:16526): Kernel listo para recibir instrucciones
+[INFO] 23:45:38:730 Kernel/(16526:16526): Consola conectada a kernel
+[INFO] 23:45:57:444 Kernel/(16526:16858): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:48:30:788 Kernel/(17295:17295): Archivo de configuracion cargado con exito
+[INFO] 23:48:30:789 Kernel/(17295:17295): Grado: 4
+[INFO] 23:48:30:790 Kernel/(17295:17295): Kernel listo para recibir instrucciones
+[INFO] 23:48:40:056 Kernel/(17295:17295): Consola conectada a kernel
+[INFO] 23:48:46:643 Kernel/(17295:17410): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:50:09:004 Kernel/(17683:17683): Archivo de configuracion cargado con exito
+[INFO] 23:50:09:004 Kernel/(17683:17683): Grado: 4
+[INFO] 23:50:09:006 Kernel/(17683:17683): Kernel listo para recibir instrucciones
+[INFO] 23:50:21:585 Kernel/(17683:17683): Consola conectada a kernel
+[INFO] 23:50:28:247 Kernel/(17683:17805): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:51:59:147 Kernel/(18118:18118): Archivo de configuracion cargado con exito
+[INFO] 23:51:59:150 Kernel/(18118:18118): Grado: 4
+[INFO] 23:51:59:151 Kernel/(18118:18118): Kernel listo para recibir instrucciones
+[INFO] 23:52:08:004 Kernel/(18118:18118): Consola conectada a kernel
+[INFO] 23:52:12:159 Kernel/(18118:18228): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:58:04:388 Kernel/(18864:18864): Archivo de configuracion cargado con exito
+[INFO] 23:58:04:390 Kernel/(18864:18864): Grado: 4
+[INFO] 23:58:04:391 Kernel/(18864:18864): Kernel listo para recibir instrucciones
+[INFO] 23:58:15:969 Kernel/(18864:18864): Consola conectada a kernel
+[INFO] 23:58:24:995 Kernel/(18864:19176): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 00:01:08:742 Kernel/(19700:19700): Archivo de configuracion cargado con exito
+[INFO] 00:01:08:743 Kernel/(19700:19700): Grado: 4
+[INFO] 00:01:08:743 Kernel/(19700:19700): Kernel listo para recibir instrucciones
+[INFO] 00:01:26:473 Kernel/(19700:19700): Consola conectada a kernel
+[INFO] 00:01:32:015 Kernel/(19700:19826): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 12:36:16:490 Kernel/(3918:3918): Archivo de configuracion cargado con exito
+[INFO] 12:36:16:491 Kernel/(3918:3918): Grado: 4
+[INFO] 12:36:16:494 Kernel/(3918:3918): Kernel listo para recibir instrucciones
+[INFO] 12:37:24:638 Kernel/(3918:3918): Consola conectada a kernel
+[INFO] 12:37:47:562 Kernel/(3918:4166): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 12:38:09:022 Kernel/(3918:3918): Consola conectada a kernel
+[INFO] 12:38:40:703 Kernel/(3918:4323): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 12:46:03:425 Kernel/(5157:5157): Archivo de configuracion cargado con exito
+[INFO] 12:46:03:427 Kernel/(5157:5157): Grado: 4
+[INFO] 12:46:03:428 Kernel/(5157:5157): Kernel listo para recibir instrucciones
+[INFO] 12:46:16:847 Kernel/(5157:5157): Consola conectada a kernel
+[INFO] 12:46:37:066 Kernel/(5157:5283): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 12:47:45:884 Kernel/(5157:5157): Consola conectada a kernel
+[INFO] 12:48:33:993 Kernel/(5157:5399): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 12:55:59:776 Kernel/(6063:6063): Archivo de configuracion cargado con exito
+[INFO] 12:55:59:779 Kernel/(6063:6063): Kernel listo para recibir instrucciones
+[INFO] 12:56:23:815 Kernel/(6063:6063): Consola conectada a kernel
+[INFO] 12:56:46:088 Kernel/(6063:6203): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 12:56:59:760 Kernel/(6063:6063): Consola conectada a kernel
+[INFO] 12:57:09:129 Kernel/(6063:6242): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 13:11:10:082 Kernel/(7100:7100): Archivo de configuracion cargado con exito
+[INFO] 13:11:10:086 Kernel/(7100:7100): Kernel listo para recibir instrucciones
+[INFO] 13:14:32:520 Kernel/(7100:7100): Consola conectada a kernel
+[INFO] 13:14:50:617 Kernel/(7100:7340): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 13:15:05:465 Kernel/(7100:7100): Consola conectada a kernel
+[INFO] 13:15:13:212 Kernel/(7100:7434): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 13:17:40:662 Kernel/(7705:7705): Archivo de configuracion cargado con exito
+[INFO] 13:17:40:663 Kernel/(7705:7705): Kernel listo para recibir instrucciones
+[INFO] 13:18:07:186 Kernel/(7705:7705): Consola conectada a kernel
+[INFO] 13:18:08:620 Kernel/(7705:7807): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 13:18:53:958 Kernel/(7705:7705): Consola conectada a kernel
+[INFO] 13:18:53:979 Kernel/(7705:7873): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:10:34:725 Kernel/(23248:23248): Archivo de configuracion cargado con exito
+[INFO] 23:10:34:740 Kernel/(23248:23248): Kernel listo para recibir instrucciones
+[INFO] 23:10:49:133 Kernel/(23248:23248): Consola conectada a kernel
+[INFO] 23:10:49:961 Kernel/(23248:23346): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:12:14:420 Kernel/(23508:23508): Archivo de configuracion cargado con exito
+[INFO] 23:12:14:420 Kernel/(23508:23508): Kernel listo para recibir instrucciones
+[INFO] 23:12:28:289 Kernel/(23508:23508): Consola conectada a kernel
+[INFO] 23:12:28:303 Kernel/(23508:23604): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:13:01:280 Kernel/(23743:23743): Archivo de configuracion cargado con exito
+[INFO] 23:13:01:280 Kernel/(23743:23743): Kernel listo para recibir instrucciones
+[INFO] 23:13:08:097 Kernel/(23743:23743): Consola conectada a kernel
+[INFO] 23:13:09:195 Kernel/(23743:23818): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:14:59:545 Kernel/(24050:24050): Archivo de configuracion cargado con exito
+[INFO] 23:14:59:545 Kernel/(24050:24050): Kernel listo para recibir instrucciones
+[INFO] 23:15:10:039 Kernel/(24050:24050): Consola conectada a kernel
+[INFO] 23:15:10:043 Kernel/(24050:24129): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:15:29:959 Kernel/(24050:24050): Consola conectada a kernel
+[INFO] 23:15:30:801 Kernel/(24050:24167): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:16:30:443 Kernel/(24350:24350): Archivo de configuracion cargado con exito
+[INFO] 23:16:30:443 Kernel/(24350:24350): Kernel listo para recibir instrucciones
+[INFO] 23:16:51:714 Kernel/(24350:24350): Consola conectada a kernel
+[INFO] 23:16:51:726 Kernel/(24350:24439): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:18:10:830 Kernel/(24654:24654): Archivo de configuracion cargado con exito
+[INFO] 23:18:10:831 Kernel/(24654:24654): Kernel listo para recibir instrucciones
+[INFO] 23:18:22:247 Kernel/(24654:24654): Consola conectada a kernel
+[INFO] 23:20:16:251 Kernel/(24916:24916): Archivo de configuracion cargado con exito
+[INFO] 23:20:16:252 Kernel/(24916:24916): Kernel listo para recibir instrucciones
+[INFO] 23:20:25:869 Kernel/(24916:24916): Consola conectada a kernel
+[INFO] 23:20:30:168 Kernel/(24916:24997): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:23:01:999 Kernel/(24916:24916): Consola conectada a kernel
+[INFO] 23:23:08:826 Kernel/(24916:25177): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:30:39:285 Kernel/(25835:25835): Archivo de configuracion cargado con exito
+[INFO] 23:30:39:289 Kernel/(25835:25835): Kernel listo para recibir instrucciones
+[INFO] 23:30:48:738 Kernel/(25835:25835): Consola conectada a kernel
+[INFO] 23:30:50:130 Kernel/(25835:25935): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:31:13:441 Kernel/(25835:25835): Consola conectada a kernel
+[INFO] 23:31:14:422 Kernel/(25835:26008): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:36:49:649 Kernel/(26498:26498): Archivo de configuracion cargado con exito
+[INFO] 23:36:49:651 Kernel/(26498:26498): Kernel listo para recibir instrucciones
+[INFO] 23:37:07:685 Kernel/(26498:26498): Consola conectada a kernel
+[INFO] 23:37:07:691 Kernel/(26498:26589): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:37:36:098 Kernel/(26498:26498): Consola conectada a kernel
+[INFO] 23:37:37:717 Kernel/(26498:26661): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:40:05:328 Kernel/(26956:26956): Archivo de configuracion cargado con exito
+[INFO] 23:40:05:330 Kernel/(26956:26956): Kernel listo para recibir instrucciones
+[INFO] 23:40:14:425 Kernel/(26956:26956): Consola conectada a kernel
+[INFO] 23:40:14:430 Kernel/(26956:27040): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:40:47:064 Kernel/(26956:26956): Consola conectada a kernel
+[INFO] 23:40:47:066 Kernel/(26956:27152): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:42:34:354 Kernel/(27413:27413): Archivo de configuracion cargado con exito
+[INFO] 23:42:34:356 Kernel/(27413:27413): Kernel listo para recibir instrucciones
+[INFO] 23:43:08:078 Kernel/(27413:27413): Consola conectada a kernel
+[INFO] 23:43:08:085 Kernel/(27413:27512): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:43:19:988 Kernel/(27413:27413): Consola conectada a kernel
+[INFO] 23:43:21:394 Kernel/(27413:27557): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:43:57:887 Kernel/(27413:27413): Consola conectada a kernel
+[INFO] 23:43:57:897 Kernel/(27413:27651): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:47:05:163 Kernel/(28010:28010): Archivo de configuracion cargado con exito
+[INFO] 23:47:05:165 Kernel/(28010:28010): Kernel listo para recibir instrucciones
+[INFO] 23:47:16:458 Kernel/(28010:28010): Consola conectada a kernel
+[INFO] 23:47:16:526 Kernel/(28010:28103): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:47:26:469 Kernel/(28010:28010): Consola conectada a kernel
+[INFO] 23:47:27:382 Kernel/(28010:28129): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 23:48:48:917 Kernel/(28010:28010): Consola conectada a kernel
+[INFO] 23:48:49:550 Kernel/(28010:28309): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 00:15:37:238 Kernel/(30407:30407): Archivo de configuracion cargado con exito
+[INFO] 00:15:37:275 Kernel/(30407:30407): Kernel listo para recibir instrucciones
+[INFO] 00:30:27:443 Kernel/(31282:31282): Archivo de configuracion cargado con exito
+[INFO] 00:30:27:505 Kernel/(31282:31282): Kernel listo para recibir instrucciones
+[INFO] 00:35:44:842 Kernel/(31726:31726): Archivo de configuracion cargado con exito
+[INFO] 00:35:44:874 Kernel/(31726:31726): Kernel listo para recibir instrucciones
+[INFO] 00:36:16:207 Kernel/(31844:31844): Archivo de configuracion cargado con exito
+[INFO] 00:36:16:208 Kernel/(31844:31844): Kernel listo para recibir instrucciones
+[INFO] 00:39:03:571 Kernel/(32188:32188): Archivo de configuracion cargado con exito
+[INFO] 00:39:03:574 Kernel/(32188:32188): Kernel listo para recibir instrucciones
+[INFO] 11:24:31:502 Kernel/(7301:7301): Archivo de configuracion cargado con exito
+[INFO] 11:24:31:506 Kernel/(7301:7301): Kernel listo para recibir instrucciones
+[INFO] 11:24:55:075 Kernel/(7301:7301): Consola conectada a kernel
+[INFO] 11:24:58:085 Kernel/(7301:7414): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 11:25:34:562 Kernel/(7301:7301): Consola conectada a kernel
+[INFO] 11:25:35:578 Kernel/(7301:7506): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:37:34:111 Kernel/(10519:10519): Archivo de configuracion cargado con exito
+[INFO] 14:37:34:114 Kernel/(10519:10519): Kernel listo para recibir instrucciones
+[INFO] 14:39:03:691 Kernel/(10664:10664): Archivo de configuracion cargado con exito
+[INFO] 14:39:03:692 Kernel/(10664:10664): Kernel listo para recibir instrucciones
+[INFO] 14:39:22:320 Kernel/(10664:10664): Consola conectada a kernel
+[INFO] 14:39:22:332 Kernel/(10664:10811): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:39:45:429 Kernel/(10664:10664): Consola conectada a kernel
+[INFO] 14:39:49:298 Kernel/(10664:10850): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:52:09:721 Kernel/(11696:11696): Archivo de configuracion cargado con exito
+[INFO] 14:52:09:723 Kernel/(11696:11696): Kernel listo para recibir instrucciones
+[INFO] 14:52:23:227 Kernel/(11696:11696): Consola conectada a kernel
+[INFO] 14:52:23:245 Kernel/(11696:11797): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:52:23:245 Kernel/(11696:11696): Consola conectada a kernel
+[INFO] 14:52:29:483 Kernel/(11696:11798): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:08:38:222 Kernel/(13015:13015): Archivo de configuracion cargado con exito
+[INFO] 15:08:38:229 Kernel/(13015:13015): Kernel listo para recibir instrucciones
+[INFO] 15:09:03:337 Kernel/(13015:13015): Consola conectada a kernel
+[INFO] 15:09:04:897 Kernel/(13015:13113): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:13:25:317 Kernel/(13344:13344): Archivo de configuracion cargado con exito
+[INFO] 15:13:25:318 Kernel/(13344:13344): Kernel listo para recibir instrucciones
+[INFO] 15:13:36:064 Kernel/(13344:13344): Consola conectada a kernel
+[INFO] 15:13:36:947 Kernel/(13344:13584): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:36:26:501 Kernel/(15062:15062): Archivo de configuracion cargado con exito
+[INFO] 15:36:26:506 Kernel/(15062:15062): Kernel listo para recibir instrucciones
+[INFO] 15:36:35:616 Kernel/(15062:15062): Consola conectada a kernel
+[INFO] 15:36:35:622 Kernel/(15062:15147): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:39:39:616 Kernel/(15508:15508): Archivo de configuracion cargado con exito
+[INFO] 15:39:39:616 Kernel/(15508:15508): Kernel listo para recibir instrucciones
+[INFO] 15:40:02:158 Kernel/(15508:15508): Consola conectada a kernel
+[INFO] 15:40:02:165 Kernel/(15508:15605): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:41:11:967 Kernel/(15807:15807): Archivo de configuracion cargado con exito
+[INFO] 15:41:11:968 Kernel/(15807:15807): Kernel listo para recibir instrucciones
+[INFO] 15:41:25:511 Kernel/(15807:15807): Consola conectada a kernel
+[INFO] 15:41:25:519 Kernel/(15807:15898): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:49:22:482 Kernel/(16437:16437): Archivo de configuracion cargado con exito
+[INFO] 15:49:22:483 Kernel/(16437:16437): Kernel listo para recibir instrucciones
+[INFO] 15:49:41:575 Kernel/(16437:16437): Consola conectada a kernel
+[INFO] 15:49:41:650 Kernel/(16437:16576): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:54:48:513 Kernel/(17034:17034): Archivo de configuracion cargado con exito
+[INFO] 15:54:48:517 Kernel/(17034:17034): Kernel listo para recibir instrucciones
+[INFO] 15:54:59:173 Kernel/(17034:17034): Consola conectada a kernel
+[INFO] 15:54:59:235 Kernel/(17034:17118): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 16:20:28:869 Kernel/(18963:18963): Archivo de configuracion cargado con exito
+[INFO] 16:20:28:890 Kernel/(18963:18963): Kernel listo para recibir instrucciones
+[INFO] 16:20:47:021 Kernel/(18963:18963): Consola conectada a kernel
+[INFO] 16:20:47:024 Kernel/(18963:19042): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:43:44:757 Kernel/(12457:12457): Archivo de configuracion cargado con exito
+[INFO] 14:46:40:667 Kernel/(12755:12755): Archivo de configuracion cargado con exito
+[INFO] 14:50:07:885 Kernel/(13074:13074): Archivo de configuracion cargado con exito
+[INFO] 14:50:07:896 Kernel/(13074:13074): KERNEL LISTO PARA RECIBIR INSTRUCCIONES
+[INFO] 14:50:27:321 Kernel/(13074:13074): SE CONECTO UNA CONSOLA AL KERNEL, ID: 5
+[INFO] 14:50:27:331 Kernel/(13074:13182): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:54:52:305 Kernel/(13544:13544): Archivo de configuracion cargado con exito
+[INFO] 14:54:52:307 Kernel/(13544:13544): KERNEL LISTO PARA RECIBIR INSTRUCCIONES
+[INFO] 14:55:09:168 Kernel/(13544:13544): SE CONECTO UNA CONSOLA AL KERNEL, ID: 5
+[INFO] 14:55:13:483 Kernel/(13544:13639): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:56:58:143 Kernel/(13880:13880): Archivo de configuracion cargado con exito
+[INFO] 14:56:58:145 Kernel/(13880:13880): KERNEL LISTO PARA RECIBIR INSTRUCCIONES
+[INFO] 14:57:11:275 Kernel/(13880:13880): SE CONECTO UNA CONSOLA AL KERNEL, ID: 5
+[INFO] 14:57:13:436 Kernel/(13880:13974): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 14:58:53:918 Kernel/(14191:14191): Archivo de configuracion cargado con exito
+[INFO] 14:58:53:920 Kernel/(14191:14191): KERNEL LISTO PARA RECIBIR INSTRUCCIONES
+[INFO] 14:59:07:751 Kernel/(14191:14191): SE CONECTO UNA CONSOLA AL KERNEL, ID: 5
+[INFO] 14:59:07:765 Kernel/(14191:14289): INFORMACION RECIBIDA CORRECTAMENTE
+[INFO] 15:01:00:804 Kernel/(14497:14497): Archivo de configuracion cargado con exito
+[INFO] 15:01:00:804 Kernel/(14497:14497): KERNEL LISTO PARA RECIBIR INSTRUCCIONES
+[INFO] 15:01:12:848 Kernel/(14497:14497): SE CONECTO UNA CONSOLA AL KERNEL, ID: 5
+[INFO] 15:01:12:856 Kernel/(14497:14596): INFORMACION RECIBIDA CORRECTAMENTE
