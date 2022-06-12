@@ -4,7 +4,7 @@
 #include "config_cpu.h"
 
 typedef struct {
-	op_code op_code;
+	op_instructions_code instructions_code;
 	int param1;
 	int param2;
 } t_instruct;

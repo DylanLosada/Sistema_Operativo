@@ -2,23 +2,24 @@
 
 int main() {
 
-
 	t_cpu* cpu = malloc(sizeof(t_cpu));
 	t_log* cpu_logger = log_create("cpu.log", "CPU_MAIN", 1, LOG_LEVEL_DEBUG);
+
 	cpu->cpu_log = cpu_logger;
 	cpu->cpu_config = create_config_cpu(cpu_logger);
 
 	pthread_t hilo_dispatch;
-	t_info* dispatch = malloc(sizeof(t_info));
+	t_conexion* dispatch = malloc(sizeof(t_conexion));
 
 	dispatch->puerto = cpu->cpu_config->PUERTO_ESCUCHA_DISPATCH;
 	dispatch->code = 1;
-	dispatch->socket = start_cpu(dispatch->puerto, cpu_logger);
-	dispatch->log = cpu_logger;
+	dispatch->socket = start_cpu(dispatch->puerto, cpu->cpu_log);
 
-	pthread_create(&hilo_dispatch, NULL, (void*)execute_cpu, (void*)dispatch);
+	cpu->dispatch = dispatch;
 
+	pthread_create(&hilo_dispatch, NULL, (void*)execute_cpu, (void*)cpu);
 
+/*
 	pthread_t hilo_interrupt;
 	t_info* interrupt = malloc(sizeof(t_info));
 
@@ -28,11 +29,11 @@ int main() {
 	interrupt->log = cpu_logger;
 
 	pthread_create(&hilo_interrupt, NULL, (void*)execute_cpu, (void*)interrupt);
-
+*/
 	while(1);
 
 	pthread_detach(hilo_dispatch);
-	pthread_detach(hilo_interrupt);
+	//pthread_detach(hilo_interrupt);
 /*
 	pthread_t hilo_interrupt;
 

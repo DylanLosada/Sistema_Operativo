@@ -1,21 +1,48 @@
 #include "execute.h"
 
-void execute(t_instruct* instruction, int no_op_time) {
-	t_log* logger = log_create("cpu.log", "CPU_EXECUTE", 1, LOG_LEVEL_DEBUG);
-	t_log* logger_read = log_create("cpu.log", "CPU_READ", 1, LOG_LEVEL_INFO);
+void sendDataToKernel(int totalInstructionsExecuted, int timeIO, clock_t clock, int socket){
+
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+
+	buffer->size = sizeof(int) + sizeof(int) + sizeof(clock_t);
+
+	void* stream = malloc(buffer->size);
+
+	int offset = 0; // Desplazamiento
+
+	memcpy(buffer->stream + offset, &totalInstructionsExecuted, sizeof(int));
+	offset += sizeof(int);
+	memcpy(buffer->stream + offset, &timeIO, sizeof(int));
+	offset += sizeof(int);
+	memcpy(buffer->stream + offset, &clock, sizeof(clock_t));
+
+	buffer->stream = stream;
+
+	send(socket, buffer, buffer->size, 0);
+
+	free(buffer);
+
+
+}
+
+
+void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb, int total_instructions_executed) {
+	char* retardoChar = cpu->cpu_config->RETARDO_NOOP;
+
+	int retardo = strtol(retardoChar, &retardoChar, 10);
 
 	int mem_value;
-	switch(instruction->op_code){
+	switch(instruction->instructions_code){
 		case NO_OP:
-			sleep(no_op_time);
+			sleep(retardo/1000);
+			log_info(cpu->cpu_log, "SE HA REALIZADO UN SLEEP DE: %d",retardo);
 			break;
 		case I_O:
-			// Devolver PCB actualizado a kernel con tiempo de bloqueo en MS.
+			send_data_to_kernel(cpu, pcb, total_instructions_executed, 3);
 			break;
 		case READ:
-			// TODO: Leer de memoria
-			mem_value = 0; // Simulando read de memoria
-			log_info(logger_read, "%d", mem_value); // Imprimir por pantalla contenido, pedido en consigna.
+			//Se deberá leer el valor de memoria correspondiente a esa dirección lógica e imprimirlo por pantalla
+			log_info(cpu->cpu_log, "Se ha ejecutado la instrucciones READ");
 			break;
 		case COPY:
 			//
@@ -24,11 +51,10 @@ void execute(t_instruct* instruction, int no_op_time) {
 			// Se deberá escribir en memoria el valor del segundo parámetro en la dirección lógica del primer parámetro.
 			break;
 		case EXIT:
-			// Devolver PCB actualizado.
+			send_data_to_kernel(cpu, pcb, total_instructions_executed, 2);
 			break;
 	}
 
-
-	log_info(logger, "Executed %d (parametros %d %d)", instruction->op_code, instruction->param1, instruction->param2);
+	log_info(cpu->cpu_log, "INSTRUCCION EJECUTADA: %d", instruction->instructions_code);
 
 }

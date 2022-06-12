@@ -2,10 +2,14 @@
 #define SRC_FETCH_AND_DECODE_H_
 
 #include "pcb.h"
+#include "execute.h"
 #include <commons/log.h>
 #include <commons/collections/list.h>
 
-void fetch_and_decode(t_pcb* pcb, t_instruct* instruction);
+
+t_list* destokenizarInstructions(t_list* listInstructions);
+t_instruct* destokenizarInstruction(char* stringInstruction);
+void fetch_and_decode(t_pcb* pcb, t_cpu* cpu);
 
 
 #endif /* SRC_FETCH_H_ */

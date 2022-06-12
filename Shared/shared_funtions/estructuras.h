@@ -44,7 +44,8 @@ typedef struct{
 typedef enum {
     CONSOLA,
 	DISPATCH,
-	INTERRUPT
+	INTERRUPT,
+	IO
 } op_code;
 
 typedef struct {

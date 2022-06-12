@@ -15,6 +15,7 @@
 #include<commons/config.h>
 #include<commons/collections/list.h>
 #include<commons/collections/queue.h>
+#include<commons/error.h>
 #include<estructuras.h>
 #include<conexion_servidor.h>
 
@@ -34,13 +35,14 @@ typedef struct{
 	char* puerto;
 	int socket;
 	op_code code;
-	t_log* log;
-}t_info;
+}t_conexion;
 
 
 typedef struct{
 	t_log* cpu_log;
 	t_config_cpu* cpu_config;
+	t_conexion* dispatch;
+	t_conexion* interrupt;
 }t_cpu;
 
 
