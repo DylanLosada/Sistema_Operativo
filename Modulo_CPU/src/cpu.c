@@ -13,7 +13,7 @@ int main() {
 
 	dispatch->puerto = cpu->cpu_config->PUERTO_ESCUCHA_DISPATCH;
 	dispatch->code = 1;
-	dispatch->socket = start_cpu(dispatch->puerto);
+	dispatch->socket = start_cpu(dispatch->puerto, cpu_logger);
 	dispatch->log = cpu_logger;
 
 	pthread_create(&hilo_dispatch, NULL, (void*)execute_cpu, (void*)dispatch);

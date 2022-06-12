@@ -3,36 +3,7 @@
 
 // INICIA SERVER ESCUCHANDO EN IP:PUERTO
 int start_kernel(t_kernel* kernel){
-	int socket_servidor;
-
-	    struct addrinfo hints, *servinfo, *p;
-
-	    memset(&hints, 0, sizeof(hints));
-	    hints.ai_family = AF_UNSPEC;
-	    hints.ai_socktype = SOCK_STREAM;
-	    hints.ai_flags = AI_PASSIVE;
-
-	    getaddrinfo(NULL, kernel->kernel_config->PUERTO_ESCUCHA, &hints, &servinfo);
-
-	    // Creamos el socket de escucha del servidor
-	    socket_servidor = socket(servinfo->ai_family,
-	                                 servinfo->ai_socktype,
-	                                 servinfo->ai_protocol);
-
-	    int yes = 1;
-	    setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
-
-	    // Asociamos el socket a un puerto
-	    bind(socket_servidor, servinfo->ai_addr, servinfo->ai_addrlen);
-
-	    // Escuchamos las conexiones entrantes
-	    listen(socket_servidor, SOMAXCONN);
-
-	    freeaddrinfo(servinfo);
-
-	    log_info(kernel->kernel_log, "Kernel listo para recibir instrucciones");
-
-	    return socket_servidor;
+	return create_server_connection(kernel->kernel_config->PUERTO_ESCUCHA, kernel->kernel_log, "KERNEL LISTO PARA RECIBIR INSTRUCCIONES");
 }
 
 
@@ -42,7 +13,7 @@ int wait_console(t_kernel* kernel){
 
 	int socket_consola = accept(kernel->kernel_socket, NULL, NULL);
 
-	log_info(kernel->kernel_log, "Consola conectada a kernel");
+	log_info(kernel->kernel_log, "SE CONECTO UNA CONSOLA AL KERNEL, ID: %d", socket_consola);
 
 	return socket_consola;
 }

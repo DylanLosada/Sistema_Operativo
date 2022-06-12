@@ -5,40 +5,15 @@ void execute_cpu(void* void_args){
 	int kernel_socket = wait_kernel(args->socket);
 	while(1){
 		if(kernel_socket > 0){
-			log_info(args->log,"Kernel conectado al puerto %s",args->puerto);
+			log_info(args->log,"KERNEL CONECTADO A PUERTO: %s",args->puerto);
 			break;
 		}
 	}
 }
 
 
-int start_cpu(char* puerto){
-	int socket_cpu;
-
-	struct addrinfo hints, *servinfo, *p;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	getaddrinfo(NULL, puerto, &hints, &servinfo);
-
-	// Creamos el socket de escucha del servidor
-	socket_cpu = socket(servinfo->ai_family,
-								 servinfo->ai_socktype,
-								 servinfo->ai_protocol);
-
-	// Asociamos el socket a un puerto
-	bind(socket_cpu, servinfo->ai_addr, servinfo->ai_addrlen);
-
-	// Escuchamos las conexiones entrantes
-	listen(socket_cpu, SOMAXCONN);
-
-	freeaddrinfo(servinfo);
-
-
-	return socket_cpu;
+int start_cpu(char* puerto, t_log* logger){
+	return create_server_connection(puerto, logger, "CPU LISTA PARA RECIBIR INSTRUCCIONES");
 }
 
 

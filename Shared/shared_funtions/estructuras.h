@@ -21,12 +21,12 @@ typedef enum
 } op_instructions_code;
 
 typedef enum{
-	OK,
 	ERROR,
 	SWAP,
 	RE_SWAP,
 	CREATE,
-	FREE_GRADO
+	FREE_GRADO,
+	DELETE
 } op_memoria_message;
 
 typedef struct{
@@ -58,7 +58,7 @@ typedef struct{
 } t_cpu_paquete;
 
 void loggear_pcb(t_pcb* pcb);
-t_pcb* deserializate_pcb(t_buffer* buffer);
+t_pcb* deserializate_pcb(int socket, int* op_code);
 void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE);
 
 #endif /* SHARED_FUNTIONS_ESTRUCTURAS_H_ */

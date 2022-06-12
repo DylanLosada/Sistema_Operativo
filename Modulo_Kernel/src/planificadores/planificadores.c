@@ -163,8 +163,9 @@ void long_term_planner(void* args_long_term_planner){
 	while(1){
 		pthread_mutex_lock(args->hasNewConsole);
 		pthread_mutex_lock(args->states->state_exit->mutex);
-		if(queue_size(args->states->state_exit->state) > 0){
-			close_console_process(args->states->state_exit->state);
+		if (queue_size(args->states->state_exit->state) > 0) {
+			// TODO introducimos logger para avisar que se vana cerrar procesos.
+			close_console_process(args->states->state_exit->state, args->socket_memoria);
 		}
 		pthread_mutex_unlock(args->states->state_exit->mutex);
 
@@ -176,13 +177,13 @@ void long_term_planner(void* args_long_term_planner){
 void mid_term_planner(void* args_mid_term_planner){
 	t_args_mid_term_planner* args = (t_args_mid_term_planner*) args_mid_term_planner;
 
-	while(1){
-		if(!list_is_empty(args->states->state_suspended_blocked->state)){
+	while (1) {
+		if (!list_is_empty(args->states->state_suspended_blocked->state)) {
 			pthread_mutex_unlock(args->hasPcbBlocked);
 		}
 
 		pthread_mutex_lock(args->states->state_suspended_ready->mutex);
-		if(!list_is_empty(args->states->state_blocked->state)){
+		if (!list_is_empty(args->states->state_blocked->state)) {
 			pthread_mutex_unlock(args->hasPcbBlocked);
 		}
 		pthread_mutex_unlock(args->states->state_suspended_ready->mutex);
@@ -418,16 +419,19 @@ void check_time_in_blocked_and_pass_to_suspended_blocked(t_state_list_hanndler* 
 }
 
 void recive_information_from_memoria(t_pcb* pcb, int socket_memoria){
-	int message_confirmation;
-	recv(socket_memoria, &message_confirmation, sizeof(int), 0);
+	int* op_code;
+	// recibo mensaje y pcb de memoria.
+	t_pcb* pcb_received = deserializate_pcb(socket_memoria, op_code);
 
-	if(message_confirmation == ERROR){
-		// loggeamos error y cortamos la ejecucion.
-		perror("LA MEMORIA FALLO AL REALIZAR LA INSTRUCCION SOLICITADA.");
-		exit(1);
-	} else if (message_confirmation != SWAP) {
-		// loggeamos mensaje de salvado correctamente.
-		recv(socket_memoria, pcb->tabla_paginas, sizeof(int), 0);
+	if (*op_code == ERROR || *op_code < 0) {
+		error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON MEMORIA, CODIGO ERROR: %d", *op_code);
+		//exit(1);
+	} else if (*op_code == CREATE || *op_code == RE_SWAP) {
+		pcb->tabla_paginas = pcb_received->tabla_paginas;
+	} else if (*op_code == SWAP) {
+		// TODO loggeamos que se realizo el SWAP a memoria.
+	} else if (*op_code == FREE_GRADO) {
+		// TODO loggeamos que se realizo la liberacion de espacio memoria.
 	}
 }
 
@@ -435,11 +439,12 @@ void add_pcb_to_suspended_blocked(t_pcb* pcb_blocked, t_state_list_hanndler* sta
 	list_add(state_suspended_blocked, pcb_blocked);
 }
 
-void close_console_process(t_queue* state_exit){
+void close_console_process(t_queue* state_exit, int socket_memoria){
 	int size_exit_state = queue_size(state_exit);
 	for(int elem_destroy = 0; elem_destroy < size_exit_state; elem_destroy++){
 		t_pcb* pcb_to_deleat = queue_pop(state_exit);
 		// avisar a memoria que se eleimina el pcb.
+		send_action_to_memoria(pcb_to_deleat, socket_memoria, DELETE);
 		close(pcb_to_deleat->id);
 		free(pcb_to_deleat->instrucciones);
 		free(pcb_to_deleat->program_counter);
@@ -493,7 +498,7 @@ t_pcb* create_pcb(t_monitor_grado_multiprogramacion* monitorGradoMulti, int GRAD
 	pcb->time_blocked = malloc(sizeof(clock_t));
 	pcb->time_io = 0;
 	pthread_mutex_lock(monitorGradoMulti->mutex);
-	if(monitorGradoMulti->gradoMultiprogramacionActual >= GRADO_MULTIPROGRAMACION || (monitorGradoMulti->gradoMultiprogramacionActual + 1) >= GRADO_MULTIPROGRAMACION){
+	if(monitorGradoMulti->gradoMultiprogramacionActual >= GRADO_MULTIPROGRAMACION || (monitorGradoMulti->gradoMultiprogramacionActual + 1) > GRADO_MULTIPROGRAMACION){
 		pcb->tabla_paginas = NULL;
 	}else{
 		pcb->tabla_paginas = malloc(sizeof(int));
@@ -505,14 +510,13 @@ t_pcb* create_pcb(t_monitor_grado_multiprogramacion* monitorGradoMulti, int GRAD
 
 void send_pcb_to_memoria(t_pcb* pcb , int socket_memoria, op_memoria_message MENSSAGE){
 	if(pcb != NULL){
-		int menssage_confirmation;
 		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 		void* pcb_serializate = serializate_pcb(pcb, paquete, MENSSAGE);
-		//send_data_to_server(socket_memoria, pcb, sizeof(int) + sizeof(int) + sizeof(t_list) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(clock_t) + sizeof(int));
-		//recv(socket_memoria, &menssage_confirmation, sizeof(int), 0);
+		int code_operation = send_data_to_server(socket_memoria, pcb, paquete->buffer + sizeof(int));
 
-		if(menssage_confirmation == ERROR){
-			//loggeamos un error y cerramos todo.
+		if(code_operation < 0){
+			error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON MEMORIA, ERROR: IMPOSIBLE CONECTAR");
+			//exit(1);
 		}
 	}
 }
@@ -520,13 +524,13 @@ void send_pcb_to_memoria(t_pcb* pcb , int socket_memoria, op_memoria_message MEN
 void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 	if(pcb != NULL){
 		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
-		//error aca.
 		void* pcb_serializate = serializate_pcb(pcb, paquete, DISPATCH);
-		//send_data_to_server(socket_cpu_dispatch, pcb, sizeof(int) + sizeof(int) + sizeof(t_list) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(clock_t) + sizeof(int));
+		send_data_to_server(socket_cpu_dispatch, pcb, paquete->buffer->size + sizeof(int));
 	}
 }
 
 void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb_excecuted){
+	// TODO pasarlo a "funcion de deserializacion de Facu"
 	int time_excecute_pcb;
 	int count_instructions_excecute;
 	int time_io;
@@ -598,7 +602,7 @@ void check_state_of_pcb(void* void_args){
 
 t_pcb* send_action_to_memoria(t_pcb* pcb, int socket_memoria, int ACTION){
 	send_pcb_to_memoria(pcb , socket_memoria, ACTION);
-	recive_information_from_memoria(pcb , socket_memoria);
+	//recive_information_from_memoria(pcb , socket_memoria);
 	return pcb;
 }
 

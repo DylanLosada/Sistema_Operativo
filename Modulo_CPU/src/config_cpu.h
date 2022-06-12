@@ -16,6 +16,7 @@
 #include<commons/collections/list.h>
 #include<commons/collections/queue.h>
 #include<estructuras.h>
+#include<conexion_servidor.h>
 
 
 typedef struct {

@@ -28,56 +28,64 @@ void loggear_pcb(t_pcb* pcb){
 	return;
 }
 
-
-t_pcb* deserializate_pcb(t_buffer* buffer){
+t_pcb* deserializate_pcb(int socket, int* op_code){
+	t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
+	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_pcb* pcb = malloc(sizeof(t_pcb));
 	int offset = 0;
 
+	// OP CODE
+	recv(socket, op_code, sizeof(int), 0);
 
+	// TAMAÑO STREAM
+	recv(socket, &paquete->buffer->size, sizeof(int), 0);
+
+	// STREAM
+	recv(socket, paquete->buffer->stream, paquete->buffer->size, 0);
 
 	// ID
-	memcpy(&pcb->id, buffer->stream, sizeof(int));
+	memcpy(&pcb->id, paquete->buffer->stream, sizeof(int));
 	offset += sizeof(int);
 
 
 	// processSize
-	memcpy(&pcb->processSize, buffer->stream + offset, sizeof(int));
+	memcpy(&pcb->processSize, paquete->buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
 	// program_counter
-	memcpy(&pcb->program_counter, buffer->stream + offset, sizeof(int));
+	memcpy(&pcb->program_counter, paquete->buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
 	// tabla_paginas
-	memcpy(pcb->tabla_paginas, buffer->stream + offset, sizeof(int));
+	memcpy(pcb->tabla_paginas, paquete->buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
 	// rafaga
-	memcpy(&pcb->rafaga, buffer->stream + offset, sizeof(int));
+	memcpy(&pcb->rafaga, paquete->buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
 	// time_io
-	memcpy(&pcb->time_io, buffer->stream + offset, sizeof(int));
+	memcpy(&pcb->time_io, paquete->buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
 	// time_excecuted_rafaga
-	memcpy(&pcb->time_excecuted_rafaga, buffer->stream + offset, sizeof(int));
+	memcpy(&pcb->time_excecuted_rafaga, paquete->buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
 	// time_blocked
-	memcpy(&pcb->time_blocked, buffer->stream + offset, sizeof(clock_t));
+	memcpy(&pcb->time_blocked, paquete->buffer->stream + offset, sizeof(clock_t));
 	offset += sizeof(clock_t);
 
 
 	// (cant instrucciones)
 	int cant;
-	memcpy(&cant, buffer->stream + offset, sizeof(int));
+	memcpy(&cant, paquete->buffer->stream + offset, sizeof(int));
 	offset += sizeof(int);
 
 
@@ -86,19 +94,16 @@ t_pcb* deserializate_pcb(t_buffer* buffer){
 
 	for (int i = 0; i < cant; i++) {
 		int size;
-		memcpy(&size, buffer->stream + offset, sizeof(int));
+		memcpy(&size, paquete->buffer->stream + offset, sizeof(int));
 		offset += sizeof(int);
 
 		char* instruccion = malloc(size); // TODO: Checkear free
-		memcpy(instruccion, buffer->stream + offset, size);
+		memcpy(instruccion, paquete->buffer->stream + offset, size);
 		offset += size;
 
 
 		list_add(pcb->instrucciones, instruccion);
 	}
-
-
-
 
 	return pcb;
 }
@@ -111,19 +116,12 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 	int size = 0;
 	int* tabla_paginas = malloc(sizeof(int));
 
-
-
 	for (int i = 0; i < pcb_list_size; i++){
 		char* elem = list_get(pcb->instrucciones, i);
 		size += string_length(elem) + 1 + sizeof(int); // +1 por fin de string.
 	}
 
-
-
-
-
 	t_buffer* buffer = malloc(sizeof(t_buffer));
-
 
 	// Primero completo la estructura buffer interna del paquete.
 	buffer->size =
@@ -138,12 +136,8 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 			+ sizeof(int)		// (cant instrucciones)
 			+ size;				// (largo inst + inst) x cada inst.
 
-
-
 	buffer->stream = malloc(buffer->size);
 	int offset = 0;
-
-
 
 	// ID
 	memcpy(buffer->stream, &pcb->id, sizeof(int));
@@ -205,8 +199,6 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 		offset += elem_size;
 	}
 
-
-
 	// Segundo: completo el paquete.
 	paquete->op_code = MENSSAGE;
 	paquete->buffer = buffer;
@@ -220,14 +212,6 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 	offset += sizeof(int);
 	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
 	offset += paquete->buffer->size;
-
-
-
-
-	// TEST DESERIALIZE
-	//t_pcb* pcb2 = deserializate_pcb(buffer);
-	//loggear_pcb(pcb2);
-
 
 	free(paquete->buffer->stream);
 	free(paquete->buffer);

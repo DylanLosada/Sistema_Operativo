@@ -2,6 +2,7 @@
 #define PLANIFICADORES_H_
 
 #include "../conexion.h"
+#include <commons/error.h>
 #include <stdbool.h>
 #include <time.h>
 
@@ -10,8 +11,14 @@ typedef enum{
 	SRT
 } tipo_planificador_enum;
 
+typedef struct {
+	t_log* logger;
+	pthread_mutex_t* mutex;
+} t_monitor_log;
+
 typedef struct{
 	char* planner_type;
+	t_monitor_log* monito_log;
 	t_queue* pre_pcbs;
 	t_config_kernel* config_kernel;
 	pthread_mutex_t* mutex;

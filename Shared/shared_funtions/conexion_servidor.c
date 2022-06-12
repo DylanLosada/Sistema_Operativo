@@ -7,7 +7,7 @@
 
 #include "./conexion_servidor.h"
 
-int create_server_connection(char* puerto, t_log* kernel_logger){
+int create_server_connection(char* puerto, t_log* logger, char* message_connection){
 	int socket_servidor;
 
 	struct addrinfo hints, *servinfo, *p;
@@ -24,6 +24,9 @@ int create_server_connection(char* puerto, t_log* kernel_logger){
 								 servinfo->ai_socktype,
 								 servinfo->ai_protocol);
 
+	int yes = 1;
+	setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+
 	// Asociamos el socket a un puerto
 	bind(socket_servidor, servinfo->ai_addr, servinfo->ai_addrlen);
 
@@ -32,7 +35,7 @@ int create_server_connection(char* puerto, t_log* kernel_logger){
 
 	freeaddrinfo(servinfo);
 
-	log_info(kernel_logger, "Kernel listo para recibir instrucciones");
+	log_info(logger, message_connection);
 
 	return socket_servidor;
 }

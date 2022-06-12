@@ -24,7 +24,7 @@
 #include <dirent.h>
 #include <errno.h>
 
-int create_server_connection(char* puerto, t_log* kernel_logger);
+int create_server_connection(char* puerto, t_log* logger, char* message_connection);
 int wait_client(int socket_server, t_log* logger, char* client, char* server);
 void close_client_connection(int* socket_cliente);
 

@@ -33,8 +33,8 @@ int create_client_connection(char *ip, char* puerto)
 	return socket_cliente;
 }
 
-void send_data_to_server(int socket_cliente, void* dataToSend, int sizeDataToSend){
-	send(socket_cliente, dataToSend, sizeDataToSend, 0);
+int send_data_to_server(int socket_cliente, void* dataToSend, int sizeDataToSend){
+	return send(socket_cliente, dataToSend, sizeDataToSend, 0);
 }
 
 void free_connection(int socket_cliente)
