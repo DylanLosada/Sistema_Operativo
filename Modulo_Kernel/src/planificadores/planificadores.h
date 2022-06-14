@@ -61,7 +61,8 @@ typedef struct{
 	t_state_queue_hanndler* state_running;
 	t_state_list_hanndler* state_ready;
 	t_state_list_hanndler* state_suspended_blocked;
-	t_state_list_hanndler* state_suspended_ready;
+	t_state_list_hanndler* state_suspended_ready_max;
+	t_state_list_hanndler* state_suspended_ready_min;
 	t_state_list_hanndler* state_blocked;
 } t_states;
 
@@ -95,6 +96,7 @@ typedef struct{
 	pthread_mutex_t* hasPcb;
 	pthread_mutex_t* hasPcbBlocked;
 	pthread_mutex_t* hasPcbRunning;
+	pthread_mutex_t* hasNewConsole;
 	t_monitor_grado_multiprogramacion* monitorGradoMulti;
 	t_sockets_cpu* sockets_cpu;
 	t_config_kernel* config_kernel;

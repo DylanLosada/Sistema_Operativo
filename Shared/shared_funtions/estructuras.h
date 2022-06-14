@@ -3,6 +3,7 @@
 #include <commons/collections/list.h>
 #include <commons/log.h>
 #include <commons/string.h>
+#include<sys/socket.h>
 
 typedef struct{
 	int processSize;
@@ -24,8 +25,7 @@ typedef enum{
 	ERROR,
 	SWAP,
 	RE_SWAP,
-	CREATE,
-	FREE_GRADO,
+	NEW,
 	DELETE
 } op_memoria_message;
 

@@ -33,10 +33,10 @@ void execute_cpu(void* void_args){
 
 	//cpu->dispatch->socket = 1;
 
-	int* code;
-	t_pcb* pcb = deserializate_pcb(cpu->dispatch->socket, code);
+	int code;
+	t_pcb* pcb = deserializate_pcb(cpu->dispatch->socket, &code);
 
-	if(*code < 0){
+	if(code < 0){
 		//TODO
 	}
 
