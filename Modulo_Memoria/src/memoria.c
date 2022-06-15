@@ -1,37 +1,32 @@
 #include "memoria.h"
-
 #include "funciones_memoria.h"
 
 
 int main(void) {
-	//int socketCliente;
 
 //	HACER HANDSHAKE CON CPU DONDE YO PASO cantidad de entradas por tabla de páginas y tamaño de página.Y A MI ME PASAN IP CPU E IP KERNELL
 
-	char* path_config_memoria = "/home/utnso/tp-2022-1c-SanguchitOS-main/Modulo_Memoria/memoria.config";
-
-	logger = iniciar_logger();
-	logger = log_create("../memoria.log", "Modulo_Memoria", 0, LOG_LEVEL_DEBUG);
+	logger = log_create("memoria.log", "Modulo_Memoria", 1, LOG_LEVEL_DEBUG);
 	log_info(logger, "--------------------------------------------\n");
 
-    t_config* config = leer_config(path_config_memoria);
+	t_config_memoria* config_memoria = create_config(logger);
 
-    config_memoria.puerto = config_get_string_value(config,"PUERTO_ESCUCHA");
-    config_memoria.ip_memoria = config_get_int_value(config, "IP");
+	memoria->memoria_log = logger;
+	memoria->memoria_config= config_memoria;
 
-    int server_fd = iniciar_servidor(config_memoria.ip_memoria, config_memoria.puerto);
+    int server_fd = start_memoria(memoria);
+
+    memoria->server_fd = server_fd;
 
     //Si iniciar memoria falla retorna 0 osea error
-    if(!iniciar_memoria()){
+    if(!iniciar_memoria_paginada()){
             return 0;
         }
 
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
 	pthread_t hilo_servidor;
-	pthread_create (&hilo_servidor, NULL , (void*) manejar_conexion,(void*) server_fd);
+	pthread_create(&hilo_servidor, NULL, manejar_conexion,(void*)memoria);
 	pthread_detach(hilo_servidor);
-
-	int tamanio_paginas = config_memoria.tamanio_pagina;
 
 	liberar_conexion(server_fd);
 	liberar_memoria();
@@ -39,47 +34,63 @@ int main(void) {
 	return 0;
 }
 
-int iniciar_memoria(void){
-    char* path_config_miRamHQ = "/home/utnso/tp-2021-1c-Androide-2021/Mi-RAM-HQ/miRamHQ.config";
-    t_config* config = leer_config(path_config_miRamHQ);
-    config_memoria.tamanio_memoria = config_get_int_value(config, "TAM_MEMORIA");
-	config_memoria.tamanio_pagina = config_get_int_value(config, "TAM_PAGINA");
-	config_memoria.path_swap = config_get_string_value(config, "PATH_SWAP");
-    config_memoria.entradas_por_tabla = config_get_int_value(config, "ENTRADAS_POR_TABLA");
-	config_memoria.retardo_memoria = config_get_int_value(config, "RETARDO_MEMORIA");
-	config_memoria.marcos_proceso = config_get_int_value(config, "MARCOS_POR_PROCESO");
-	config_memoria.retardo_swap = config_get_int_value(config, "RETARDO_SWAP");
-	config_memoria.algoritmo_reemplazo = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
+int iniciar_memoria_paginada(){
 
-    int id_pagina = 0;
-    memoria_principal = malloc(config_memoria.tamanio_memoria);
+	int id_pagina = 0;
+	logger = memoria->memoria_log;
+	int tamanio_memoria = memoria->memoria_config->tamanio_memoria;
 
-    log_info(logger,"Direccion inicial de memoria: %d",memoria_principal);
+	memoriaRAM = malloc(tamanio_memoria);
 
-    if(memoria_principal == NULL){
-        perror("MALLOC FAIL!\n");
+	log_info(logger,"Direccion inicial de memoria: %d",memoriaRAM);
+
+	if(memoriaRAM == NULL){
+	        perror("MALLOC FAIL!\n");
+	        return 0;
+	    }
+
+    int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
+    //char * path_memoria_virtual = config_memoria.path_swap; ver tema de memoria virtual, porq hay tlb y el swap no es con memoria virtual sino con archivos
+
+    cant_frames_principal = tamanio_memoria / tamanio_paginas;
+
+    log_info(logger,"/// Se tienen %d marcos de %d bytes en memoria principal",cant_frames_principal, tamanio_paginas);
+
+
+    //calloc asigna la memoria solicitada y le devuelve un puntero. La diferencia entre malloc y calloc es que
+        //malloc no establece la memoria en cero, mientras que calloc establece la memoria asignada en cero.
+    int bitarrayMemoria = calloc(cant_frames_principal, sizeof(int));
+
+    if(bitarrayMemoria == NULL){
+        perror("CALLOC FAIL!\n");
         return 0;
     }
-    return iniciar_memoria_paginada();
+
+    return 1;
 }
 
 //----------Tema de creacion de hilos-------------------
-void manejar_conexion(int server_fd){
+void manejar_conexion(void* void_args){
+	t_memoria* memoria = (t_memoria*) void_args;
+	logger = memoria->memoria_log;
+	int server_fd = memoria->server_fd;
 	    while(1){
-	        int cliente_fd = esperar_cliente(server_fd);
+	        int cliente_fd = wait_client(server_fd, logger, "Cliente", "Memoria");
 	        pthread_t hilo_servidor;
-	        pthread_create (&hilo_servidor, NULL , (void*) administrar_cliente,(void*) cliente_fd);
+	        pthread_create (&hilo_servidor, NULL , (void*)administrar_cliente,(void*) cliente_fd);
 	        pthread_detach(hilo_servidor);
 	    }
 	}
 
+//ME QUEDE ACA EL RESTO ESTA JOYA
 //SWITCH DEL CODIGO OPERACION
 int administrar_cliente(int cliente_fd){
 	while(1){
 		//ver que el cod op es un int
-	        int cod_op = recibir_operacion(cliente_fd);
-	        switch(cod_op){
-	            case NUEVO_PROCESO:
+		t_paquete* paquete_recibido = recibir_operacion(cliente_fd); //Ver esto q hay funciones compartidas
+	        switch(paquete_recibido->codigo_operacion){
+	        //El switch es por orden del enum!
+	            case NEW:
 	                iniciar_proceso(cliente_fd);
 	                break;
 	            default:
@@ -94,6 +105,7 @@ int administrar_cliente(int cliente_fd){
 //kernell lo unico que hace es enviar pcbs de procesos nuevos para almacenarlos en memoria
 //cpu manda el pcb con cierta instruccion. Dependiendo la instruccion es lo que hay que hacer, en estos casos cpu deberia quedarse esperando a q memoria le mande el ok
 
+//Aca podria recibir el pcb en vez del cliente_fd
 void iniciar_proceso(int cliente_fd){
     char* instrucciones;
     int size;
@@ -129,8 +141,13 @@ void iniciar_proceso(int cliente_fd){
     free(instrucciones);
 }
 
+//Tendria que recibir el pcb!
 int guardar_proceso_en_paginacion(int idProceso, char * instrucciones, int tamanio_proceso){
+	//ceil redondea el double para el prox int
 	int paginasNecesarias = ceil((double) tamanio_proceso/ (double) config_memoria.tamanio_pagina);
+
+
+	// HAY QUE CHEQUEAR NO SOLO QUE HAYA ESPACIO EN MEMORIA DE LAS PAGS SINO Q TAMBIEN LA CANT DE PAGINAS A AGREGAR NO SUPERE EL LIMITE MAX DE PAGS POR PROCESO
 
 	if(puedo_guardar_n_paginas(paginasNecesarias)){
 		//Tal vez estaria mejor pasar el pcb
@@ -176,7 +193,7 @@ t_list* guardar_proceso_en_paginas(int idProceso, int tamanio){ //OCUPA PAGINAS 
 
     // Si no hay frames en memoria principal, hago swap
     //if(hay frames libres) -> guardar, else -> hacer swap de los bloqueados. pasa q esa orden deberia llegar desde kernell
-    }
+    
     eliminar_lista(framesLibres);
     return paginasQueOcupa;
 }
