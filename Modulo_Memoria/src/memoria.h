@@ -93,5 +93,4 @@ t_list* guardar_proceso_en_paginas(int idProceso, int tamanio);
 
 pthread_mutex_t mutex_memoria_principal_bitmap;
 
-
 #endif
