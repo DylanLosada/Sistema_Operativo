@@ -16,6 +16,7 @@
 #include<commons/config.h>
 #include<dirent.h>
 #include<errno.h>
+#include<estructuras.h>
 
 
 
@@ -26,34 +27,14 @@
 #define MEMORIA_PRINCIPAL 0
 #define MEMORIA_VIRTUAL 1
 
-#define CLOCL-M 1
 #define CLOCK 2
 
-typedef enum{
-	MENSAJE,
-	PAQUETE,
-	ELIMINAR_PROCESO,
-	PROCESO_ELIMINADO,
-	HACER_SWAP,
-	SWAP_HECHO,
-	//paginacion??
-    OPERACION_EXITOSA,
-    OPERACION_FALLIDA,
-}op_code;
+t_log* logger;
+char* memoriaRAM;
+
 
 typedef struct{
-    int size;
-    void* stream;
-} t_buffer;
-
-typedef struct{
-    op_code codigo_operacion;
-    t_buffer* buffer;
-} t_paquete;
-
-typedef struct{
-	char * puerto;
-	char * ip_memoria;
+	char* puerto;
 	int tamanio_memoria;
 	int tamanio_pagina;
 	int entradas_por_tabla;
@@ -63,6 +44,20 @@ typedef struct{
 	int retardo_swap;
 	char * path_swap;
 }t_config_memoria;
+
+typedef struct{
+	t_log* memoria_log;
+	t_config_memoria* memoria_config;
+	int server_fd;
+}t_memoria;
+
+t_memoria* memoria;
+
+typedef struct{
+    op_code codigo_operacion;
+    t_buffer* buffer;
+} t_paquete;
+
 
 typedef struct{
     int id_pagina;
@@ -83,10 +78,6 @@ typedef struct{
     int direccionPCB;
     t_list* paginas;
 }t_tabla_pagina;
-
-t_config_memoria config_memoria;
-
-char * memoria_principal;
 
 //**************************FUNCIONES********************+
 int iniciar_memoria(void);
