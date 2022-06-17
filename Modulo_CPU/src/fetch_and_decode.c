@@ -80,9 +80,15 @@ void fetch_and_decode(t_pcb* pcb, t_cpu* cpu){
 
 	int total_instructions_executed = 0;
 
-	bool exist_interrupt = false;
-
 	pthread_t check_interrupt;
+
+	t_interrupt_message* exist_interrupt = malloc(sizeof(t_interrupt_message));
+
+	exist_interrupt->socket = cpu->interrupt->socket;
+	exist_interrupt->is_interrupt = false;
+
+	pthread_create(&check_interrupt, NULL, (void*)recive_interrupt , (void*)exist_interrupt);
+
 
 	//START EXECUTE
 	while(pcb->program_counter != pcb->instrucciones->elements_count){
@@ -94,13 +100,12 @@ void fetch_and_decode(t_pcb* pcb, t_cpu* cpu){
 		total_instructions_executed++;
 
 		//GENERAR HILO PARA CHEQUEAR INTERRUPT
-		/*pthread_create(&check_interrupt, NULL, (void*) recive_interrupt , (void*) exist_interrupt);
-		if(exist_interrupt(cpu)){
+		if(exist_interrupt->is_interrupt){
 
-			send_data_to_kernel(cpu, pcb, total_instructions_executed);
+			//send_data_to_kernel(cpu, pcb, total_instructions_executed);
 			exist_interrupt = false;
 		}
-		*/
+
 		pcb->program_counter++;
 	}
 

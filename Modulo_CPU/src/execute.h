@@ -11,7 +11,6 @@ typedef struct{
 	clock_t clock;
 } t_dataToKernel;
 
-
 //void execute(t_instruct* instruction, t_cpu* cpu, int totalInstructionsExecuted);
 
 

@@ -46,4 +46,10 @@ typedef struct{
 }t_cpu;
 
 
+typedef struct{
+	int socket;
+	bool* is_interrupt;
+} t_interrupt_message;
+
+
 #endif

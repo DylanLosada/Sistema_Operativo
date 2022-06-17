@@ -1,14 +1,20 @@
 #include "funciones.h"
 
-void execute_cpu(void* void_args){
+void execute_interrupt(void* void_args){
 	t_cpu* cpu = (t_cpu*) void_args;
 
-	//t_list* listInstructions = list_create();
+	cpu->interrupt->socket = wait_kernel(cpu->interrupt->socket);
+}
+
+void execute_dispatch(void* void_args){
+	t_cpu* cpu = (t_cpu*) void_args;
+
 
 	cpu->dispatch->socket = wait_kernel(cpu->dispatch->socket);
 
+/*
+	t_list* listInstructions = list_create();
 
-	/*
 	for(int i = 0; i<5; i++){
 		list_add(listInstructions, "NO_OP");
 	}
@@ -29,17 +35,17 @@ void execute_cpu(void* void_args){
 	pcb->time_excecuted_rafaga = 0;
 	pcb->time_blocked = 0;
 	pcb->instrucciones = listInstructions;
-	*/
 
-	//cpu->dispatch->socket = 1;
 
+	cpu->dispatch->socket = 1;
+*/
 	int code;
 	t_pcb* pcb = deserializate_pcb(cpu->dispatch->socket, &code);
-
+/*
 	if(code < 0){
 		//TODO
 	}
-
+*/
 	log_info(cpu->cpu_log,"KERNEL CONECTADO A PUERTO %s",cpu->dispatch->puerto);
 	fetch_and_decode(pcb, cpu);
 

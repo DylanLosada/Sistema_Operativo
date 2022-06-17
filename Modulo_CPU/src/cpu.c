@@ -17,35 +17,23 @@ int main() {
 
 	cpu->dispatch = dispatch;
 
-	pthread_create(&hilo_dispatch, NULL, (void*)execute_cpu, (void*)cpu);
-
-/*
 	pthread_t hilo_interrupt;
-	t_info* interrupt = malloc(sizeof(t_info));
+	t_conexion* interrupt = malloc(sizeof(t_conexion));
 
 	interrupt->puerto = cpu->cpu_config->PUERTO_ESCUCHA_INTERRUPT;
 	interrupt->code = 2;
-	interrupt->socket = start_cpu(interrupt->puerto);
-	interrupt->log = cpu_logger;
+	interrupt->socket = start_cpu(interrupt->puerto, cpu->cpu_log);
 
-	pthread_create(&hilo_interrupt, NULL, (void*)execute_cpu, (void*)interrupt);
-*/
+	cpu->interrupt = interrupt;
+
+	pthread_create(&hilo_dispatch, NULL, (void*)execute_dispatch, (void*)cpu);
+	pthread_create(&hilo_interrupt, NULL, (void*)execute_interrupt, (void*)cpu);
+
 	while(1);
 
 	pthread_detach(hilo_dispatch);
-	//pthread_detach(hilo_interrupt);
-/*
-	pthread_t hilo_interrupt;
-
-	t_info* args_interrupt = malloc(sizeof(t_info));
-
-	args_interrupt->puerto = cpu->cpu_config->PUERTO_ESCUCHA_INTERRUPT;
-	args_interrupt->texto = "CPU INTERRUPT a la espera de mensajes de interrupcion..";
-	args_interrupt->logger = cpu_logger;
-
-	pthread_create(&hilo_interrupt, NULL, execute_cpu , args_interrupt);
 	pthread_detach(hilo_interrupt);
-*/
+
 /*
 	// Handle pcb (fetch, decode, fetch operands, execute, check interrupt)
 	t_pcb* pcb = malloc(sizeof(t_pcb));

@@ -3,6 +3,7 @@
 
 #include "pcb.h"
 #include "execute.h"
+#include "check_interrupt.h"
 #include <commons/log.h>
 #include <commons/collections/list.h>
 
