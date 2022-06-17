@@ -59,10 +59,10 @@ t_instruct* destokenizarInstruction(char* stringInstruction){
 	return instruction;
 }
 
-void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int total_instructions_executed, int mensaje){
+void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int mensaje){
 	t_cpu_paquete* cpu_paquete = malloc(sizeof(t_cpu_paquete));
-	list_take_and_remove(pcb->instrucciones, total_instructions_executed);
-	int response = send_data_to_server(cpu->dispatch->socket, serializate_pcb(pcb, cpu_paquete, mensaje), cpu_paquete->buffer->size + sizeof(int));
+	void* a_enviar = serializate_pcb(pcb, cpu_paquete, mensaje);
+	int response = send_data_to_server(cpu->dispatch->socket, a_enviar, cpu_paquete->buffer->size + sizeof(int) + sizeof(int));
 
 	if(response < 0){
 		error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON EL KERNEL, ERROR: IMPOSIBLE CONECTAR");
@@ -72,23 +72,11 @@ void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int total_instructions_executed
 	log_info(cpu->cpu_log, "SE HA ENVIADO EL PCB AL KERNEL, ID: %d", pcb->id);
 }
 
-void fetch_and_decode(t_pcb* pcb, t_cpu* cpu){
+void fetch_and_decode(t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
 
 	pcb->instrucciones = destokenizarInstructions(pcb->instrucciones);
 
 	t_instruct* instruct = malloc(sizeof(t_instruct));
-
-	int total_instructions_executed = 0;
-
-	pthread_t check_interrupt;
-
-	t_interrupt_message* exist_interrupt = malloc(sizeof(t_interrupt_message));
-
-	exist_interrupt->socket = cpu->interrupt->socket;
-	exist_interrupt->is_interrupt = false;
-
-	pthread_create(&check_interrupt, NULL, (void*)recive_interrupt , (void*)exist_interrupt);
-
 
 	//START EXECUTE
 	while(pcb->program_counter != pcb->instrucciones->elements_count){
@@ -96,19 +84,14 @@ void fetch_and_decode(t_pcb* pcb, t_cpu* cpu){
 		if(instruct->instructions_code == COPY){
 			fetch_operands(instruct->param2);
 		}
-		execute(instruct, cpu, pcb, total_instructions_executed, 2);
-		total_instructions_executed++;
-
-		//GENERAR HILO PARA CHEQUEAR INTERRUPT
-		if(exist_interrupt->is_interrupt){
-
-			//send_data_to_kernel(cpu, pcb, total_instructions_executed);
-			exist_interrupt = false;
-		}
-
+		execute(instruct, cpu, pcb, pcb->program_counter, INTERRUPT);
 		pcb->program_counter++;
+
+		if(*exist_interrupt->is_interrupt){
+
+			//send_data_to_kernel(cpu, pcb);
+			*exist_interrupt->is_interrupt = false;
+		}
 	}
-
-
 }
 
