@@ -9,7 +9,7 @@
 #include<netdb.h>
 #include<string.h>
 #include<commons/log.h>
-#include <estructuras.h>
+#include <shared_funtions/estructuras.h>
 
 typedef struct
 {
@@ -18,7 +18,7 @@ typedef struct
 } t_paquete;
 
 int crear_conexion(char* ip, char* puerto);
-void send_instructions(char*, int , int);
+int send_instructions(char*, int , int);
 void liberar_conexion(int socket_cliente);
 void* serializate_instructions(char*, int, t_paquete*);
 void eliminar_paquete(t_paquete* paquete);

@@ -20,6 +20,8 @@ t_list* destokenizar_instructions(char* message){
 		}
 	}
 
+	//free_instruction_split(vec);
+	free(vec);
 	return list_instructions;
 }
 
@@ -40,8 +42,9 @@ void process_connection(void* void_args) {
 			pthread_mutex_unlock(args->semaforo);
 			pthread_mutex_unlock(args->hasNewConsole);
 
-			//free(consolaRecv->stream);
-			//free(consolaRecv);
+			consolaRecv->stream = NULL;
+			free(consolaRecv);
+			free(instructions);
 			break;
 		}
 		// Errores
@@ -53,8 +56,6 @@ void process_connection(void* void_args) {
 			//log_info(logger, "Cop: %d", cop);
 			break;
 	}
-
-    //free(args);
 
     return;
 }

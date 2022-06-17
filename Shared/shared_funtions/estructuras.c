@@ -24,7 +24,7 @@ void loggear_pcb(t_pcb* pcb){
 
 	log_info(logger, "%s", "------------------------\n");
 
-
+	free(logger);
 	return;
 }
 
@@ -211,6 +211,8 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 	memcpy(a_enviar + offset, paquete->buffer->stream, buffer->size);
 	offset += paquete->buffer->size;
 
+
+	tabla_paginas = NULL;
 	return a_enviar;
 
 }

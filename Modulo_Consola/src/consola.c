@@ -8,7 +8,7 @@ int main(int argc, char** argv){
 	char* ip;
 	char* puerto;
 	t_log* logger = iniciar_logger();
-	t_config* config = iniciar_config();
+	t_config* config = config_create("/home/utnso/tp-2022-1c-SanguchitOS/Modulo_Consola/consola.config");
 
 	log_info(logger, "INICIANDO CONSOLA.....");
 
@@ -26,7 +26,11 @@ int main(int argc, char** argv){
 	connection = crear_conexion(ip, puerto);
 	log_info(logger, "CONSOLA CONECTADA A KERNEL");
 
-	send_instructions(instructions, connection, strtol(argv[1], &argv[1], 10));
+	log_info(logger, "INTENTANDO ENVIAR DATA AL KERNEL");
+	if(send_instructions(instructions, connection, strtol(argv[1], &argv[1], 10)) < 0){
+		error_show("IMPOSIBLE ENVIAR DATA AL KERNEL, CERRANDO CONSOLA.");
+		exit(1);
+	}
 	log_info(logger, "INSTRUCCIONES ENVIADAS CORRECTAMENTE, ESPERANDO FINALIZACION DEL PROCESO.......");
 
 	// Esperamos por la terminacion del proceso
@@ -43,13 +47,6 @@ t_log* iniciar_logger(void)
 	return nuevo_logger;
 }
 
-t_config* iniciar_config(void)
-{
-	t_config* nuevo_config = config_create("consola.config");
-
-	return nuevo_config;
-}
-
 char* generateInstructiosnString(char* pathFile, t_log* logger)
 {
 	char* instructs = string_new();
@@ -62,6 +59,7 @@ char* generateInstructiosnString(char* pathFile, t_log* logger)
 		getline(&instructRead, &len, pseudocodeFile);
 		strtok(instructRead,"\n");   //con esto borro el \n que se lee
 		checkCodeOperation(instructRead, &instructs, logger);
+		free(instructRead);
 	}
 	fclose(pseudocodeFile);
 	log_info(logger, "-------------------------------");
@@ -88,6 +86,16 @@ void checkCodeOperation(char* instructRead, char** instructs, t_log* logger){
 		appendNoOpToInstructionsString(intructrReadSplitBySpaces, instructs, logger);
 	}else{
 		appendOperationToInstructionsString(instructRead, instructs, logger);
+	}
+
+	//free_instruction_split(intructrReadSplitBySpaces);
+	free(intructrReadSplitBySpaces);
+}
+
+void free_instruction_split(char** intructrReadSplitBySpaces){
+	int array_size = string_array_size(intructrReadSplitBySpaces);
+	for(int i = 0; i < array_size; i++){
+		free(intructrReadSplitBySpaces[i]);
 	}
 }
 

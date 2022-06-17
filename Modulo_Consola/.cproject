@@ -27,9 +27,7 @@
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.277698498" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1375061331" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.paths.1984235489" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Shared/shared_funtions}&quot;"/>
-								</option>
+								<option id="gnu.c.compiler.option.include.paths.1984235489" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false"/>
 								<option id="gnu.c.compiler.option.misc.pic.1250473177" name="Position Independent Code (-fPIC)" superClass="gnu.c.compiler.option.misc.pic" useByScannerDiscovery="false" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1869937575" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -39,19 +37,14 @@
 									<listOptionValue builtIn="false" value="commons"/>
 									<listOptionValue builtIn="false" value="Shared"/>
 								</option>
-								<option id="gnu.cpp.link.option.paths.610445802" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Shared/Debug}&quot;"/>
-								</option>
+								<option id="gnu.cpp.link.option.paths.610445802" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.695139710" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.92437348" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.190263389" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Sahred}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Shared}&quot;"/>
-								</option>
+								<option id="gnu.both.asm.option.include.paths.190263389" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.286013504" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>

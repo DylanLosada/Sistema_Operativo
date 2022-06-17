@@ -45,6 +45,7 @@ void execute_dispatch(void* void_args){
 	if(code < 0){
 		//TODO
 	}
+<<<<<<< Updated upstream
 */
 	log_info(cpu->cpu_log,"KERNEL CONECTADO A PUERTO %s",cpu->dispatch->puerto);
 	fetch_and_decode(pcb, cpu);

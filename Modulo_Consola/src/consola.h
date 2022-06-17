@@ -7,10 +7,10 @@
 #include <commons/collections/queue.h>
 #include<commons/string.h>
 #include<commons/config.h>
+#include<commons/error.h>
 #include<readline/readline.h>
 
 t_log* iniciar_logger(void);
-t_config* iniciar_config(void);
 char* serializeInstruction(int ,char*);
 void leer_consola(t_log*);
 void checkCodeOperation(char*, char**, t_log* logger);

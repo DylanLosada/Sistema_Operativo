@@ -45,7 +45,7 @@ void handler_planners(void* void_args){
 
 	// conexiones a los demas modulos.
 	t_sockets_cpu* sockets_cpu = malloc(sizeof(t_sockets_cpu));
-	//sockets_cpu->check_state_instructions = connect_to_check_state_instructions_cpu(config_kernel, "9000");
+//	sockets_cpu->check_state_instructions = connect_to_check_state_instructions_cpu(config_kernel, "9000");
 	//sockets_cpu->interrupt = connect_to_interrupt_cpu(config_kernel);
 	sockets_cpu->dispatch= connect_to_dispatch_cpu(config_kernel);
 	//int socket_kernel_memoria = connect_to_memoria(config_kernel);
@@ -82,6 +82,7 @@ void handler_planners(void* void_args){
 	args_long_term_planner->hasPcb = hasPcb;
 	args_long_term_planner->socket_memoria = socket_kernel_memoria;
 	args_long_term_planner->states = states;
+	args_long_term_planner->monitor_logger = args->monitor_logger;
 	pthread_create(&hilo_long_term, NULL, long_term_planner, args_long_term_planner);
 	pthread_detach(hilo_long_term);
 
@@ -92,6 +93,7 @@ void handler_planners(void* void_args){
 	args_mid_term_planner->TIEMPO_MAXIMO_BLOQUEADO = TIEMPO_MAXIMO_BLOQUEADO;
 	args_mid_term_planner->socket_memoria = socket_kernel_memoria;
 	args_mid_term_planner->states = states;
+	args_mid_term_planner->monitor_logger = args->monitor_logger;
 	args_mid_term_planner->hasPcbBlocked = hasPcbBlocked;
 	pthread_create(&hilo_mid_term, NULL, mid_term_planner, args_mid_term_planner);
 	pthread_detach(hilo_mid_term);
@@ -112,8 +114,13 @@ void handler_planners(void* void_args){
 	args_short_term_planner->hasPcb = hasPcb;
 	args_short_term_planner->hasPcbRunning = hasPcbRunning;
 	args_short_term_planner->hasNewConsole = args->hasNewConsole;
+	args_short_term_planner->monitor_logger = args->monitor_logger;
 	pthread_create(&hilo_short_term, NULL, short_term_planner, args_short_term_planner);
 	pthread_detach(hilo_short_term);
+
+	//free(args_long_term_planner);
+	//free(args_mid_term_planner);
+	//free(args_short_term_planner);
 }
 
 void generate_t_list_state(t_state_list_hanndler* state_hanndler){
@@ -163,23 +170,26 @@ void calculate_rafaga(int alpha, t_pcb* pcb_anterior, t_pcb* pcb_to_calculate_ra
 
 void long_term_planner(void* args_long_term_planner){
 	t_args_long_term_planner* args = (t_args_long_term_planner*) args_long_term_planner;
+	use_logger(args->monitor_logger, "PLANIFICADOR DE LARGO PLAZO CREADO");
 
 	while(1){
 		pthread_mutex_lock(args->hasNewConsole);
 		pthread_mutex_lock(args->states->state_exit->mutex);
 		if (queue_size(args->states->state_exit->state) > 0) {
-			// TODO introducimos logger para avisar que se van a cerrar procesos.
+			use_logger(args->monitor_logger, "TENEMOS UNO/S PCB POR CERRAR.");
 			close_console_process(args->states->state_exit->state, args->socket_memoria);
+			use_logger(args->monitor_logger, "PCB CERRARADOS.");
 		}
 		pthread_mutex_unlock(args->states->state_exit->mutex);
 
-		add_pcbs_to_new(args->isFirstPcb, args->states, args->pre_pcbs, args->socket_memoria, args->monitorGradoMulti,args->pre_pcbs_mutex, args->GRADO_MULTIPROGRAMACION, args->ESTIMACION_INICIAL);
+		add_pcbs_to_new(args->monitor_logger, args->isFirstPcb, args->states, args->pre_pcbs, args->socket_memoria, args->monitorGradoMulti,args->pre_pcbs_mutex, args->GRADO_MULTIPROGRAMACION, args->ESTIMACION_INICIAL);
 		pthread_mutex_unlock(args->hasPcb);
 	}
 }
 
 void mid_term_planner(void* args_mid_term_planner){
 	t_args_mid_term_planner* args = (t_args_mid_term_planner*) args_mid_term_planner;
+	use_logger(args->monitor_logger, "PLANIFICADOR DE MEDIO PLAZO CREADO");
 
 	while (1) {
 		pthread_mutex_lock(args->states->state_suspended_ready_max->mutex);
@@ -225,6 +235,7 @@ void short_term_planner(void* args_short_planner){
 
 	t_args_short_term_planner* args = (t_args_short_term_planner*) args_short_planner;
 
+	use_logger(args->monitor_logger, "PLANIFICADOR DE CORTO PLAZO CREADO");
 	t_state_list_hanndler* ready = args->states->state_ready;
 	t_state_list_hanndler* state_suspended_ready_max = args->states->state_suspended_ready_max;
 	t_state_list_hanndler* state_suspended_ready_min = args->states->state_suspended_ready_min;
@@ -322,9 +333,10 @@ void short_term_planner(void* args_short_planner){
 		pthread_mutex_lock(args_instruction_thread->mutex_check_instruct);
 		bool hasNewPcbIntoReady = isNewPcbIntoReady(pre_evaluate_add_pcb_to_ready_size, ready->state);
 		// args_instruction_thread->hasUpdateState
-		if(hasRunning && true){
+		if(hasRunning && false){
 			t_pcb* pcb_excecuted = queue_pop(running->state);
 			//update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction);
+			update_pcb_with_cpu_data(args->sockets_cpu->dispatch, pcb_excecuted, isExitInstruction);
 			if(*isExitInstruction){
 				pthread_mutex_lock(exit->mutex);
 				queue_push(exit->state, pcb_excecuted);
@@ -347,7 +359,7 @@ void short_term_planner(void* args_short_planner){
 			// desalojamos al proceso en CPU.
 			if(hasRunning){
 				t_pcb* pcb_excecuted = queue_pop(running->state);
-				interrupt_cpu(args->sockets_cpu->interrupt, INTERRUPT, pcb_excecuted);
+				interrupt_cpu(args->sockets_cpu->dispatch, args->sockets_cpu->interrupt, INTERRUPT, pcb_excecuted);
 				list_add_in_index(ready->state, 0, pcb_excecuted);
 			}
 
@@ -489,24 +501,28 @@ int total_pcbs_short_mid_term(t_states* states){
 	return list_size(states->state_ready->state) + list_size(states->state_blocked->state) + queue_size(states->state_running->state);
 }
 
-void add_pcbs_to_new(bool* isFirstPcb, t_states* states, t_queue* pre_pbcs, int socket_memoria, t_monitor_grado_multiprogramacion* monitorGradoMulti, pthread_mutex_t* mutex, int GRADO_MULTIPROGRAMACION, int ESTIMACION_INICIAL){
+void add_pcbs_to_new(t_monitor_log* monitor_logger, bool* isFirstPcb, t_states* states, t_queue* pre_pbcs, int socket_memoria, t_monitor_grado_multiprogramacion* monitorGradoMulti, pthread_mutex_t* mutex, int GRADO_MULTIPROGRAMACION, int ESTIMACION_INICIAL){
 	int queue_pre_pcbs_size = queue_size(pre_pbcs);
 	for(int position_element = 0; position_element < queue_pre_pcbs_size; position_element++){
 		pthread_mutex_lock(mutex);
+		use_logger(monitor_logger, "TENEMOS UN NUEVO PCB POR CREAR.");
 		t_pcb* pcb = create_pcb(monitorGradoMulti, GRADO_MULTIPROGRAMACION, ESTIMACION_INICIAL, isFirstPcb, queue_pop(pre_pbcs));
 		pthread_mutex_unlock(mutex);
 		if(pcb->tabla_paginas == NULL){
 			// CASO DONDE EL GRADO DE MULTI. NO NOS LO PERMITE
 			//agrego a cola de menos prioridad.
+			use_logger(monitor_logger, "PCB CREADO, LO PASAMOS A SUSPENDED READY POR FALTA DE GRADO DE MULTIPROGRAMACION.");
 			pthread_mutex_lock(states->state_suspended_ready_min->mutex);
 			list_add(states->state_suspended_ready_min->state, pcb);
 			pthread_mutex_unlock(states->state_suspended_ready_min->mutex);
 		}else{
 			// CASO DONDE EL GRADO DE MULTI. NOS LO PERMITE
+			use_logger(monitor_logger, "PCB CREADO, MANDAMOS A MEMORIA.");
 			send_action_to_memoria(pcb, socket_memoria, NEW);
 			pthread_mutex_lock(states->state_new->mutex);
 			queue_push(states->state_new->state, pcb);
 			pthread_mutex_unlock(states->state_new->mutex);
+			use_logger(monitor_logger, "TABLA DE PAGINAS CARGADA, LO PASAMOS A NEW.");
 		}
 	}
 }
@@ -544,12 +560,13 @@ void send_pcb_to_memoria(t_pcb* pcb , int socket_memoria, op_memoria_message MEN
 	if(pcb != NULL){
 		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 		void* pcb_serializate = serializate_pcb(pcb, paquete, MENSSAGE);
-		int code_operation = send_data_to_server(socket_memoria, pcb, paquete->buffer + sizeof(int));
-
+		//int code_operation = send_data_to_server(socket_memoria, pcb, paquete->buffer + sizeof(int));
+		int code_operation = 0;
 		if(code_operation < 0){
 			error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON MEMORIA, ERROR: IMPOSIBLE CONECTAR");
-			//exit(1);
+			exit(1);
 		}
+		free(pcb_serializate);
 	}
 }
 
@@ -563,6 +580,7 @@ void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 			error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON La CPU, ERROR: IMPOSIBLE CONECTAR");
 			//exit(1);
 		}
+		free(pcb_serializate);
 	}
 }
 
@@ -586,14 +604,14 @@ void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool*
 	}
 }
 
-int interrupt_cpu(int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted){
+int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted){
 	int op_code;
 	bool* isExitInstruction;
 	*isExitInstruction = false;
 	t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 	serializate_pcb(pcb_excecuted, paquete, INTERRUPT);
-	send_data_to_server(socket_kernel_interrupt_cpu, paquete, paquete->buffer->size + sizeof(int) + sizeof(int));
-	update_pcb_with_cpu_data(socket_kernel_interrupt_cpu, pcb_excecuted, isExitInstruction);
+	//send_data_to_server(socket_kernel_interrupt_cpu, paquete, paquete->buffer->size + sizeof(int) + sizeof(int));
+	update_pcb_with_cpu_data(socket_kernel_dispatch_cpu, pcb_excecuted, isExitInstruction);
 }
 
 int connect_to_interrupt_cpu(t_config_kernel* config_kernel){

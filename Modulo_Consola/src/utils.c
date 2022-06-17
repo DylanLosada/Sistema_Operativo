@@ -1,12 +1,13 @@
 #include "utils.h"
 
-void send_instructions(char* instructions, int socket_cliente, int processSize)
+int send_instructions(char* instructions, int socket_cliente, int processSize)
 {
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 	void* instructionsToSend = serializate_instructions(instructions, processSize, paquete);
-	send(socket_cliente, instructionsToSend, paquete->consola->streamLength + sizeof(int) + sizeof(int), 0);
+	int ret = send(socket_cliente, instructionsToSend, paquete->consola->streamLength + sizeof(int) + sizeof(int), 0);
 	free(instructionsToSend);
 	eliminar_paquete(paquete);
+	return ret;
 }
 
 void* serializate_instructions(char* instructions, int processSize, t_paquete* paquete){
