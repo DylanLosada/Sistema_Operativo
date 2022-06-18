@@ -49,6 +49,7 @@ char* recive_buffer(int socket_cliente, t_consola* consolaRecv)
     memcpy(mensaje, consolaRecv->stream, instructions_size);
     consolaRecv->stream =+ instructions_size;
 
+    //free(consolaRecv->stream);
     return mensaje;
 }
 

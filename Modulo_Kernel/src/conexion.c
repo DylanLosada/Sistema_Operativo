@@ -42,7 +42,6 @@ void process_connection(void* void_args) {
 			pthread_mutex_unlock(args->semaforo);
 			pthread_mutex_unlock(args->hasNewConsole);
 
-			consolaRecv->stream = NULL;
 			free(consolaRecv);
 			free(instructions);
 			break;

@@ -16,6 +16,16 @@ typedef struct {
 	pthread_mutex_t* mutex;
 } t_monitor_log;
 
+typedef struct {
+	bool* is_pcb_to_add_ready;
+	pthread_mutex_t* mutex;
+} t_monitor_pcb_to_add_ready;
+
+typedef struct {
+	bool* is_new_pcb_in_ready;
+	pthread_mutex_t* mutex;
+} t_monitor_is_new_pcb_in_ready;
+
 typedef struct{
 	char* planner_type;
 	t_queue* pre_pcbs;
@@ -61,8 +71,7 @@ typedef struct{
 	t_state_queue_hanndler* state_running;
 	t_state_list_hanndler* state_ready;
 	t_state_list_hanndler* state_suspended_blocked;
-	t_state_list_hanndler* state_suspended_ready_max;
-	t_state_list_hanndler* state_suspended_ready_min;
+	t_state_list_hanndler* state_suspended_ready;
 	t_state_list_hanndler* state_blocked;
 } t_states;
 
@@ -71,9 +80,12 @@ typedef struct{
 	int ESTIMACION_INICIAL;
 	int socket_memoria;
 	bool* isFirstPcb;
+	t_monitor_pcb_to_add_ready* monitor_add_pcb_ready;
+	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
 	pthread_mutex_t* pre_pcbs_mutex;
 	pthread_mutex_t* hasNewConsole;
 	pthread_mutex_t* hasPcb;
+	pthread_mutex_t* hasGradoForNew;
 	t_monitor_log* monitor_logger;
 	t_monitor_grado_multiprogramacion* monitorGradoMulti;
 	t_queue* pre_pcbs;
@@ -95,12 +107,15 @@ typedef struct{
 	int TIEMPO_MAXIMO_BLOQUEADO;
 	int socket_memoria;
 	char* ALGORITMO_PLANIFICACION;
+	t_monitor_pcb_to_add_ready* monitor_add_pcb_ready;
 	pthread_mutex_t* hasPcb;
 	pthread_mutex_t* hasPcbBlocked;
 	pthread_mutex_t* hasPcbRunning;
 	pthread_mutex_t* hasNewConsole;
+	pthread_mutex_t* hasGradoForNew;
 	t_monitor_log* monitor_logger;
 	t_monitor_grado_multiprogramacion* monitorGradoMulti;
+	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
 	t_sockets_cpu* sockets_cpu;
 	t_config_kernel* config_kernel;
 	t_states* states;
@@ -115,7 +130,7 @@ int connect_to_interrupt_cpu(t_config_kernel* config_kernel);
 bool hasCalculateRafaga(t_pcb* pcb);
 bool hasRunningPcb(t_queue* state_ready);
 bool isNewPcbIntoReady(int pre_evaluate_add_pcb_to_ready_size, t_list* state_ready);
-t_pcb* create_pcb(t_monitor_grado_multiprogramacion* monitorGradoMulti, int GRADO_MULTIPROGRAMACION, int ESTIMACION_INICIAL, bool* isFirstPcb, t_pre_pcb* pre_pcb);
+t_pcb* create_pcb(int ESTIMACION_INICIAL, bool* isFirstPcb, t_pre_pcb* pre_pcb);
 int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted);
 t_pcb* send_action_to_memoria(t_pcb* pcb, int socket_memoria, int ACTION);
 void check_time_in_blocked_and_pass_to_suspended_blocked(t_state_list_hanndler* state_suspended_blocked, t_state_list_hanndler* state_blocked, t_monitor_grado_multiprogramacion* monitorGradoMulti, int socket_memoria, int TIEMPO_MAXIMO_BLOQUEADO);

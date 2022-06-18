@@ -78,13 +78,22 @@ void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int mensaje){
 void fetch_and_decode(t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
 	t_list* instruccionesDestokenizadas = destokenizarInstructions(pcb->instrucciones);
 
+<<<<<<< Updated upstream
 	pcb->instrucciones = instruccionesDestokenizadas;
+=======
+	t_list* instructs = destokenizarInstructions(pcb->instrucciones);
+>>>>>>> Stashed changes
 
 	t_instruct* instruct = malloc(sizeof(t_instruct));
 
 	//START EXECUTE
+<<<<<<< Updated upstream
 	for(int i = pcb->program_counter; i < pcb->instrucciones->elements_count; i++){
 		instruct = list_get(instruccionesDestokenizadas,i);
+=======
+	while(pcb->program_counter != pcb->instrucciones->elements_count){
+		instruct = list_get(instructs,pcb->program_counter);
+>>>>>>> Stashed changes
 		if(instruct->instructions_code == COPY){
 			fetch_operands(instruct->param2);
 		}
