@@ -11,7 +11,8 @@ typedef struct{
 	clock_t clock;
 } t_dataToKernel;
 
-//void execute(t_instruct* instruction, t_cpu* cpu, int totalInstructionsExecuted);
+void sendDataToKernel(int totalInstructionsExecuted, int timeIO, clock_t clock, int socket);
+void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb);
 
 
 #endif /* SRC_EXECUTE_H_ */

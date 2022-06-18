@@ -91,17 +91,19 @@ t_pcb* deserializate_pcb(int socket, int* op_code){
 	memcpy(&cant, buffer->stream, sizeof(int));
 	buffer->stream += sizeof(int);
 
+	t_list* lista_aux = list_create();
+
 	for (int i = 0; i < cant; i++) {
 		int size;
 		memcpy(&size, buffer->stream, sizeof(int));
 		buffer->stream += sizeof(int);
 
-		char* instruccion;
+		char* instruccion = malloc(size);
 		memcpy(instruccion, buffer->stream, size);
 		buffer->stream += size;
 
 		list_add(pcb->instrucciones, instruccion);
-		//free(instruccion);
+		free(instruccion);
 	}
 
 	return pcb;

@@ -13,7 +13,7 @@ int main() {
 
 	dispatch->puerto = cpu->cpu_config->PUERTO_ESCUCHA_DISPATCH;
 	dispatch->code = 1;
-	dispatch->socket = start_cpu(dispatch->puerto, cpu->cpu_log);
+	dispatch->socket = start_cpu(dispatch->puerto, cpu->cpu_log, "dispatch");
 
 	cpu->dispatch = dispatch;
 
@@ -22,7 +22,7 @@ int main() {
 
 	interrupt->puerto = cpu->cpu_config->PUERTO_ESCUCHA_INTERRUPT;
 	interrupt->code = 2;
-	interrupt->socket = start_cpu(interrupt->puerto, cpu->cpu_log);
+	interrupt->socket = start_cpu(interrupt->puerto, cpu->cpu_log, "interrupt");
 
 	cpu->interrupt = interrupt;
 

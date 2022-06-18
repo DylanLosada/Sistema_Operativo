@@ -5,8 +5,11 @@ t_list* destokenizarInstructions(t_list* listInstructions){
 
 	t_list* instructionsDestokenizadas = list_create();
 
+	t_instruct* instruct = malloc(sizeof(t_instruct));
+
 	for(int i = 0; i < listInstructions->elements_count; i++){
-		list_add(instructionsDestokenizadas, destokenizarInstruction(list_get(listInstructions, i)));
+		instruct = destokenizarInstruction(list_get(listInstructions, i));
+		list_add(instructionsDestokenizadas, instruct);
 	}
 
 	return instructionsDestokenizadas;
@@ -73,24 +76,25 @@ void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int mensaje){
 }
 
 void fetch_and_decode(t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
+	t_list* instruccionesDestokenizadas = destokenizarInstructions(pcb->instrucciones);
 
-	pcb->instrucciones = destokenizarInstructions(pcb->instrucciones);
+	pcb->instrucciones = instruccionesDestokenizadas;
 
 	t_instruct* instruct = malloc(sizeof(t_instruct));
 
 	//START EXECUTE
-	while(pcb->program_counter != pcb->instrucciones->elements_count){
-		instruct = list_get(pcb->instrucciones,pcb->program_counter);
+	for(int i = pcb->program_counter; i < pcb->instrucciones->elements_count; i++){
+		instruct = list_get(instruccionesDestokenizadas,i);
 		if(instruct->instructions_code == COPY){
 			fetch_operands(instruct->param2);
 		}
-		execute(instruct, cpu, pcb, pcb->program_counter, INTERRUPT);
-		pcb->program_counter++;
+		execute(instruct, cpu, pcb);
 
 		if(*exist_interrupt->is_interrupt){
-
-			//send_data_to_kernel(cpu, pcb);
+			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
+			send_data_to_kernel(cpu, pcb, INTERRUPT);
 			*exist_interrupt->is_interrupt = false;
+			break;
 		}
 	}
 }

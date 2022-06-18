@@ -22,11 +22,10 @@ void sendDataToKernel(int totalInstructionsExecuted, int timeIO, clock_t clock, 
 
 	free(buffer);
 
-
 }
 
 
-void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb, int total_instructions_executed) {
+void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 	char* retardoChar = cpu->cpu_config->RETARDO_NOOP;
 
 	int retardo = strtol(retardoChar, &retardoChar, 10);
@@ -38,7 +37,7 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb, int total_instruct
 			log_info(cpu->cpu_log, "SE HA REALIZADO UN SLEEP DE: %d",retardo);
 			break;
 		case I_O:
-			send_data_to_kernel(cpu, pcb, total_instructions_executed, 3);
+			send_data_to_kernel(cpu, pcb, IO);
 			break;
 		case READ:
 			//Se deberá leer el valor de memoria correspondiente a esa dirección lógica e imprimirlo por pantalla
@@ -51,10 +50,10 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb, int total_instruct
 			// Se deberá escribir en memoria el valor del segundo parámetro en la dirección lógica del primer parámetro.
 			break;
 		case EXIT:
-			send_data_to_kernel(cpu, pcb, total_instructions_executed, 2);
+			send_data_to_kernel(cpu, pcb, INTERRUPT);
 			break;
 	}
 
-	log_info(cpu->cpu_log, "INSTRUCCION EJECUTADA: %d", instruction->instructions_code);
+	//log_info(cpu->cpu_log, "INSTRUCCION EJECUTADA: %d", instruction->instructions_code);
 
 }
