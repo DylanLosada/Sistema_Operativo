@@ -21,9 +21,9 @@
 
 
 typedef struct {
-	char* ENTRADAS_TLB;
+	int ENTRADAS_TLB;
 	char* REEMPLAZO_TLB;
-	char* RETARDO_NOOP;
+	int RETARDO_NOOP;
 	char* IP_MEMORIA;
 	char* PUERTO_MEMORIA;
 	char* PUERTO_ESCUCHA_DISPATCH;
@@ -37,12 +37,18 @@ typedef struct{
 	op_code code;
 }t_conexion;
 
+typedef struct{
+	int size_pagina;
+	int cant_entradas_por_tabla;
+}t_mem_config;
 
 typedef struct{
 	t_log* cpu_log;
 	t_config_cpu* cpu_config;
 	t_conexion* dispatch;
 	t_conexion* interrupt;
+	t_mem_config* mem_config;
+	t_list* tlb;
 }t_cpu;
 
 
