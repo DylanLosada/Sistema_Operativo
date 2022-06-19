@@ -45,6 +45,11 @@ int existe_dir(char* path)
 	}
 }
 
+t_cpu_paquete* recibir_buffer_memoria(cliente_fd){
+	t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete*));
+
+} //VER
+
 void* recibir_buffer(int* size, int socket_cliente){
     void * buffer;
     recv(socket_cliente, size, sizeof(int), MSG_WAITALL); /* MSG_WAITALL es un flag Wait for a full request.  */
