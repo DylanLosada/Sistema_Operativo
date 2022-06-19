@@ -4,12 +4,13 @@
 
 int main(void) {
 
-//	HACER HANDSHAKE CON CPU DONDE YO PASO cantidad de entradas por tabla de páginas y tamaño de página.Y A MI ME PASAN IP CPU E IP KERNELL
-
 	logger = log_create("memoria.log", "Modulo_Memoria", 1, LOG_LEVEL_DEBUG);
 	log_info(logger, "--------------------------------------------\n");
 
 	t_config_memoria* config_memoria = create_config(logger);
+
+	int tamanio_pagina = config_memoria->tamanio_pagina;
+	int entradas_por_tabla = config_memoria->entradas_por_tabla;
 
 	memoria->memoria_log = logger;
 	memoria->memoria_config= config_memoria;
@@ -17,6 +18,9 @@ int main(void) {
     int server_fd = start_memoria(memoria);
 
     memoria->server_fd = server_fd;
+
+//	HACER HANDSHAKE CON CPU DONDE YO PASO cantidad de entradas por tabla de páginas y tamaño de página.Y A MI ME PASAN IP CPU E IP KERNELL
+
 
     //Si iniciar memoria falla retorna 0 osea error
     if(!iniciar_memoria_paginada()){
@@ -86,15 +90,27 @@ void manejar_conexion(void* void_args){
 //SWITCH DEL CODIGO OPERACION
 int administrar_cliente(int cliente_fd){
 	while(1){
-		//ver que el cod op es un int
-		t_paquete* paquete_recibido = recibir_operacion(cliente_fd); //Ver esto q hay funciones compartidas
-	        switch(paquete_recibido->codigo_operacion){
-	        //El switch es por orden del enum!
+		//t_cpu_paquete tiene un code op y un buffer. El buffer tendria el pcb y el code_op la instruccion
+		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete*));
+		paquete = recibir_buffer_memoria(cliente_fd); //Ver esta funcion deberia devover el paquete
+
+		int codigo_operacion = paquete->op_code;
+		t_buffer* pcb = malloc(sizeof(t_buffer*));
+		pcb = paquete->buffer;
+		//POR ESTO MISMO LOS OP_CODE TIENEN Q TENER TODOS EL MISMO ENUM, VA A HABER QUILOMBO DE TIPOS
+		//OP_CODE NO ES LO MISMO QUE OP_CODE_MEMORIA POR MAS DE Q SEAN DOS ENUMS
+			switch(codigo_operacion){
+				case HANDSHAKE:
+					hacer_handshake_con_cpu();
+					break;
 	            case NEW:
-	                iniciar_proceso(cliente_fd);
+	                iniciar_proceso(pcb);
 	                break;
+	            case DELETE:
+	            	eliminar_proceso(pcb);
+	            	break;
 	            default:
-	                //log_warning(logger, "Operacion desconocida\n");
+	                log_warning(logger, "Operacion desconocida\n");
 	                break;
 	        }
 	    }
@@ -139,6 +155,10 @@ void iniciar_proceso(int cliente_fd){
     eliminar_paquete(paquete);
     free(buffer);
     free(instrucciones);
+}
+
+void hacer_handshake_con_cpu(){
+
 }
 
 //Tendria que recibir el pcb!
