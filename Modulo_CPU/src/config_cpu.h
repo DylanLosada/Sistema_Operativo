@@ -53,7 +53,7 @@ typedef struct{
 	t_config_cpu* cpu_config;
 	t_conexion* dispatch;
 	t_conexion* interrupt;
-	t_mem_config* t_mem_config;
+	t_mem_config* mem_config;
 	t_list* tlb;
 	t_interrupt_message* exist_interrupt;
 }t_cpu;

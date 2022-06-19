@@ -97,7 +97,7 @@ int main() {
 
 void wait_handshake(t_cpu* cpu, char* puerto, char* ip){
 	int socket = create_client_connection(ip, puerto);
-	cpu->t_mem_config = deserialize_handshake(cpu, socket);
+	cpu->mem_config = deserialize_handshake(cpu, socket);
 }
 
 t_mem_config* deserialize_handshake(t_cpu* cpu, int socket){
