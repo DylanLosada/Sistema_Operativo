@@ -9,9 +9,6 @@ int main(void) {
 
 	t_config_memoria* config_memoria = create_config(logger);
 
-	int tamanio_pagina = config_memoria->tamanio_pagina;
-	int entradas_por_tabla = config_memoria->entradas_por_tabla;
-
 	memoria->memoria_log = logger;
 	memoria->memoria_config= config_memoria;
 
@@ -100,12 +97,12 @@ int administrar_cliente(int cliente_fd){
 		//POR ESTO MISMO LOS OP_CODE TIENEN Q TENER TODOS EL MISMO ENUM, VA A HABER QUILOMBO DE TIPOS
 		//OP_CODE NO ES LO MISMO QUE OP_CODE_MEMORIA POR MAS DE Q SEAN DOS ENUMS
 			switch(codigo_operacion){
-				case HANDSHAKE:
-					hacer_handshake_con_cpu();
-					break;
 	            case NEW:
 	                iniciar_proceso(pcb);
 	                break;
+	            case HANDSHAKE:
+					hacer_handshake_con_cpu(cliente_fd);
+					break;
 	            case DELETE:
 	            	eliminar_proceso(pcb);
 	            	break;
@@ -157,8 +154,15 @@ void iniciar_proceso(int cliente_fd){
     free(instrucciones);
 }
 
-void hacer_handshake_con_cpu(){
+void hacer_handshake_con_cpu(int cliente_fd){
 
+	int tamanio_pagina = memoria->memoria_config->tamanio_pagina;
+	int entradas_por_tabla = memoria->memoria_config->entradas_por_tabla;
+
+	log_info(memoria->memoria_log, "CONECTADO A CPU, REALIZANDO HANDSHAKE.");
+	send_data_to_server(cliente_fd, &tamanio_pagina, sizeof(int), 0);
+	send_data_to_server(cliente_fd, &entradas_por_tabla, sizeof(int), 0);
+	log_info(memoria->memoria_log, "DATOS ENVIADOS.");
 }
 
 //Tendria que recibir el pcb!

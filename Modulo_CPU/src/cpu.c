@@ -103,7 +103,7 @@ void wait_handshake(t_cpu* cpu, char* puerto, char* ip){
 t_mem_config* deserialize_handshake(t_cpu* cpu, int socket){
 	t_mem_config* handshake = malloc(sizeof(t_mem_config));
 	handshake->socket = socket;
-	int op_code = HANDSAKE;
+	int op_code = HANDSHAKE;
 	log_info(cpu->cpu_log, "CONECTADO A MEMORIA, ESPERAMOS HANDSHAKE.");
 	send_data_to_server(socket, &op_code, sizeof(int), 0);
 	log_info(cpu->cpu_log, "HANDSHAKE REALIZADO, ESPERAMOS DATOS.");

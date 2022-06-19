@@ -26,6 +26,7 @@ typedef enum{
 	SWAP,
 	RE_SWAP,
 	NEW,
+	HANDSHAKE,
 	DELETE
 } op_memoria_message;
 
@@ -43,7 +44,6 @@ typedef struct{
 
 typedef enum {
     CONSOLA,
-	HANDSAKE,
 	DISPATCH,
 	INTERRUPT,
 	BLOCKED,
