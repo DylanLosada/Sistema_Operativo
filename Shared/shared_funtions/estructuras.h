@@ -61,12 +61,6 @@ typedef struct{
 	t_buffer* buffer;
 } t_cpu_paquete;
 
-typedef struct{
-	int op_code;
-	int tamanio_pag;
-	int entrada_por_tabla;
-} t_handshake_paquete;
-
 void loggear_pcb(t_pcb* pcb);
 t_pcb* deserializate_pcb(int socket, int* op_code);
 void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE);
