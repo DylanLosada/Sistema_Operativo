@@ -38,24 +38,26 @@ typedef struct{
 }t_conexion;
 
 typedef struct{
+	int socket;
 	int size_pagina;
 	int cant_entradas_por_tabla;
 }t_mem_config;
+
+typedef struct{
+	bool is_interrupt;
+	pthread_mutex_t* mutex_has_interrupt;
+} t_interrupt_message;
 
 typedef struct{
 	t_log* cpu_log;
 	t_config_cpu* cpu_config;
 	t_conexion* dispatch;
 	t_conexion* interrupt;
-	t_mem_config* mem_config;
+	t_mem_config* t_mem_config;
 	t_list* tlb;
+	t_interrupt_message* exist_interrupt;
 }t_cpu;
 
-
-typedef struct{
-	int socket;
-	bool* is_interrupt;
-} t_interrupt_message;
-
+t_mem_config* deserialize_handshake(t_cpu* cpu, int socket);
 
 #endif

@@ -3,35 +3,38 @@
 void execute_interrupt(void* void_args){
 	t_cpu* cpu = (t_cpu*) void_args;
 
-	cpu->interrupt->socket = wait_kernel(cpu->cpu_log, cpu->interrupt->socket, cpu->interrupt->puerto);
+	int kernel_socket = wait_kernel(cpu->cpu_log, cpu->interrupt->socket, cpu->interrupt->puerto);
+
+	if(kernel_socket > 0){
+		int op_code;
+		while(1){
+			recv(kernel_socket, &op_code, sizeof(int), MSG_WAITALL);
+			// VER QUE PASA SI ES MENOR QUE 0
+			// SEMAFOROS
+			pthread_mutex_lock(cpu->exist_interrupt->mutex_has_interrupt);
+			cpu->exist_interrupt->is_interrupt = true;
+			pthread_mutex_unlock(cpu->exist_interrupt->mutex_has_interrupt);
+		}
+	}
+
 }
 
 void execute_dispatch(void* void_args){
 	t_cpu* cpu = (t_cpu*) void_args;
 
-	cpu->dispatch->socket = wait_kernel(cpu->cpu_log, cpu->dispatch->socket, cpu->dispatch->puerto);
-
-	pthread_t check_interrupt;
-
-	t_interrupt_message* exist_interrupt = malloc(sizeof(t_interrupt_message));
-	exist_interrupt->is_interrupt = malloc(sizeof(bool));
-
-	exist_interrupt->socket = cpu->interrupt->socket;
-	*exist_interrupt->is_interrupt = false;
-
-	pthread_create(&check_interrupt, NULL, (void*)recive_interrupt , (void*)exist_interrupt);
+	int kernel_socket = wait_kernel(cpu->cpu_log, cpu->dispatch->socket, cpu->dispatch->puerto);
 
 	while(1){
 		int code;
 		//SE RECIBE EL PCB DEL KERNEL
-		t_pcb* pcb = deserializate_pcb(cpu->dispatch->socket, &code);
+		t_pcb* pcb = deserializate_pcb(kernel_socket, &code);
 		/*
 			if(code < 0){
 				//TODO
 			}
 		*/
 		//INICIA EL CICLO DE FETCH AND DECODE
-		fetch_and_decode(pcb, cpu, exist_interrupt);
+		fetch_and_decode(pcb, cpu, cpu->exist_interrupt);
 	}
 
 }

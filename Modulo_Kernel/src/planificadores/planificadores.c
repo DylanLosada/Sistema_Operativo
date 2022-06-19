@@ -65,7 +65,7 @@ void handler_planners(void* void_args){
 	// conexiones a los demas modulos.
 	t_sockets_cpu* sockets_cpu = malloc(sizeof(t_sockets_cpu));
 //	sockets_cpu->check_state_instructions = connect_to_check_state_instructions_cpu(config_kernel, "9000");
-	//sockets_cpu->interrupt = connect_to_interrupt_cpu(config_kernel);
+	sockets_cpu->interrupt = connect_to_interrupt_cpu(config_kernel);
 	sockets_cpu->dispatch= connect_to_dispatch_cpu(config_kernel);
 	//int socket_kernel_memoria = connect_to_memoria(config_kernel);
 	int socket_kernel_memoria = 0;
@@ -225,9 +225,11 @@ void mid_term_planner(void* args_mid_term_planner){
 		pthread_mutex_unlock(args->states->state_blocked->mutex);
 
 		pthread_mutex_lock(args->hasPcbBlocked);
+		pthread_mutex_lock(args->states->state_blocked->mutex);
 		check_time_in_blocked_and_pass_to_suspended_blocked(args->states->state_suspended_blocked, args->states->state_blocked, args->monitorGradoMulti, args->socket_memoria, args->TIEMPO_MAXIMO_BLOQUEADO);
 		check_process_finished_io_and_pass_to_suspended_ready(args->states->state_suspended_blocked, args->states->state_suspended_ready);
 		//TODO agregar el binary del corto plazo asi se retroalimentan entre ellos.
+		pthread_mutex_unlock(args->states->state_blocked->mutex);
 	}
 }
 
@@ -328,12 +330,12 @@ void short_term_planner(void* args_short_planner){
 		// Puedo agregar algun PCB que este en NEW ?
 		pthread_mutex_lock(args->monitor_add_pcb_ready->mutex);
 		if((args->monitorGradoMulti->gradoMultiprogramacionActual < args->GRADO_MULTIPROGRAMACION) && *args->monitor_add_pcb_ready->is_pcb_to_add_ready){
+			pthread_mutex_unlock(args->hasGradoForNew);
 			args->monitorGradoMulti->gradoMultiprogramacionActual++;
 			*args->monitor_add_pcb_ready->is_pcb_to_add_ready = false;
-			pthread_mutex_unlock(args->hasGradoForNew);
 		}
-		pthread_mutex_unlock(args->monitorGradoMulti->mutex);
 		pthread_mutex_unlock(args->monitor_add_pcb_ready->mutex);
+		pthread_mutex_unlock(args->monitorGradoMulti->mutex);
 
 		pthread_mutex_lock(ready->mutex);
 		pthread_mutex_lock(args_instruction_thread->mutex_check_instruct);
@@ -365,20 +367,18 @@ void short_term_planner(void* args_short_planner){
 			// desalojamos al proceso en CPU.
 			if(hasRunning){
 				t_pcb* pcb_excecuted = queue_pop(running->state);
-				//interrupt_cpu(args->sockets_cpu->dispatch, args->sockets_cpu->interrupt, INTERRUPT, pcb_excecuted);
+				interrupt_cpu(args->sockets_cpu->dispatch, args->sockets_cpu->interrupt, INTERRUPT, pcb_excecuted);
 				list_add_in_index(ready->state, 0, pcb_excecuted);
 			}
-
 			order_state(ready->state, args->config_kernel);
 		}
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(args_instruction_thread->mutex_check_instruct);
-		pthread_mutex_unlock(ready->mutex);
 
-		pthread_mutex_lock(ready->mutex);
 		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
 		// es responsabilidad de la CPU enviarnos el clock del proceso, la siguiente instruccion y.......
 		if(!list_is_empty(ready->state) && *args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready){
+			*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = false;
 			t_pcb* pcb_ready_to_run = list_remove(ready->state, 0);
 			queue_push(running->state, pcb_ready_to_run);
 			// introducimos logger para avisar que va aempezar a correr cierto pcb
@@ -612,8 +612,8 @@ void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 		int code_operation = send_data_to_server(socket_cpu_dispatch, pcb_serializate, (paquete->buffer->size + sizeof(int) + sizeof(int)));
 
 		if(code_operation < 0){
-			error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON La CPU, ERROR: IMPOSIBLE CONECTAR");
-			//exit(1);
+			error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON LA CPU, ERROR: IMPOSIBLE CONECTAR");
+			exit(1);
 		}
 		free(pcb_serializate);
 	}
@@ -640,11 +640,10 @@ void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool*
 }
 
 int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted){
-	int op_code;
+	int op_code = INTERRUPT;
 	bool* isExitInstruction = malloc(sizeof(bool));
 	*isExitInstruction = false;
-	send_data_to_server(socket_kernel_dispatch_cpu, &INTERRUPT, sizeof(int), 0);
-	//send_data_to_server(socket_kernel_interrupt_cpu, paquete, paquete->buffer->size + sizeof(int) + sizeof(int));
+	send_data_to_server(socket_kernel_interrupt_cpu, &op_code, sizeof(int), 0);
 	update_pcb_with_cpu_data(socket_kernel_dispatch_cpu, pcb_excecuted, isExitInstruction);
 }
 

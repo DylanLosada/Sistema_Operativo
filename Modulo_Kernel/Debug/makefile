@@ -27,7 +27,7 @@ endif
 all: Modulo_Kernel
 
 dependents:
-	-cd /home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug && $(MAKE) clean all
 
 # Tool invocations
 Modulo_Kernel: $(OBJS) $(USER_OBJS) /home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug/libShared.so

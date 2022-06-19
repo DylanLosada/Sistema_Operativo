@@ -78,33 +78,35 @@ void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int mensaje){
 void fetch_and_decode(t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
 	t_list* instruccionesDestokenizadas = destokenizarInstructions(pcb->instrucciones);
 
-<<<<<<< Updated upstream
 	pcb->instrucciones = instruccionesDestokenizadas;
-=======
-	t_list* instructs = destokenizarInstructions(pcb->instrucciones);
->>>>>>> Stashed changes
 
 	t_instruct* instruct = malloc(sizeof(t_instruct));
+	bool hasInterrupt = false;
 
 	//START EXECUTE
-<<<<<<< Updated upstream
 	for(int i = pcb->program_counter; i < pcb->instrucciones->elements_count; i++){
 		instruct = list_get(instruccionesDestokenizadas,i);
-=======
-	while(pcb->program_counter != pcb->instrucciones->elements_count){
-		instruct = list_get(instructs,pcb->program_counter);
->>>>>>> Stashed changes
 		if(instruct->instructions_code == COPY){
 			fetch_operands(instruct->param2);
 		}
 		execute(instruct, cpu, pcb);
+		pcb->program_counter++;
 
-		if(*exist_interrupt->is_interrupt){
+		pthread_mutex_lock(exist_interrupt->mutex_has_interrupt);
+		if(exist_interrupt->is_interrupt){
 			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
-			send_data_to_kernel(cpu, pcb, INTERRUPT);
-			*exist_interrupt->is_interrupt = false;
+			int op_code = INTERRUPT;
+			send_data_to_kernel(cpu, pcb, op_code);
+			exist_interrupt->is_interrupt = false;
+			hasInterrupt = true;
+		}
+		pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
+
+		if(hasInterrupt){
 			break;
 		}
 	}
+	free(instruct);
+	list_destroy(instruccionesDestokenizadas);
 }
 
