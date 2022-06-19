@@ -7,6 +7,7 @@ int main() {
 
 	cpu->cpu_log = cpu_logger;
 	cpu->cpu_config = create_config_cpu(cpu_logger);
+	cpu->tlb = list_create();
 
 	pthread_t hilo_dispatch;
 	t_conexion* dispatch = malloc(sizeof(t_conexion));

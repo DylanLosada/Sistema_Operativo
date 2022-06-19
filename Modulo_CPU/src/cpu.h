@@ -12,6 +12,7 @@
 #include "funciones.h"
 #include "fetch_and_decode.h"
 #include "execute.h"
+#include "tlb.h"
 //#include "check_interrupt.h"
 
 

@@ -3,7 +3,7 @@
 
 #include "config_cpu.h"
 #include "pcb.h"
-
+#include "mmu.h"
 
 typedef struct{
 	int totalInstructionsExecuted;
