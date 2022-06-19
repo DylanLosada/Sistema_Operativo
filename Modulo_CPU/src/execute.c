@@ -30,7 +30,7 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 
 	int retardo = strtol(retardoChar, &retardoChar, 10);
 
-	int mem_value;
+	int dir_fisica = dir_logica_a_fisica(cpu, pcb, 123123);
 	switch(instruction->instructions_code){
 		case NO_OP:
 			sleep(retardo/1000);
@@ -40,18 +40,15 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 			send_data_to_kernel(cpu, pcb, IO);
 			break;
 		case READ:
-			int dir_fisica = dir_logica_a_fisica(cpu, pcb, 123123);
 			//Se deberá leer el valor de memoria correspondiente a esa dirección lógica e imprimirlo por pantalla
 			log_info(cpu->cpu_log, "Se ha ejecutado la instrucciones READ");
 			break;
 		case COPY:
 			// Se deberá escribir en memoria el valor ubicado en la dirección lógica pasada como segundo parámetro, en la dirección lógica pasada como primer parámetro.
 			// A efectos de esta etapa, el accionar es similar a la instrucción WRITE ya que el valor a escribir ya se debería haber obtenido en la etapa anterior.
-			int dir_fisica = dir_logica_a_fisica(cpu, pcb, 123123);
 			break;
 		case WRITE:
 			// Se deberá escribir en memoria el valor del segundo parámetro en la dirección lógica del primer parámetro.
-			int dir_fisica = dir_logica_a_fisica(cpu, pcb, 123123);
 			break;
 		case EXIT:
 			send_data_to_kernel(cpu, pcb, INTERRUPT);
