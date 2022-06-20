@@ -9,7 +9,7 @@ int main(int argc, char** argv){
 	char* puerto;
 	t_log* logger = iniciar_logger();
 	// TODO por parametros.
-	t_config* config = config_create("/home/utnso/tp-2022-1c-SanguchitOS/Modulo_Consola/consola.config");
+	t_config* config = config_create("consola.config");
 
 	log_info(logger, "INICIANDO CONSOLA.....");
 

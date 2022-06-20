@@ -9,7 +9,7 @@
 #include<netdb.h>
 #include<string.h>
 #include<commons/log.h>
-#include <shared_funtions/estructuras.h>
+#include<estructuras.h>
 
 typedef struct
 {
