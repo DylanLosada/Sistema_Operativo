@@ -35,9 +35,6 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 			sleep(retardo/1000);
 			log_info(cpu->cpu_log, "SE HA REALIZADO UN SLEEP DE: %d",retardo);
 			break;
-		case I_O:
-			send_data_to_kernel(cpu, pcb, IO);
-			break;
 		case READ: {
 			//Se deberá leer el valor de memoria correspondiente a esa dirección lógica e imprimirlo por pantalla
 			int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
@@ -52,9 +49,6 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 			// Se deberá escribir en memoria el valor del segundo parámetro en la dirección lógica del primer parámetro.
 			int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
 			break;
-		}
-		case EXIT:{
-			send_data_to_kernel(cpu, pcb, INTERRUPT);
 		}
 	}
 

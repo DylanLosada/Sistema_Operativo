@@ -10,6 +10,10 @@ int main() {
 	cpu->tlb = list_create();
 	//wait_handshake(cpu, cpu->cpu_config->PUERTO_MEMORIA, cpu->cpu_config->IP_MEMORIA);
 
+	pthread_mutex_t* mutex_io_exit = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(mutex_io_exit, NULL);
+	pthread_mutex_lock(mutex_io_exit);
+
 	pthread_t hilo_dispatch;
 	t_conexion* dispatch = malloc(sizeof(t_conexion));
 
@@ -37,6 +41,12 @@ int main() {
 
 	cpu->exist_interrupt = exist_interrupt;
 
+	t_args_io_exit* args_io_exit = malloc(sizeof(t_args_io_exit));
+
+	args_io_exit->mutex_has_io_exit = mutex_io_exit;
+
+	cpu->args_io_exit = args_io_exit;
+
 	pthread_create(&hilo_dispatch, NULL, (void*)execute_dispatch, (void*)cpu);
 	pthread_create(&hilo_interrupt, NULL, (void*)execute_interrupt, (void*)cpu);
 	//pthread_create(&hilo_interrupt, NULL, (void*)execute_blocked_exit, (void*)cpu);
@@ -46,53 +56,7 @@ int main() {
 	pthread_detach(hilo_dispatch);
 	pthread_detach(hilo_interrupt);
 
-/*
-	// Handle pcb (fetch, decode, fetch operands, execute, check interrupt)
-	t_pcb* pcb = malloc(sizeof(t_pcb));
-	pcb->id = 1;
-	pcb->tamanio = 10;
-	pcb->instrucciones = list_create();
 
-
-	// Test instructions:
-	t_instruct* instruct = malloc(sizeof(t_instruct));
-	instruct->op_code = NO_OP;
-	instruct->param1 = 1;
-	instruct->param2 = 2;
-
-
-	t_link_element* head = malloc(sizeof(t_link_element));
-	head->data = instruct;
-
-
-	pcb->instrucciones->head = head;
-	pcb->pc = 0;
-	//pcb.tabla_paginas????
-	pcb->rafaga = 0;
-
-	t_instruct* current_instruct = malloc(sizeof(t_instruct));
-	fetch_and_decode(pcb, current_instruct);
-	execute(current_instruct, no_op_time / 1000);
-
-
-	//list_destroy(pcb->instrucciones);
-	free(pcb);
-
-
-
-
-	// Conexion puerto interrupt kernel.
-	char* puerto_escucha_interrupt = config_get_string_value(config, "PUERTO_ESCUCHA_INTERRUPT");
-
-
-
-
-	// Handle interrupt.
-
-
-
-
-*/
    return 0;
 }
 

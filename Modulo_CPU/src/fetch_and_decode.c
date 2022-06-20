@@ -73,9 +73,6 @@ void send_data_to_kernel(int kernel_socket, t_cpu* cpu, t_pcb* pcb, int mensaje)
 }
 
 void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
-	for(int i = 0; i < list_size(pcb->instrucciones); i++){
-		log_info(cpu->cpu_log, "%s", list_get(pcb->instrucciones, i));
-	}
 
 	t_list* instruccionesDestokenizadas = destokenizarInstructions(pcb->instrucciones);
 
@@ -83,14 +80,12 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 	bool hasInterrupt = false;
 
 	//START EXECUTE
+	clock_t time_excecuted = clock();
 	while(pcb->program_counter < list_size(pcb->instrucciones)){
-		clock_t time_excecuted = clock();
 		instruct = list_get(instruccionesDestokenizadas,pcb->program_counter);
 		if(instruct->instructions_code == COPY){
 			fetch_operands(instruct->param2);
 		}
-		execute(instruct, cpu, pcb);
-		pcb->program_counter++;
 
 		pthread_mutex_lock(exist_interrupt->mutex_has_interrupt);
 		if(exist_interrupt->is_interrupt){
@@ -103,9 +98,31 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 		}
 		pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
 
+
+		if(instruct->instructions_code == EXIT || instruct->instructions_code == IO){
+
+			pcb->time_excecuted_rafaga = clock() - time_excecuted;
+
+			if(instruct->instructions_code == IO){
+				pcb->time_blocked = instruct->param1;
+			}
+
+			cpu->args_io_exit->code = instruct->instructions_code;
+			cpu->args_io_exit->pcb = pcb;
+
+			pthread_mutex_unlock(cpu->args_io_exit->mutex_has_io_exit);
+
+			hasInterrupt = true;
+		}
+
 		if(hasInterrupt){
 			break;
 		}
+
+
+		execute(instruct, cpu, pcb);
+
+		pcb->program_counter++;
 	}
 	free(instruct);
 	list_destroy(instruccionesDestokenizadas);

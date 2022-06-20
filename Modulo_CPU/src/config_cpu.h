@@ -16,8 +16,8 @@
 #include<commons/collections/list.h>
 #include<commons/collections/queue.h>
 #include<commons/error.h>
-#include<estructuras.h>
-#include<conexion_servidor.h>
+#include<shared_funtions/estructuras.h>
+#include<shared_funtions/conexion_servidor.h>
 
 
 typedef struct {
@@ -49,6 +49,12 @@ typedef struct{
 } t_interrupt_message;
 
 typedef struct{
+	t_pcb* pcb;
+	op_instructions_code code;
+	pthread_mutex_t* mutex_has_io_exit;
+}t_args_io_exit;
+
+typedef struct{
 	t_log* cpu_log;
 	t_config_cpu* cpu_config;
 	t_conexion* dispatch;
@@ -56,6 +62,7 @@ typedef struct{
 	t_mem_config* mem_config;
 	t_list* tlb;
 	t_interrupt_message* exist_interrupt;
+	t_args_io_exit* args_io_exit;
 }t_cpu;
 
 t_mem_config* deserialize_handshake(t_cpu* cpu, int socket);
