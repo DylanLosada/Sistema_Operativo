@@ -5,6 +5,7 @@ int id_tablas_primer_nivel = 0;
 int id_tablas_segundo_nivel = 0;
 
 int main(void) {
+	t_memoria* memoria = malloc(sizeof(t_memoria));
 
 	logger = log_create("memoria.log", "Modulo_Memoria", 1, LOG_LEVEL_DEBUG);
 	log_info(logger, "--------------------------------------------\n");
@@ -24,17 +25,12 @@ int main(void) {
     t_list* tablas_segundo_nivel = list_create();
     tablas_segundo_nivel = memoria->tablas_segundo_nivel;
 
-    int bitarrayMemoria = iniciar_memoria_paginada();
-
-    if(bitarrayMemoria == NULL){
-    	return 0;
-    }
-
+    int* bitarrayMemoria = iniciar_memoria_paginada(memoria);
 
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
 	pthread_t hilo_servidor;
 	pthread_create(&hilo_servidor, NULL, manejar_conexion,(void*)memoria);
-	pthread_detach(hilo_servidor);
+	pthread_join(hilo_servidor, NULL);
 
 	//liberar_conexion(server_fd);
 	//liberar_memoria();
@@ -42,7 +38,7 @@ int main(void) {
 	return 0;
 }
 
-int* iniciar_memoria_paginada(){
+int* iniciar_memoria_paginada(t_memoria* memoria){
 
 	logger = memoria->memoria_log;
 	int tamanio_memoria = memoria->memoria_config->tamanio_memoria;
@@ -69,7 +65,7 @@ int* iniciar_memoria_paginada(){
 
     if(bitarrayMemoria == NULL){
         perror("CALLOC FAIL!\n");
-        return 0;
+        exit(1);
     }
 
     return bitarrayMemoria;
@@ -89,6 +85,7 @@ void manejar_conexion(void* void_args){
 	    	args_administrar_cliente->semaforo_conexion = semaforo_conexion;
 	        int cliente_fd = wait_client(server_fd, logger, "Cliente", "Memoria");
 	        args_administrar_cliente->socket = cliente_fd;
+	        args_administrar_cliente->memoria = memoria;
 	        pthread_t hilo_servidor;
 	        pthread_create (&hilo_servidor, NULL, (void*)administrar_cliente,(void*) args_administrar_cliente);
 	        pthread_detach(hilo_servidor);
@@ -97,40 +94,42 @@ void manejar_conexion(void* void_args){
 
 
 int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
-
+	int cliente_fd = args_administrar_cliente->socket;
+	int op_code;
+	while(1){
+		// OP CODE
+		recv(cliente_fd, &op_code, sizeof(int), MSG_WAITALL);
 		pthread_mutex_lock(args_administrar_cliente->semaforo_conexion);
-		int cliente_fd = args_administrar_cliente->socket;
-		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
+		op_memoria_message op_code_memori = op_code;
 
-		int op_code = paquete->op_code;
-		t_pcb* pcb_cliente = deserializate_pcb(cliente_fd, &op_code); //ver
+		if(op_code_memori == HANDSHAKE){
+			hacer_handshake_con_cpu(cliente_fd, args_administrar_cliente->memoria);
+		}else{
+			t_pcb* pcb_cliente = deserializate_pcb_memoria(cliente_fd); //ver
 
-			switch(op_code){
-	            case NEW:
-	                //iniciar_proceso(pcb_cliente, cliente_fd);
-	                break;
-	            case HANDSHAKE:
-					hacer_handshake_con_cpu(cliente_fd);
-					break;
-	            case DELETE:
-	            	//eliminar_proceso(pcb_cliente);
-	            	break;
-	            default:
-	                log_warning(logger, "Operacion desconocida\n");
-	                break;
-	        }
-			pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
+			if(op_code_memori == NEW){
+				//iniciar_proceso(pcb_cliente, cliente_fd);
+			}else if (op_code_memori == DELETE){
+
+			} else {
+				log_warning(logger, "Operacion desconocida\n");
+			}
+		}
+		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
+	}
 	    return EXIT_SUCCESS;
 }
 
-void hacer_handshake_con_cpu(int cliente_fd){
+void hacer_handshake_con_cpu(int cliente_fd, t_memoria* memoria){
 
 	int tamanio_pagina = memoria->memoria_config->tamanio_pagina;
 	int entradas_por_tabla = memoria->memoria_config->entradas_por_tabla;
 
 	log_info(memoria->memoria_log, "CONECTADO A CPU, REALIZANDO HANDSHAKE.");
-	send_data_to_server(cliente_fd, &tamanio_pagina, sizeof(int));
-	send_data_to_server(cliente_fd, &entradas_por_tabla, sizeof(int));
+	void* a_enviar = malloc(2*sizeof(int));
+	memcpy(a_enviar, &tamanio_pagina, sizeof(int));
+	memcpy(a_enviar + sizeof(int), &entradas_por_tabla, sizeof(int));
+	send_data_to_server(cliente_fd, a_enviar, 2*sizeof(int));
 	log_info(memoria->memoria_log, "DATOS ENVIADOS.");
 }
 

@@ -19,6 +19,23 @@ void execute_interrupt(void* void_args){
 
 }
 
+void execute_blocked_exit(void* void_args){
+	t_args_io_exit* args = (t_args_io_exit*) void_args;
+	int kernel_socket = wait_kernel(args->cpu_log, args->socket_cpu, "9000");
+
+	while(1){
+		pthread_mutex_lock(args->mutex_has_io_exit);
+		int op_code = BLOCKED_FINISHED;
+		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
+		void* pcp_to_send = serializate_pcb(args->pcb, paquete, args->code);
+		void* send_object = malloc(paquete->buffer->size + sizeof(int) + sizeof(int) + sizeof(int));
+		memcpy(send_object, &op_code, sizeof(int));
+		memcpy(send_object + sizeof(int), pcp_to_send, paquete->buffer->size + sizeof(int) + sizeof(int));
+		send(kernel_socket, send_object, (paquete->buffer->size + sizeof(int) + sizeof(int) + sizeof(int)), 0);
+		log_info(args->cpu_log, "EJECUCION INTERRUMPIDA DEBIDO A INSTRUCCION BLOQUEANTE/TERMINACION.");
+	}
+}
+
 void execute_dispatch(void* void_args){
 	t_cpu* cpu = (t_cpu*) void_args;
 
@@ -44,8 +61,10 @@ int start_cpu(char* puerto, t_log* logger, char* conexion){
 	char* mensaje;
 	if(strcmp(conexion, "dispatch") == 0){
 		mensaje = "PUERTO DISPATCH LISTO PARA RECIBIR INSTRUCCIONES";
-	}else{
+	}else if (strcmp(conexion, "interrupt") == 0){
 		mensaje = "PUERTO INTERRUPT LISTO PARA RECIBIR INTERRUPCIONES";
+	}else{
+		mensaje = "PUERTO INTERRUPT LISTO PARA RECIBIR EXIT/BLOCKED";
 	}
 
 	return create_server_connection(puerto, logger, mensaje);

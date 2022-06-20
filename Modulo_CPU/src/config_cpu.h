@@ -49,6 +49,8 @@ typedef struct{
 } t_interrupt_message;
 
 typedef struct{
+	int socket_cpu;
+	t_log* cpu_log;
 	t_pcb* pcb;
 	op_instructions_code code;
 	pthread_mutex_t* mutex_has_io_exit;

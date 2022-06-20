@@ -44,8 +44,6 @@ typedef struct{
 	t_list* tablas_segundo_nivel;
 }t_memoria;
 
-t_memoria* memoria;
-
 typedef struct{
     op_code codigo_operacion;
     t_buffer* buffer;
@@ -53,6 +51,7 @@ typedef struct{
 
 typedef struct{
     int socket;
+    t_memoria* memoria;
     pthread_mutex_t* semaforo_conexion;
 } t_args_administrar_cliente;
 
@@ -77,12 +76,12 @@ typedef struct{
 }t_tabla_paginas_segundo_nivel;
 
 //**************************FUNCIONES********************+
-int* iniciar_memoria_paginada();
+int* iniciar_memoria_paginada(t_memoria* memoria);
 void manejar_conexion(void* void_args);
 int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente);
 void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd);
 int guardar_proceso_en_paginacion(t_pcb* pcb_cliente);
-void hacer_handshake_con_cpu(int cliente_fd);
+void hacer_handshake_con_cpu(int cliente_fd, t_memoria* memoria);
 t_list* guardar_proceso(int idProceso, int tamanio_proceso);
 t_list* guardar_proceso_en_paginas(int idProceso, int tamanio);
 

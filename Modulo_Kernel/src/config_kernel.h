@@ -15,7 +15,7 @@
 #include<commons/string.h>
 #include<commons/collections/list.h>
 #include<commons/collections/queue.h>
-#include <estructuras.h>
+#include <shared_funtions/estructuras.h>
 
 typedef struct {
 	char* IP_MEMORIA;

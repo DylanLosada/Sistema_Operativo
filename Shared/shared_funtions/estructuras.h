@@ -48,9 +48,7 @@ typedef enum {
     CONSOLA,
 	DISPATCH,
 	INTERRUPT,
-	BLOCKED,
-	FINISHED,
-	IO
+	BLOCKED_FINISHED
 } op_code;
 
 typedef struct {
@@ -65,6 +63,7 @@ typedef struct{
 
 void loggear_pcb(t_pcb* pcb);
 t_pcb* deserializate_pcb(int socket, int* op_code);
+t_pcb* deserializate_pcb_memoria(int socket);
 void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE);
 
 #endif /* SHARED_FUNTIONS_ESTRUCTURAS_H_ */

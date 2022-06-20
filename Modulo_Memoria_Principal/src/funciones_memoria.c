@@ -82,9 +82,9 @@ int recibir_operacion(int socket_cliente){
 }
 
 
-void liberar_memoria(){
+void liberar_memoria(t_memoria* memoria){
+    log_destroy(memoria->memoria_log);
     free(memoria);
-    log_destroy(logger);
 }
 
 

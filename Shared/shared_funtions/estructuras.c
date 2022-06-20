@@ -28,6 +28,83 @@ void loggear_pcb(t_pcb* pcb){
 	return;
 }
 
+t_pcb* deserializate_pcb_memoria(int socket){
+	t_buffer* buffer = malloc(sizeof(t_buffer));
+	t_pcb* pcb = malloc(sizeof(t_pcb));
+	pcb->tabla_paginas = malloc(sizeof(int));
+	pcb->time_blocked = malloc(sizeof(clock_t));
+	pcb->instrucciones = list_create();
+	int offset = 0;
+
+	// TAMAÑO STREAM
+	recv(socket, &buffer->size, sizeof(int), MSG_WAITALL);
+
+	buffer->stream = malloc(buffer->size);
+	// STREAM
+	recv(socket, buffer->stream, buffer->size, MSG_WAITALL);
+
+	// ID
+	memcpy(&pcb->id, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+	// processSize
+	memcpy(&pcb->processSize, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+	// program_counter
+	memcpy(&pcb->program_counter, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+	// tabla_paginas
+	memcpy(pcb->tabla_paginas, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+	// rafaga
+	memcpy(&pcb->rafaga, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+	// time_io
+	memcpy(&pcb->time_io, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+	// time_excecuted_rafaga
+	memcpy(&pcb->time_excecuted_rafaga, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+	// time_blocked
+	memcpy(&pcb->time_blocked, buffer->stream, sizeof(clock_t));
+	buffer->stream += sizeof(clock_t);
+
+
+	// (cant instrucciones)
+	int cant;
+	memcpy(&cant, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
+
+
+
+	for (int i = 0; i < cant; i++) {
+		int size;
+		memcpy(&size, buffer->stream, sizeof(int));
+		buffer->stream += sizeof(int);
+
+		char* instruccion = malloc(size);
+		memcpy(instruccion, buffer->stream, size);
+		buffer->stream += size;
+
+		list_add(pcb->instrucciones, instruccion);
+	}
+
+	return pcb;
+}
+
 t_pcb* deserializate_pcb(int socket, int* op_code){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_pcb* pcb = malloc(sizeof(t_pcb));

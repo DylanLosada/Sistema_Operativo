@@ -99,11 +99,11 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 		pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
 
 
-		if(instruct->instructions_code == EXIT || instruct->instructions_code == IO){
+		if(instruct->instructions_code == EXIT || instruct->instructions_code == I_O){
 
 			pcb->time_excecuted_rafaga = clock() - time_excecuted;
 
-			if(instruct->instructions_code == IO){
+			if(instruct->instructions_code == I_O){
 				pcb->time_blocked = instruct->param1;
 			}
 
