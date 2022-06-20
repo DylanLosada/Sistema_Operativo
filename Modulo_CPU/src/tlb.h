@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include "pcb.h"
 
 typedef struct {

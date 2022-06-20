@@ -5,10 +5,10 @@ t_list* destokenizarInstructions(t_list* listInstructions){
 
 	t_list* instructionsDestokenizadas = list_create();
 
-	t_instruct* instruct = malloc(sizeof(t_instruct));
+	for(int i = 0; i < list_size(listInstructions); i++){
 
-	for(int i = 0; i < listInstructions->elements_count; i++){
-		instruct = destokenizarInstruction(list_get(listInstructions, i));
+		char* list_elem = list_get(listInstructions, i);
+		t_instruct* instruct = destokenizarInstruction(list_elem);
 		list_add(instructionsDestokenizadas, instruct);
 	}
 
@@ -23,28 +23,25 @@ t_instruct* destokenizarInstruction(char* stringInstruction){
 
 	char** vec = string_split(stringInstruction, " ");
 
-	op_instructions_code code = 0;
+	op_instructions_code code = NO_OP;
 
 	bool hasParams = false;
 	bool hasOneParam = false;
 
-	if(strcmp(vec[0], "NO_OP") == 0){
-	}else if(strcmp(vec[0], "I/O") == 0){
+	if(strcmp(vec[0], "I/O") == 0){
 		hasOneParam = true;
-		code++;
+		code = I_O;
 	}else if(strcmp(vec[0], "READ") == 0){
 		hasOneParam = true;
-		code += 2;
+		code = READ;
 	}else if(strcmp(vec[0], "WRITE") == 0){
 		hasParams = true;
-		code += 3;
+		code = WRITE;
 	}else if(strcmp(vec[0], "COPY") == 0){
 		hasParams = true;
-		code += 4;
+		code = COPY;
 	}else if(strcmp(vec[0], "EXIT") == 0){
-		code += 5;
-	}else{
-
+		code = EXIT;
 	}
 
 	instruction->instructions_code = code;
@@ -76,6 +73,7 @@ void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int mensaje){
 }
 
 void fetch_and_decode(t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
+
 	t_list* instruccionesDestokenizadas = destokenizarInstructions(pcb->instrucciones);
 
 	pcb->instrucciones = instruccionesDestokenizadas;

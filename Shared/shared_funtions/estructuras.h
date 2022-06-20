@@ -1,6 +1,8 @@
 #ifndef SHARED_FUNTIONS_ESTRUCTURAS_H_
 #define SHARED_FUNTIONS_ESTRUCTURAS_H_
 #include <commons/collections/list.h>
+#include <stdlib.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/string.h>
 #include<sys/socket.h>
