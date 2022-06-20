@@ -59,10 +59,10 @@ t_instruct* destokenizarInstruction(char* stringInstruction){
 	return instruction;
 }
 
-void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int mensaje){
+void send_data_to_kernel(int kernel_socket, t_cpu* cpu, t_pcb* pcb, int mensaje){
 	t_cpu_paquete* cpu_paquete = malloc(sizeof(t_cpu_paquete));
 	void* a_enviar = serializate_pcb(pcb, cpu_paquete, mensaje);
-	int response = send_data_to_server(cpu->dispatch->socket, a_enviar, cpu_paquete->buffer->size + sizeof(int) + sizeof(int));
+	int response = send_data_to_server(kernel_socket, a_enviar, cpu_paquete->buffer->size + sizeof(int) + sizeof(int));
 
 	if(response < 0){
 		error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON EL KERNEL, ERROR: IMPOSIBLE CONECTAR");
@@ -72,18 +72,20 @@ void send_data_to_kernel(t_cpu* cpu, t_pcb* pcb, int mensaje){
 	log_info(cpu->cpu_log, "SE HA ENVIADO EL PCB AL KERNEL, ID: %d", pcb->id);
 }
 
-void fetch_and_decode(t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
+void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
+	for(int i = 0; i < list_size(pcb->instrucciones); i++){
+		log_info(cpu->cpu_log, "%s", list_get(pcb->instrucciones, i));
+	}
 
 	t_list* instruccionesDestokenizadas = destokenizarInstructions(pcb->instrucciones);
-
-	pcb->instrucciones = instruccionesDestokenizadas;
 
 	t_instruct* instruct = malloc(sizeof(t_instruct));
 	bool hasInterrupt = false;
 
 	//START EXECUTE
-	for(int i = pcb->program_counter; i < pcb->instrucciones->elements_count; i++){
-		instruct = list_get(instruccionesDestokenizadas,i);
+	while(pcb->program_counter < list_size(pcb->instrucciones)){
+		clock_t time_excecuted = clock();
+		instruct = list_get(instruccionesDestokenizadas,pcb->program_counter);
 		if(instruct->instructions_code == COPY){
 			fetch_operands(instruct->param2);
 		}
@@ -94,7 +96,8 @@ void fetch_and_decode(t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interru
 		if(exist_interrupt->is_interrupt){
 			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
 			int op_code = INTERRUPT;
-			send_data_to_kernel(cpu, pcb, op_code);
+			pcb->time_excecuted_rafaga = clock() - time_excecuted;
+			send_data_to_kernel(kernel_socket, cpu, pcb, op_code);
 			exist_interrupt->is_interrupt = false;
 			hasInterrupt = true;
 		}

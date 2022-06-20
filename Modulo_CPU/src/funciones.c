@@ -34,7 +34,7 @@ void execute_dispatch(void* void_args){
 			}
 		*/
 		//INICIA EL CICLO DE FETCH AND DECODE
-		fetch_and_decode(pcb, cpu, cpu->exist_interrupt);
+		fetch_and_decode(kernel_socket, pcb, cpu, cpu->exist_interrupt);
 	}
 
 }

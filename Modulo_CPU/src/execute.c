@@ -48,16 +48,15 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 			// Se deberá escribir en memoria el valor ubicado en la dirección lógica pasada como segundo parámetro, en la dirección lógica pasada como primer parámetro.
 			// A efectos de esta etapa, el accionar es similar a la instrucción WRITE ya que el valor a escribir ya se debería haber obtenido en la etapa anterior.
 			break;
-		}
 		case WRITE:{
 			// Se deberá escribir en memoria el valor del segundo parámetro en la dirección lógica del primer parámetro.
+			int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
 			break;
 		}
-		case EXIT:
+		case EXIT:{
 			send_data_to_kernel(cpu, pcb, INTERRUPT);
-			break;
+		}
 	}
 
 	//log_info(cpu->cpu_log, "INSTRUCCION EJECUTADA: %d", instruction->instructions_code);
-
 }

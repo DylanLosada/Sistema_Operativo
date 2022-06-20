@@ -39,6 +39,7 @@ int main() {
 
 	pthread_create(&hilo_dispatch, NULL, (void*)execute_dispatch, (void*)cpu);
 	pthread_create(&hilo_interrupt, NULL, (void*)execute_interrupt, (void*)cpu);
+	//pthread_create(&hilo_interrupt, NULL, (void*)execute_blocked_exit, (void*)cpu);
 
 	while(1);
 
