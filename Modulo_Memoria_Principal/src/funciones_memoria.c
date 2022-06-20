@@ -45,11 +45,6 @@ int existe_dir(char* path)
 	}
 }
 
-t_cpu_paquete* recibir_buffer_memoria(cliente_fd){
-	t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete*));
-
-} //VER
-
 void* recibir_buffer(int* size, int socket_cliente){
     void * buffer;
     recv(socket_cliente, size, sizeof(int), MSG_WAITALL); /* MSG_WAITALL es un flag Wait for a full request.  */
@@ -86,18 +81,9 @@ int recibir_operacion(int socket_cliente){
     }
 }
 
-int puedo_guardar_n_paginas(int paginas){
-
-    if(frames_disponibles_en(MEMORIA_PRINCIPAL) >= paginas){
-        return 1;
-    }else{
-        return 0;
-    }
-}
 
 void liberar_memoria(){
-    //liberar_memoria_paginada();
-    free(memoria_principal);
+    free(memoria);
     log_destroy(logger);
 }
 

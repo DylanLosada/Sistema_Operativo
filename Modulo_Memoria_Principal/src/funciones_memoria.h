@@ -17,9 +17,10 @@
 #include<commons/config.h>
 #include<dirent.h>
 #include<errno.h>
-#include<conexion_servidor.h>
-#include<estructuras.h>
+#include<shared_funtions/conexion_servidor.h>
+#include<shared_funtions/estructuras.h>
 #include <pthread.h>
+#include<shared_funtions/conexion_cliente.h>
 
 //Funciones q podrian estar en shared y son utiles para el modulo
 
