@@ -48,9 +48,11 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 			// Se deberá escribir en memoria el valor ubicado en la dirección lógica pasada como segundo parámetro, en la dirección lógica pasada como primer parámetro.
 			// A efectos de esta etapa, el accionar es similar a la instrucción WRITE ya que el valor a escribir ya se debería haber obtenido en la etapa anterior.
 			break;
-		case WRITE:
+		}
+		case WRITE:{
 			// Se deberá escribir en memoria el valor del segundo parámetro en la dirección lógica del primer parámetro.
 			break;
+		}
 		case EXIT:
 			send_data_to_kernel(cpu, pcb, INTERRUPT);
 			break;

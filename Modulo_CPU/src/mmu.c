@@ -3,7 +3,7 @@
 int dir_logica_a_fisica(t_cpu* cpu, t_pcb* pcb, int dir_logica) {
 
 	// Se piden a memoria en handshake inicial de CPU.
-	t_mem_config* mem_config = cpu->mem_config;
+	t_mem_config* mem_config = cpu->t_mem_config;
 
 
 	int tabla_1er_nivel = *pcb->tabla_paginas;
