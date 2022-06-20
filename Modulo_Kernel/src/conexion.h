@@ -2,7 +2,6 @@
 #define CONEXION_H_
 
 #include "funciones.h"
-//#include <shared_funtions/free_memory.h>
 #include "pcb.h"
 
 typedef struct {

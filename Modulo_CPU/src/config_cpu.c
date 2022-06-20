@@ -1,7 +1,7 @@
 #include "config_cpu.h"
 
 t_config_cpu* create_config_cpu(t_log* log){
-	t_config* cfg = config_create("/home/utnso/tp-2022-1c-SanguchitOS/Modulo_CPU/cpu.config");
+	t_config* cfg = config_create("cpu.config");
 	t_config_cpu* cpu_config = malloc(sizeof(t_config_cpu));
 
 	if(cfg == NULL){

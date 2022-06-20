@@ -6,20 +6,17 @@
 C_SRCS += \
 ../shared_funtions/conexion_cliente.c \
 ../shared_funtions/conexion_servidor.c \
-../shared_funtions/estructuras.c \
-../shared_funtions/free_memory.c 
+../shared_funtions/estructuras.c 
 
 OBJS += \
 ./shared_funtions/conexion_cliente.o \
 ./shared_funtions/conexion_servidor.o \
-./shared_funtions/estructuras.o \
-./shared_funtions/free_memory.o 
+./shared_funtions/estructuras.o 
 
 C_DEPS += \
 ./shared_funtions/conexion_cliente.d \
 ./shared_funtions/conexion_servidor.d \
-./shared_funtions/estructuras.d \
-./shared_funtions/free_memory.d 
+./shared_funtions/estructuras.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
