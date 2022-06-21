@@ -24,11 +24,7 @@
 
 //Funciones q podrian estar en shared y son utiles para el modulo
 
-
-t_bitarray* frames_ocupados_principal;
-int cant_frames_principal;
-int cant_frames_virtual;
-
+//**************************FUNCIONES********************+
 
 #endif
 

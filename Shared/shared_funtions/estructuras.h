@@ -29,6 +29,8 @@ typedef enum{
 	RE_SWAP,
 	NEW,
 	HANDSHAKE,
+	OPERACION_EXITOSA,
+	OPERACION_FALLIDA,
 	DELETE
 } op_memoria_message;
 

@@ -1,8 +1,6 @@
 #include "memoria.h"
 #include "funciones_memoria.h"
 
-int id_tablas_primer_nivel = 0;
-int id_tablas_segundo_nivel = 0;
 
 int main(void) {
 	t_memoria* memoria = malloc(sizeof(t_memoria));
@@ -19,13 +17,18 @@ int main(void) {
 
     memoria->server_fd = server_fd;
 
-    t_list* tablas_primer_nivel = list_create();
-    tablas_primer_nivel = memoria->tablas_primer_nivel;
+    memoria->tablas_primer_nivel = list_create();
 
-    t_list* tablas_segundo_nivel = list_create();
-    tablas_segundo_nivel = memoria->tablas_segundo_nivel;
+    memoria->tablas_segundo_nivel = list_create();
 
-    int* bitarrayMemoria = iniciar_memoria_paginada(memoria);
+    memoria->marcos_libres = list_create();
+
+    memoria->id_tablas_primer_nivel = 0;
+    memoria->id_tablas_segundo_nivel = 0;
+
+    t_list* bitarrayMemoria = iniciar_memoria_paginada(memoria);
+
+    memoria->marcos_memoria = bitarrayMemoria;
 
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
 	pthread_t hilo_servidor;
@@ -38,7 +41,7 @@ int main(void) {
 	return 0;
 }
 
-int* iniciar_memoria_paginada(t_memoria* memoria){
+t_list* iniciar_memoria_paginada(t_memoria* memoria){
 
 	logger = memoria->memoria_log;
 	int tamanio_memoria = memoria->memoria_config->tamanio_memoria;
@@ -49,19 +52,19 @@ int* iniciar_memoria_paginada(t_memoria* memoria){
 
 	if(memoriaRAM == NULL){
 	        perror("MALLOC FAIL!\n");
-	        return 0;
+	        exit(1);
 	    }
 
     int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
 
-    cant_frames_principal = tamanio_memoria / tamanio_paginas;
+    int cant_frames_principal = tamanio_memoria / tamanio_paginas;
 
     log_info(logger,"/// Se tienen %d marcos de %d bytes en memoria principal",cant_frames_principal, tamanio_paginas);
 
 
     //calloc asigna la memoria solicitada y le devuelve un puntero. La diferencia entre malloc y calloc es que
         //malloc no establece la memoria en cero, mientras que calloc establece la memoria asignada en cero.
-    int* bitarrayMemoria = calloc(cant_frames_principal, sizeof(int));
+    t_list* bitarrayMemoria = calloc(cant_frames_principal, sizeof(int));
 
     if(bitarrayMemoria == NULL){
         perror("CALLOC FAIL!\n");
@@ -96,20 +99,21 @@ void manejar_conexion(void* void_args){
 int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 	int cliente_fd = args_administrar_cliente->socket;
 	int op_code;
+	t_memoria* memoria = args_administrar_cliente->memoria;
 	while(1){
 		// OP CODE
 		recv(cliente_fd, &op_code, sizeof(int), MSG_WAITALL);
 		pthread_mutex_lock(args_administrar_cliente->semaforo_conexion);
-		op_memoria_message op_code_memori = op_code;
+		op_memoria_message op_code_memoria = op_code;
 
-		if(op_code_memori == HANDSHAKE){
-			hacer_handshake_con_cpu(cliente_fd, args_administrar_cliente->memoria);
+		if(op_code_memoria == HANDSHAKE){
+			hacer_handshake_con_cpu(cliente_fd, memoria);
 		}else{
 			t_pcb* pcb_cliente = deserializate_pcb_memoria(cliente_fd); //ver
 
-			if(op_code_memori == NEW){
-				//iniciar_proceso(pcb_cliente, cliente_fd);
-			}else if (op_code_memori == DELETE){
+			if(op_code_memoria == NEW){
+				iniciar_proceso(pcb_cliente, cliente_fd, memoria);
+			}else if (op_code_memoria == DELETE){
 
 			} else {
 				log_warning(logger, "Operacion desconocida\n");
@@ -133,8 +137,8 @@ void hacer_handshake_con_cpu(int cliente_fd, t_memoria* memoria){
 	log_info(memoria->memoria_log, "DATOS ENVIADOS.");
 }
 
-/*
-void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd){
+
+void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
 
 	int id_proceso = pcb_cliente->id;
     int tamanio_proceso = pcb_cliente->processSize;
@@ -142,27 +146,40 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd){
 
     log_info(logger, "Iniciando proceso %d que pesa %d...", id_proceso, tamanio_proceso);
 
-    int pudeGuardar = guardar_proceso_en_paginacion(pcb_cliente);
+    t_pcb* pcb_actualizado = guardar_proceso_en_paginacion(pcb_cliente, memoria);
 
-    //t_cpu_paquete* paquete = crear_paquete();
-    //agregar_entero_a_paquete(paquete, pudeGuardar);
 
-    //Avisa si pudo o no guardar
-    if(pudeGuardar == 1){
-	    paquete->op_code = OPERACION_EXITOSA;
-        log_info(logger, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
-    }else{
-        paquete->op_code = OPERACION_FALLIDA;
-        log_error(logger, "----------> No hay lugar para guardar el proceso [%d] en memoria\n", id_proceso);
-    }
-    enviar_paquete(paquete,cliente_fd);
-    eliminar_paquete(paquete);
+    if(pcb_actualizado->tabla_paginas != NULL){
+    		enviar_pcb_a_kernell(pcb_actualizado , cliente_fd, OPERACION_EXITOSA);
+    		log_info(logger, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
+
+    	}else{
+    		enviar_pcb_a_kernell(pcb_actualizado , cliente_fd, OPERACION_FALLIDA);
+    		log_info(logger, "----------> No hay lugar para guardar el proceso [%d] en memoria\n", id_proceso);
+
+    	}
+    free(pcb_actualizado->tabla_paginas);
+    free(pcb_actualizado);
+}
+
+void enviar_pcb_a_kernell(t_pcb* pcb_actualizado , int cliente_fd, op_memoria_message MENSSAGE){
+	if(pcb_actualizado != NULL){
+		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
+		void* pcb_serializate = serializate_pcb(pcb_actualizado, paquete, MENSSAGE);
+
+		int code_operation = send_data_to_server(cliente_fd, pcb_actualizado, (paquete->buffer->size + sizeof(int) + sizeof(int)));
+		if(code_operation < 0){
+			error_show("OCURRIO UN PROBLEMA INTENTANDO RESPONDERLE AL KERNELL, ERROR: IMPOSIBLE RESPONDER");
+			exit(1);
+		}
+		free(pcb_serializate);
+	}
 }
 
 
 
 //Tendria que recibir el pcb!
-int guardar_proceso_en_paginacion(t_pcb* pcb_cliente){
+t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	int tamanio_proceso = pcb_cliente->processSize;
 	int cant_marcos = memoria->memoria_config->marcos_proceso;
@@ -173,10 +190,11 @@ int guardar_proceso_en_paginacion(t_pcb* pcb_cliente){
 	//ej: pag_necesarias = 16, marcos_por_proceso= 4 --> cant_tablas #2 = 4 --> cant_entradas #1 = 4
 	int cant_tablas_segundo_necesarias = ceil((double) paginas_necesarias / (double) cant_marcos);
 
-	t_tabla_paginas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_paginas_primer_nivel*));
+	t_tabla_entradas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_entradas_primer_nivel*));
 
+	aumentar_contador_tablas_primer_nivel(memoria);
 	tabla_primer_nivel->id_proceso = pcb_cliente->id;
-	tabla_primer_nivel->id_tabla = id_tablas_primer_nivel +1;
+	tabla_primer_nivel->id_tabla = memoria->id_tablas_primer_nivel;
 
 	t_list* entadas_tabla_nivel_uno = list_create();
 
@@ -185,7 +203,9 @@ int guardar_proceso_en_paginacion(t_pcb* pcb_cliente){
 	for(paginas_guardadas = 0; paginas_guardadas < cant_tablas_segundo_necesarias; paginas_guardadas++){
 
 		t_tabla_paginas_segundo_nivel* tabla_segundo_nivel = malloc(sizeof(t_tabla_paginas_segundo_nivel*));
-		tabla_segundo_nivel->id_tabla = id_tablas_segundo_nivel +1;
+
+		aumentar_contador_tablas_segundo_nivel(memoria);
+		tabla_segundo_nivel->id_tabla = memoria->id_tablas_segundo_nivel;
 
 		t_list* paginas_tabla_segundo_nivel = list_create();
 
@@ -196,44 +216,74 @@ int guardar_proceso_en_paginacion(t_pcb* pcb_cliente){
 				int numero_pagina = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel;
 				pagina_segundo_nivel->id_pagina = numero_pagina + 1;
-				pagina_segundo_nivel->presencia = 1;
+				pagina_segundo_nivel->presencia = 0;
 				pagina_segundo_nivel->uso = 1;
-				pagina_segundo_nivel->modificado=1; //??
+				pagina_segundo_nivel->modificado= 1; //??
 				//pagina_segundo_nivel->frame_principal ??
+
+				list_add(paginas_tabla_segundo_nivel, pagina_segundo_nivel);
 				//tabla_nivel_dos = agregar pagina
-				paginas_necesarias = paginas_necesarias -1;
 
 			}
+			tabla_segundo_nivel->paginas_segundo_nivel = paginas_tabla_segundo_nivel;
 		}else{
 			int i= 0;
 			for(i=0; i < cant_marcos; i++){
 				int numero_pagina = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel;
 				pagina_segundo_nivel->id_pagina = numero_pagina + 1;
-				pagina_segundo_nivel->presencia = 1;
+				pagina_segundo_nivel->presencia = 0;
 				pagina_segundo_nivel->uso = 1;
 				pagina_segundo_nivel->modificado=1; //??
 				//pagina_segundo_nivel->frame_principal ??
-				//tabla_nivel_dos = agregar pagina
+
+				list_add(paginas_tabla_segundo_nivel, pagina_segundo_nivel);
 				paginas_necesarias = paginas_necesarias - 1;
 
 			}
 
+			tabla_segundo_nivel->paginas_segundo_nivel = paginas_tabla_segundo_nivel;
 
 		}
+		list_add(entadas_tabla_nivel_uno, tabla_segundo_nivel);
+		agregar_tabla_de_segundo_nivel_a_memoria(memoria, tabla_segundo_nivel);
 }
-	//add tabla de segundo nivel a lista de primer nivel
-		//lista_tablas_segundo_nivel_del_proceso = agregar
-	//add tabla de segundo nivel a lista global de tablas de segundo nivel
-		//tablas_segundo_nivel = agregar
-	}
+	tabla_primer_nivel->entradas = entadas_tabla_nivel_uno;
 
-	//add tabla de primer nivel a lista global de tablas de primer nivel
-	list_add(tablas_primer_nivel, tabla_primer_nivel);
-		//tablas_primer_nivel = agregar
-	// actualizar pcb
+	agregar_tabla_de_primer_nivel_a_memoria(memoria, tabla_primer_nivel);
 
+	int* id_tabla = malloc(sizeof(int));
+	*id_tabla = tabla_primer_nivel->id_tabla;
 
+	pcb_cliente->tabla_paginas = id_tabla;
+
+	return pcb_cliente;
+
+}
+
+void agregar_tabla_de_primer_nivel_a_memoria(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_primer_nivel){
+	t_list* tablas_actuales = memoria->tablas_primer_nivel;
+	list_add(tablas_actuales, tabla_primer_nivel);
+}
+
+void agregar_tabla_de_segundo_nivel_a_memoria(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel){
+	t_list* tablas_actuales = memoria->tablas_segundo_nivel;
+	list_add(tablas_actuales, tabla_segundo_nivel);
+}
+
+void aumentar_contador_tablas_primer_nivel(t_memoria* memoria){
+	int contador_actual = memoria->id_tablas_primer_nivel;
+	int contador_actualizado = contador_actual + 1;
+
+	memoria->id_tablas_primer_nivel = contador_actualizado;
+}
+
+void aumentar_contador_tablas_segundo_nivel(t_memoria* memoria){
+	int contador_actual = memoria->id_tablas_segundo_nivel;
+	int contador_actualizado = contador_actual + 1;
+
+	memoria->id_tablas_segundo_nivel = contador_actualizado;
+}
 
 	/*
 
