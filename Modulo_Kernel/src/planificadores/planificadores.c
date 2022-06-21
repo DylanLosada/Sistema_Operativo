@@ -64,11 +64,10 @@ void handler_planners(void* void_args){
 
 	// conexiones a los demas modulos.
 	t_sockets_cpu* sockets_cpu = malloc(sizeof(t_sockets_cpu));
-//	sockets_cpu->check_state_instructions = connect_to_check_state_instructions_cpu(config_kernel, "9000");
+	sockets_cpu->check_state_instructions = connect_to_check_state_instructions_cpu(config_kernel, "9000");
 	sockets_cpu->interrupt = connect_to_interrupt_cpu(config_kernel);
 	sockets_cpu->dispatch= connect_to_dispatch_cpu(config_kernel);
-	//int socket_kernel_memoria = connect_to_memoria(config_kernel);
-	int socket_kernel_memoria = 0;
+	int socket_kernel_memoria = connect_to_memoria(config_kernel);
 
 	// variables que necesito como int.
 	char* ALGORITMO_PLANIFICACION = config_kernel->ALGORITMO_PLANIFICACION;
@@ -202,7 +201,17 @@ void long_term_planner(void* args_long_term_planner){
 		}
 		pthread_mutex_unlock(args->states->state_exit->mutex);
 
-		add_pcbs_to_new(args->monitor_logger, args->isFirstPcb, args->monitor_add_pcb_ready, args->monitor_is_new_pcb_in_ready, args->states, args->pre_pcbs, args->socket_memoria, args->monitorGradoMulti,args->pre_pcbs_mutex, args->hasGradoForNew, args->ESTIMACION_INICIAL);
+		add_pcbs_to_new(args->monitor_logger,
+				args->isFirstPcb,
+				args->monitor_add_pcb_ready,
+				args->monitor_is_new_pcb_in_ready,
+				args->states,
+				args->pre_pcbs,
+				args->socket_memoria,
+				args->monitorGradoMulti,
+				args->pre_pcbs_mutex,
+				args->hasGradoForNew,
+				args->ESTIMACION_INICIAL);
 		pthread_mutex_unlock(args->hasPcb);
 	}
 }
@@ -269,6 +278,7 @@ void short_term_planner(void* args_short_planner){
 	t_args_check_instructions* args_instruction_thread = malloc(sizeof(t_args_check_instructions));
 	args_instruction_thread->mutex_check_instruct = mutex_check_instruct;
 	args_instruction_thread->hasPcb = args->hasPcb;
+	args_instruction_thread->hasUpdateState = false;
 	args_instruction_thread->hasPcbRunning = args->hasPcbRunning;
 	args_instruction_thread->socket = args->sockets_cpu->check_state_instructions;
 	create_check_instructions_thread(args_instruction_thread);
@@ -339,11 +349,10 @@ void short_term_planner(void* args_short_planner){
 
 		pthread_mutex_lock(ready->mutex);
 		pthread_mutex_lock(args_instruction_thread->mutex_check_instruct);
-		// args_instruction_thread->hasUpdateState
-		if(hasRunning && false){
+		if(hasRunning && args_instruction_thread->hasUpdateState){
 			t_pcb* pcb_excecuted = queue_pop(running->state);
 			//update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction);
-			update_pcb_with_cpu_data(args->sockets_cpu->dispatch, pcb_excecuted, isExitInstruction);
+			update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction);
 			if(*isExitInstruction){
 				pthread_mutex_lock(exit->mutex);
 				queue_push(exit->state, pcb_excecuted);
@@ -390,7 +399,7 @@ void short_term_planner(void* args_short_planner){
 		}
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(ready->mutex);
-		pthread_mutex_unlock(args->hasPcbBlocked);
+		//pthread_mutex_unlock(args->hasPcbBlocked);
 	}
 }
 
@@ -535,9 +544,10 @@ void add_pcbs_to_new(t_monitor_log* monitor_logger, bool* isFirstPcb, t_monitor_
 		pthread_mutex_lock(hasGradoForNew);
 		pthread_mutex_lock(states->state_ready->mutex);
 		use_logger(monitor_logger, "MANDAMOS A MEMORIA PARA GENERAR TABLA.");
-		send_action_to_memoria(pcb, socket_memoria, NEW);
+		op_memoria_message op_code = NEW;
+		t_pcb* pcb_tabla = send_action_to_memoria(pcb, socket_memoria, op_code);
 		pthread_mutex_lock(states->state_new->mutex);
-		queue_push(states->state_new->state, pcb);
+		queue_push(states->state_new->state, pcb_tabla);
 		pthread_mutex_unlock(states->state_new->mutex);
 		use_logger(monitor_logger, "TABLA DE PAGINAS CARGADA, LO PASAMOS A READY.");
 		pthread_mutex_lock(states->state_new->mutex);
@@ -594,9 +604,9 @@ t_pcb* create_pcb(int ESTIMACION_INICIAL, bool* isFirstPcb, t_pre_pcb* pre_pcb){
 void send_pcb_to_memoria(t_pcb* pcb , int socket_memoria, op_memoria_message MENSSAGE){
 	if(pcb != NULL){
 		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
-		void* pcb_serializate = serializate_pcb(pcb, paquete, MENSSAGE);
-		//int code_operation = send_data_to_server(socket_memoria, pcb, paquete->buffer + sizeof(int));
-		int code_operation = 0;
+		void* pcb_serializate = serializate_pcb(pcb, paquete, (int)MENSSAGE);
+		int code_operation = send_data_to_server(socket_memoria, pcb_serializate, (paquete->buffer->size + sizeof(int) + sizeof(int)));
+
 		if(code_operation < 0){
 			error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON MEMORIA, ERROR: IMPOSIBLE CONECTAR");
 			exit(1);
@@ -620,18 +630,18 @@ void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 }
 
 void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool* isExitInstruction){
-	int op_code;
+	op_instructions_code op_code;
 	t_pcb* pcb_excecuted = deserializate_pcb(socket_kernel_interrupt_cpu, &op_code);
 
 	if(op_code < 0){
 		error_show("NO SE PUDO EXTRAER INFOIRMACION ENVIADA POR LA CPU");
 		exit(1);
-	} else if (op_code == FINISHED){
+	} else if (op_code == EXIT){
 		*isExitInstruction = true;
 	} else {
 		pcb->time_excecuted_rafaga += pcb_excecuted->time_excecuted_rafaga;
 
-		if(op_code == BLOCKED){
+		if(op_code == I_O){
 			pcb->time_io = pcb_excecuted->time_io;
 		}
 
@@ -677,23 +687,21 @@ int has_tabla_paginas(t_pcb* pcb_to_add){
 
 void check_state_of_pcb(void* void_args){
 	t_args_check_instructions* args = (t_args_check_instructions*) void_args;
-	op_code code = -1;
+	op_code code;
 	while(1){
 		pthread_mutex_lock(args->hasPcbRunning);
 		recv(args->socket, &code, sizeof(int), 0);
 		pthread_mutex_lock(args->mutex_check_instruct);
-		if(code == IO){
+		if(code == BLOCKED_FINISHED){
 			args->hasUpdateState = true;
-			pthread_mutex_unlock(args->hasPcb);
 		}
 		pthread_mutex_unlock(args->mutex_check_instruct);
-		pthread_mutex_unlock(args->hasPcb);
 	}
 }
 
-t_pcb* send_action_to_memoria(t_pcb* pcb, int socket_memoria, int ACTION){
+t_pcb* send_action_to_memoria(t_pcb* pcb, int socket_memoria, op_memoria_message ACTION){
 	send_pcb_to_memoria(pcb , socket_memoria, ACTION);
-	//recive_information_from_memoria(pcb , socket_memoria);
+	recive_information_from_memoria(pcb , socket_memoria);
 	return pcb;
 }
 
