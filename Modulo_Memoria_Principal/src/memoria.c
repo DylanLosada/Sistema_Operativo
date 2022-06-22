@@ -181,6 +181,24 @@ void enviar_pcb_a_kernell(t_pcb* pcb_actualizado , int cliente_fd, op_memoria_me
 //Tendria que recibir el pcb!
 t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
+	//_________________CREACION DE ARCHIVO DEL PROCESO_____________________
+
+	char* path_archivo = memoria->memoria_config->path_swap;
+	int id_proceso = pcb_cliente->id;
+
+	char nombre[50];
+	strcpy(nombre,  "/Swap_proceso_");
+	char* id_proceso_char = string_itoa(id_proceso);
+
+	strcat(nombre, id_proceso_char);
+	strcat(path_archivo, nombre);
+
+	FILE* archivo_proceso;
+
+	archivo_proceso = fopen(path_archivo, "w" );;
+	log_info(memoria->memoria_log, "SE CREA EL ARCHIVO SWAP DEL PROCESO %d EN LA RUTA %s", id_proceso, path_archivo);
+
+	//_____________________CREACION DE TABLAS______________________________
 	int tamanio_proceso = pcb_cliente->processSize;
 	int cant_marcos = memoria->memoria_config->marcos_proceso;
 
@@ -256,6 +274,12 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	*id_tabla = tabla_primer_nivel->id_tabla;
 
 	pcb_cliente->tabla_paginas = id_tabla;
+
+
+	//_________________CERRADO DE ARCHIVO DEL PROCESO_____________________
+
+	fclose(archivo_proceso);
+	log_info(memoria->memoria_log, "SE CIERRA EL ARCHIVO SWAP DEL PROCESO %d DE LA RUTA %s", id_proceso, path_archivo);
 
 	return pcb_cliente;
 
