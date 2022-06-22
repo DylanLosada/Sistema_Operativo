@@ -96,6 +96,12 @@ void aumentar_contador_tablas_segundo_nivel(t_memoria* memoria);
 void agregar_tabla_de_primer_nivel_a_memoria(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_primer_nivel);
 void agregar_tabla_de_segundo_nivel_a_memoria(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel);
 void enviar_pcb_a_kernell(t_pcb* pcb_actualizado , int cliente_fd, op_memoria_message MENSSAGE);
+t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
+void eliminar_tablas_de_segundo_nivel(t_pcb* pcb_proceso, t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria);
+void eliminar_paginas_de_memoria(t_tabla_paginas_segundo_nivel* tabla_segundo_nivel, t_memoria* memoria);
+void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria, int posicion_tabla_en_lista);
+void eliminar_archivo_swap(t_pcb* pcb_proceso);
+void eliminar_tabla_de_la_lista_de_tablas_del_sistema(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel);
 //////////////////////////////SEMAFOROS////////////////////////////
 
 pthread_mutex_t mutex_memoria_principal_bitmap;
