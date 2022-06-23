@@ -7,5 +7,6 @@
 #include "pcb.h"
 
 int dir_logica_a_fisica(t_cpu* cpu, t_pcb* pcb, int dir_logica);
+int get_tabla_marco_from_memoria(t_cpu* cpu, int tabla_nivel, int entrada_tabla_nivel, int OPERACION);
 
 #endif /* SRC_MMU_H_ */
