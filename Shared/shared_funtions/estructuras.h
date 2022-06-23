@@ -31,14 +31,16 @@ typedef enum{
 	HANDSHAKE,
 	OPERACION_EXITOSA,
 	OPERACION_FALLIDA,
-	DELETE
+	DELETE,
+	TABLA_SEGUNDO_NIVEL,
+	MARCO
 } op_memoria_message;
 
 typedef struct{
 	int id;
 	int processSize;
 	int program_counter;
-	int* tabla_paginas;
+	int tabla_paginas;
 	int rafaga;
 	int time_io;
 	int time_excecuted_rafaga;

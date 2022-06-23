@@ -7,44 +7,15 @@
 #include<unistd.h>
 #include<sys/socket.h>
 #include<netdb.h>
-#include<string.h>
-#include<commons/log.h>
 #include <commons/error.h>
+#include "funciones_memoria.h"
 #include<unistd.h>
 #include<netdb.h>
-#include<commons/collections/list.h>
 #include<commons/collections/queue.h>
-#include<commons/config.h>
 #include<dirent.h>
 #include<errno.h>
 #include<shared_funtions/estructuras.h>
 #include<math.h>
-
-t_log* logger;
-
-typedef struct{
-	char* puerto;
-	int tamanio_memoria;
-	int tamanio_pagina;
-	int entradas_por_tabla;
-	int retardo_memoria;
-	char * algoritmo_reemplazo;
-	int marcos_proceso;
-	int retardo_swap;
-	char * path_swap;
-}t_config_memoria;
-
-typedef struct{
-	t_log* memoria_log;
-	t_config_memoria* memoria_config;
-	int server_fd;
-	t_list* tablas_primer_nivel;
-	t_list* tablas_segundo_nivel;
-	int id_tablas_primer_nivel;
-	int id_tablas_segundo_nivel;
-	void* espacio_memoria;
-	t_list* marcos_libres;
-}t_memoria;
 
 typedef struct{
     op_code codigo_operacion;
@@ -96,7 +67,7 @@ t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
 void eliminar_tablas_de_segundo_nivel(t_pcb* pcb_proceso, t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria);
 void eliminar_paginas_de_memoria(t_tabla_paginas_segundo_nivel* tabla_segundo_nivel, t_memoria* memoria);
 void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria, int posicion_tabla_en_lista);
-void eliminar_archivo_swap(t_pcb* pcb_proceso);
+void eliminar_archivo_swap(t_log* logger, t_pcb* pcb_proceso);
 void eliminar_tabla_de_la_lista_de_tablas_del_sistema(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel);
 //////////////////////////////SEMAFOROS////////////////////////////
 

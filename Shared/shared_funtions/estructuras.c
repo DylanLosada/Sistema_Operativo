@@ -59,7 +59,7 @@ t_pcb* deserializate_pcb_memoria(int socket){
 
 
 	// tabla_paginas
-	memcpy(pcb->tabla_paginas, buffer->stream, sizeof(int));
+	memcpy(&pcb->tabla_paginas, buffer->stream, sizeof(int));
 	buffer->stream += sizeof(int);
 
 
@@ -139,9 +139,8 @@ t_pcb* deserializate_pcb(int socket, int* op_code){
 
 
 	// tabla_paginas
-	memcpy(pcb->tabla_paginas, buffer->stream, sizeof(int));
+	memcpy(&pcb->tabla_paginas, buffer->stream, sizeof(int));
 	buffer->stream += sizeof(int);
-
 
 	// rafaga
 	memcpy(&pcb->rafaga, buffer->stream, sizeof(int));
@@ -191,7 +190,6 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 
 	const int pcb_list_size = list_size(pcb->instrucciones);
 	int size = 0;
-	int* tabla_paginas = malloc(sizeof(int));
 
 	for (int i = 0; i < pcb_list_size; i++){
 		char* elem = list_get(pcb->instrucciones, i);
@@ -232,10 +230,7 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 
 
 	// tabla_paginas
-	if(pcb->tabla_paginas != NULL){
-		tabla_paginas = pcb->tabla_paginas;
-	}
-	memcpy(buffer->stream + offset, tabla_paginas, sizeof(int));
+	memcpy(buffer->stream + offset, &pcb->tabla_paginas, sizeof(int));
 	offset += sizeof(int);
 
 
@@ -290,7 +285,6 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 	offset += paquete->buffer->size;
 
 
-	tabla_paginas = NULL;
 	return a_enviar;
 
 }

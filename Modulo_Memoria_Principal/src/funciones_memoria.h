@@ -1,26 +1,36 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<signal.h>
-#include<unistd.h>
-#include<sys/socket.h>
-#include<commons/bitarray.h>
-#include<netdb.h>
-#include<string.h>
-#include<commons/log.h>
-#include<unistd.h>
-#include<netdb.h>
-#include<commons/collections/list.h>
-#include<commons/collections/queue.h>
 #include<commons/config.h>
-#include<dirent.h>
-#include<errno.h>
-#include<shared_funtions/conexion_servidor.h>
-#include<shared_funtions/estructuras.h>
-#include <pthread.h>
-#include<shared_funtions/conexion_cliente.h>
+#include<commons/log.h>
+#include<commons/collections/list.h>
+#include <shared_funtions/conexion_servidor.h>
+#include <dirent.h>
+#include<string.h>
+
+typedef struct{
+	char* puerto;
+	int tamanio_memoria;
+	int tamanio_pagina;
+	int entradas_por_tabla;
+	int retardo_memoria;
+	char * algoritmo_reemplazo;
+	int marcos_proceso;
+	int retardo_swap;
+	char * path_swap;
+}t_config_memoria;
+
+typedef struct{
+	t_log* memoria_log;
+	t_config_memoria* memoria_config;
+	int server_fd;
+	t_list* tablas_primer_nivel;
+	t_list* tablas_segundo_nivel;
+	int id_tablas_primer_nivel;
+	int id_tablas_segundo_nivel;
+	void* espacio_memoria;
+	t_list* marcos_libres;
+}t_memoria;
 
 //Funciones q podrian estar en shared y son utiles para el modulo
 

@@ -597,7 +597,7 @@ t_pcb* create_pcb(int ESTIMACION_INICIAL, bool* isFirstPcb, t_pre_pcb* pre_pcb){
 	pcb->time_blocked = malloc(sizeof(clock_t));
 	pcb->time_excecuted_rafaga = 0;
 	pcb->time_io = 0;
-	pcb->tabla_paginas = malloc(sizeof(int));
+	pcb->tabla_paginas = 0;
 	return pcb;
 }
 

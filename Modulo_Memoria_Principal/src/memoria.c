@@ -1,16 +1,14 @@
 #include "memoria.h"
-#include "funciones_memoria.h"
 
 
 int main(void) {
 	t_memoria* memoria = malloc(sizeof(t_memoria));
 
-	logger = log_create("memoria.log", "Modulo_Memoria", 1, LOG_LEVEL_DEBUG);
-	log_info(logger, "--------------------------------------------\n");
+	memoria->memoria_log = log_create("memoria.log", "Modulo_Memoria", 1, LOG_LEVEL_DEBUG);
+	log_info(memoria->memoria_log, "--------------------------------------------\n");
 
-	t_config_memoria* config_memoria = create_config(logger);
+	t_config_memoria* config_memoria = create_config(memoria->memoria_log);
 
-	memoria->memoria_log = logger;
 	memoria->memoria_config= config_memoria;
 
     int server_fd = start_memoria(memoria);
@@ -32,7 +30,7 @@ int main(void) {
     memoria->espacio_memoria = malloc(tamanio_memoria);
 
     int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
-    log_info(logger,"/// Se tienen %d marcos de %d bytes en memoria principal", tamanio_memoria / tamanio_paginas, tamanio_paginas);
+    log_info(memoria->memoria_log,"/// Se tienen %d marcos de %d bytes en memoria principal", tamanio_memoria / tamanio_paginas, tamanio_paginas);
 
 
 
@@ -51,7 +49,6 @@ int main(void) {
 //----------Tema de creacion de hilos-------------------
 void manejar_conexion(void* void_args){
 	t_memoria* memoria = (t_memoria*) void_args;
-	logger = memoria->memoria_log;
 
 	pthread_mutex_t* semaforo_conexion = malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init(semaforo_conexion, NULL);
@@ -60,7 +57,7 @@ void manejar_conexion(void* void_args){
 	    while(1){
 	    	t_args_administrar_cliente* args_administrar_cliente = malloc(sizeof(t_args_administrar_cliente));
 	    	args_administrar_cliente->semaforo_conexion = semaforo_conexion;
-	        int cliente_fd = wait_client(server_fd, logger, "Cliente", "Memoria");
+	        int cliente_fd = wait_client(server_fd, memoria->memoria_log, "Cliente", "Memoria");
 	        args_administrar_cliente->socket = cliente_fd;
 	        args_administrar_cliente->memoria = memoria;
 	        pthread_t hilo_servidor;
@@ -94,11 +91,11 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			}else if (op_code_memoria == DELETE){
 
 				t_pcb* pcb_actualizado = eliminar_proceso(pcb_cliente, memoria);
-				log_info(logger, "SE ELIMINAN TODAS LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_cliente->id);
+				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_actualizado, cliente_fd, OPERACION_EXITOSA);
 
 			} else {
-				log_warning(logger, "Operacion desconocida\n");
+				log_warning(memoria->memoria_log, "Operacion desconocida\n");
 			}
 		}
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
@@ -126,21 +123,21 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
     int tamanio_proceso = pcb_cliente->processSize;
 
 
-    log_info(logger, "Iniciando proceso %d que pesa %d...", id_proceso, tamanio_proceso);
+    log_info(memoria->memoria_log, "Iniciando proceso %d que pesa %d...", id_proceso, tamanio_proceso);
 
     t_pcb* pcb_actualizado = guardar_proceso_en_paginacion(pcb_cliente, memoria);
 
 
     if(pcb_actualizado->tabla_paginas != NULL){
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, OPERACION_EXITOSA);
-    		log_info(logger, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
+    		log_info(memoria->memoria_log, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
 
     	}else{
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, OPERACION_FALLIDA);
-    		log_info(logger, "----------> No hay lugar para guardar el proceso [%d] en memoria\n", id_proceso);
+    		log_info(memoria->memoria_log, "----------> No hay lugar para guardar el proceso [%d] en memoria\n", id_proceso);
 
     	}
-    free(pcb_actualizado->tabla_paginas);
+    //free(pcb_actualizado->tabla_paginas);
     free(pcb_actualizado);
 }
 
@@ -189,7 +186,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	//obtengo la cantidad de tabla de paginas de segundo nivel necesarias ==> CANTIDAD DE ENTRADAS DE TABLA #1
 	//ej: pag_necesarias = 16, marcos_por_proceso= 4 --> cant_tablas #2 = 4 --> cant_entradas #1 = 4
-	int cant_tablas_segundo_necesarias = ceil((double) paginas_necesarias / (double) cant_marcos);
+	int cant_tablas_segundo_necesarias = ceil(sqrt((double)paginas_necesarias));
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_entradas_primer_nivel*));
 
@@ -211,7 +208,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 		t_list* paginas_tabla_segundo_nivel = list_create();
 
 		//Ver si paginas guardadas aumenta desp de entrar en el for, sino habria q agregar un +1
-		if(paginas_guardadas == cant_tablas_segundo_necesarias){ //Creo que este if esta mal, es para la ultima tabla o primer tabla para aquellos q solo tengan una entrada
+		if((paginas_guardadas + 1) == cant_tablas_segundo_necesarias){ //Creo que este if esta mal, es para la ultima tabla o primer tabla para aquellos q solo tengan una entrada
 			int i= 0;
 			for(i=0; i < paginas_necesarias; i++){
 				int numero_pagina = 0;
@@ -238,7 +235,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 			tabla_segundo_nivel->paginas_segundo_nivel = paginas_tabla_segundo_nivel;
 		}else{
 			int i= 0;
-			for(i=0; i < cant_marcos; i++){
+			for(i=0; i < cant_tablas_segundo_necesarias; i++){
 				int numero_pagina = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
 				pagina_segundo_nivel->id_pagina = numero_pagina + 1;
@@ -271,10 +268,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	agregar_tabla_de_primer_nivel_a_memoria(memoria, tabla_primer_nivel);
 
-	int* id_tabla = malloc(sizeof(int));
-	*id_tabla = tabla_primer_nivel->id_tabla;
-
-	pcb_cliente->tabla_paginas = id_tabla;
+	pcb_cliente->tabla_paginas = tabla_primer_nivel->id_tabla;
 
 
 	//_________________CERRADO DE ARCHIVO DEL PROCESO_____________________
@@ -313,7 +307,7 @@ void aumentar_contador_tablas_segundo_nivel(t_memoria* memoria){
 //-------------------------------ELIMINAR PROCESO----------------------------------------------------
 t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 
-log_info(logger, "INICIO A BORRAR LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_proceso->id);
+log_info(memoria->memoria_log, "INICIO A BORRAR LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_proceso->id);
 
 int* id_tabla_primer_nivel = malloc(sizeof(int));
 
@@ -334,15 +328,15 @@ int recorrido_tabla;
 					if(id_tabla == (int)id_tabla_primer_nivel){
 
 						eliminar_tablas_de_segundo_nivel(pcb_proceso, tabla_primer_nivel, memoria);
-						log_info(logger, "TABLAS DE SEGUNDO NIVEL DEL PROCESO %d ELIMINADAS TOTALMENTE", pcb_proceso->id);
+						log_info(memoria->memoria_log, "TABLAS DE SEGUNDO NIVEL DEL PROCESO %d ELIMINADAS TOTALMENTE", pcb_proceso->id);
 
 						eliminar_tabla_de_primer_nivel(tabla_primer_nivel, memoria, id_tabla);
 
-						eliminar_archivo_swap(pcb_proceso);
+						eliminar_archivo_swap(memoria->memoria_log, pcb_proceso);
 						//list_destroy(tabla_primer_nivel->entradas);
 						//free(tabla_primer_nivel);
 						pcb_proceso->tabla_paginas = NULL;
-						log_info(logger, "TABLA DE PRIMER NIVEL DEL PROCESO %d ELIMINADA", pcb_proceso->id);
+						log_info(memoria->memoria_log, "TABLA DE PRIMER NIVEL DEL PROCESO %d ELIMINADA", pcb_proceso->id);
 
 					}
 			}
@@ -370,7 +364,7 @@ void eliminar_tablas_de_segundo_nivel(t_pcb* pcb_proceso, t_tabla_entradas_prime
 
 		eliminar_tabla_de_la_lista_de_tablas_del_sistema(memoria, tabla_segundo_nivel);
 
-		log_info(logger, "TABLA DE SEGUNDO NIVEL %d DEL PROCESO %d ELIMINADA", id_tabla_segundo_nivel, pcb_proceso->id);
+		log_info(memoria->memoria_log, "TABLA DE SEGUNDO NIVEL %d DEL PROCESO %d ELIMINADA", id_tabla_segundo_nivel, pcb_proceso->id);
 	}
 
 }
@@ -420,7 +414,7 @@ void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_
 
 }
 
-void eliminar_archivo_swap(t_pcb* pcb_proceso){
+void eliminar_archivo_swap(t_log* logger, t_pcb* pcb_proceso){
 	// Eliminar archivo del proceso
 	log_info(logger, "ARCHIVO SWAP DEL PROCESO %d ELIMINADO", pcb_proceso->id);
 }
