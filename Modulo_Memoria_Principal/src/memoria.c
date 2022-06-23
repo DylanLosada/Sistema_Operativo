@@ -26,9 +26,15 @@ int main(void) {
     memoria->id_tablas_primer_nivel = 0;
     memoria->id_tablas_segundo_nivel = 0;
 
-    t_list* bitarrayMemoria = iniciar_memoria_paginada(memoria);
 
-    memoria->marcos_memoria = bitarrayMemoria;
+
+    int tamanio_memoria = memoria->memoria_config->tamanio_memoria;
+    memoria->espacio_memoria = malloc(tamanio_memoria);
+
+    int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
+    log_info(logger,"/// Se tienen %d marcos de %d bytes en memoria principal", tamanio_memoria / tamanio_paginas, tamanio_paginas);
+
+
 
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
 	pthread_t hilo_servidor;
@@ -41,38 +47,6 @@ int main(void) {
 	return 0;
 }
 
-t_list* iniciar_memoria_paginada(t_memoria* memoria){
-
-	logger = memoria->memoria_log;
-	int tamanio_memoria = memoria->memoria_config->tamanio_memoria;
-
-	memoriaRAM = malloc(tamanio_memoria);
-
-	log_info(logger,"Direccion inicial de memoria: %s",memoriaRAM);
-
-	if(memoriaRAM == NULL){
-	        perror("MALLOC FAIL!\n");
-	        exit(1);
-	    }
-
-    int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
-
-    int cant_frames_principal = tamanio_memoria / tamanio_paginas;
-
-    log_info(logger,"/// Se tienen %d marcos de %d bytes en memoria principal",cant_frames_principal, tamanio_paginas);
-
-
-    //calloc asigna la memoria solicitada y le devuelve un puntero. La diferencia entre malloc y calloc es que
-        //malloc no establece la memoria en cero, mientras que calloc establece la memoria asignada en cero.
-    t_list* bitarrayMemoria = calloc(cant_frames_principal, sizeof(int));
-
-    if(bitarrayMemoria == NULL){
-        perror("CALLOC FAIL!\n");
-        exit(1);
-    }
-
-    return bitarrayMemoria;
-}
 
 //----------Tema de creacion de hilos-------------------
 void manejar_conexion(void* void_args){
@@ -194,11 +168,11 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	int id_proceso = pcb_cliente->id;
 
 	char nombre[50];
-	strcpy(nombre,  "/Swap_proceso_");
+	strcpy(nombre,  ".swap");
 	char* id_proceso_char = string_itoa(id_proceso);
 
-	strcat(nombre, id_proceso_char);
-	strcat(path_archivo, nombre);
+	strcat(id_proceso_char, nombre);
+	strcat(path_archivo, id_proceso_char);
 
 	FILE* archivo_proceso;
 
@@ -209,7 +183,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	int tamanio_proceso = pcb_cliente->processSize;
 	int cant_marcos = memoria->memoria_config->marcos_proceso;
 
-  int contador_marcos_por_escribir = cant_marcos;
+	int contador_marcos_por_escribir = cant_marcos;
 
 	int paginas_necesarias = ceil((double) tamanio_proceso/ (double) memoria->memoria_config->tamanio_pagina);
 

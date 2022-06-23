@@ -20,10 +20,7 @@
 #include<shared_funtions/estructuras.h>
 #include<math.h>
 
-
-
 t_log* logger;
-char* memoriaRAM;
 
 typedef struct{
 	char* puerto;
@@ -45,7 +42,7 @@ typedef struct{
 	t_list* tablas_segundo_nivel;
 	int id_tablas_primer_nivel;
 	int id_tablas_segundo_nivel;
-	t_list* marcos_memoria;
+	void* espacio_memoria;
 	t_list* marcos_libres;
 }t_memoria;
 
@@ -81,7 +78,6 @@ typedef struct{
 }t_tabla_paginas_segundo_nivel;
 
 //**************************FUNCIONES********************+
-t_list* iniciar_memoria_paginada(t_memoria* memoria);
 void manejar_conexion(void* void_args);
 int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente);
 void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria);
@@ -95,7 +91,7 @@ void aumentar_contador_tablas_primer_nivel(t_memoria* memoria);
 void aumentar_contador_tablas_segundo_nivel(t_memoria* memoria);
 void agregar_tabla_de_primer_nivel_a_memoria(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_primer_nivel);
 void agregar_tabla_de_segundo_nivel_a_memoria(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel);
-void enviar_pcb_a_kernell(t_pcb* pcb_actualizado , int cliente_fd, op_memoria_message MENSSAGE);
+void responder_pcb_a_cliente(t_pcb* pcb_actualizado , int cliente_fd, op_memoria_message MENSSAGE);
 t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
 void eliminar_tablas_de_segundo_nivel(t_pcb* pcb_proceso, t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria);
 void eliminar_paginas_de_memoria(t_tabla_paginas_segundo_nivel* tabla_segundo_nivel, t_memoria* memoria);
