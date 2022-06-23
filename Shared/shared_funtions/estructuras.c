@@ -295,6 +295,45 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 
 }
 
+void* serialize_mmu_memoria(t_cpu_paquete* paquete, int tabla_nivel, int entrada_nivel, int MENSSAGE){
+	paquete->buffer = malloc(sizeof(t_buffer));
+	paquete->buffer->size = sizeof(int) // tabla
+			+ sizeof(int); // entrada
+
+	paquete->buffer->stream = malloc(paquete->buffer->size);
+	int offset = 0;
+
+	// TABLA SEGUN NIVEL
+	memcpy(paquete->buffer->stream, &tabla_nivel, sizeof(int));
+	offset += sizeof(int);
+
+
+	// ENTRADA SEGUN NIVEL
+	memcpy(paquete->buffer->stream + offset, &entrada_nivel, sizeof(int));
+	offset += sizeof(int);
+
+	// Segundo: completo el paquete.
+	paquete->op_code = MENSSAGE;
+
+	void* a_enviar = malloc(paquete->buffer->size  + sizeof(int) + sizeof(int));
+	offset = 0;
+
+	memcpy(a_enviar, &paquete->op_code, sizeof(int));
+	offset += sizeof(int);
+	memcpy(a_enviar + offset, &paquete->buffer->size, sizeof(int));
+	offset += sizeof(int);
+	memcpy(a_enviar + offset, paquete->buffer->stream, paquete->buffer->size);
+	offset += paquete->buffer->size;
+
+	return a_enviar;
+}
+
+
+void deserialize_mmu_memoria(int* tabla_nivel, int* entrada_nivel, int socket){
+	recv(socket, tabla_nivel, sizeof(int), MSG_WAITALL);
+	recv(socket, entrada_nivel, sizeof(int), MSG_WAITALL);
+}
+
 void free_serialize(t_cpu_paquete* paquete){
 	free(paquete->buffer->stream);
 	free(paquete->buffer);
