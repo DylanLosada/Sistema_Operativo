@@ -87,12 +87,25 @@ void liberar_memoria(t_memoria* memoria){
     free(memoria);
 }
 
+char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
+
+	char* path_archivo = memoria->memoria_config->path_swap;
+		int id_proceso = pcb_cliente->id;
+
+		char nombre[50];
+		strcpy(nombre,  ".swap");
+		char* id_proceso_char = string_itoa(id_proceso);
+
+		strcat(id_proceso_char, nombre);
+		strcat(path_archivo, id_proceso_char);
+
+		return path_archivo;
+}
+
 
 //void liberar_memoria_paginada(){
 //	bitarray_destroy(frames_ocupados_principal);
-//	bitarray_destroy(frames_ocupados_virtual);
 //	free(datos_memoria);
-//	free(datos_memoria_virtual);
 //	pthread_mutex_lock(&mutex_tablas_de_paginas);
 //	list_destroy_and_destroy_elements(tablas_de_paginas, (void*)eliminar_tabla_de_paginas);
 //	pthread_mutex_unlock(&mutex_tablas_de_paginas);

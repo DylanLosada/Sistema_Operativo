@@ -16,6 +16,8 @@
 #include<errno.h>
 #include<shared_funtions/estructuras.h>
 #include<math.h>
+#include<sys/types.h>
+#include<sys/stat.h>
 
 typedef struct{
     op_code codigo_operacion;
@@ -69,6 +71,10 @@ void eliminar_paginas_de_memoria(t_tabla_paginas_segundo_nivel* tabla_segundo_ni
 void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria, int posicion_tabla_en_lista);
 void eliminar_archivo_swap(t_log* logger, t_pcb* pcb_proceso);
 void eliminar_tabla_de_la_lista_de_tablas_del_sistema(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel);
+void hacer_swap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria);
+char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria);
+t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
+void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion);
 //////////////////////////////SEMAFOROS////////////////////////////
 
 pthread_mutex_t mutex_memoria_principal_bitmap;

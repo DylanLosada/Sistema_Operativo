@@ -32,6 +32,15 @@ int main(void) {
     int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
     log_info(memoria->memoria_log,"/// Se tienen %d marcos de %d bytes en memoria principal", tamanio_memoria / tamanio_paginas, tamanio_paginas);
 
+    //-------------------CREO DIRECTORIO PARA LOS ARCHIVOS SWAP------------------------------
+
+    	char* ruta_directorio = "/home/utnso/tp-2022-1c-SanguchitOS/";
+
+    	char* swap = "swap";
+
+    	//strcat(ruta_directorio, swap);
+
+    	int directorio = mkdir("/home/utnso/tp-2022-1c-SanguchitOS/swap", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
@@ -94,10 +103,16 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_actualizado, cliente_fd, OPERACION_EXITOSA);
 
-			} else {
-				log_warning(memoria->memoria_log, "Operacion desconocida\n");
+			} else if(op_code_memoria == SWAP){
+
+				hacer_swap_del_proceso(pcb_cliente, memoria);
+				log_info(memoria->memoria_log, "SE SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
+				responder_pcb_a_cliente(pcb_cliente, cliente_fd, OPERACION_EXITOSA);
+
+				}else{
+					log_warning(memoria->memoria_log, "Operacion desconocida\n");
+				}
 			}
-		}
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
 	}
 	    return EXIT_SUCCESS;
@@ -161,32 +176,23 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	//_________________CREACION DE ARCHIVO DEL PROCESO_____________________
 
-	char* path_archivo = memoria->memoria_config->path_swap;
-	int id_proceso = pcb_cliente->id;
-
-	char nombre[50];
-	strcpy(nombre,  ".swap");
-	char* id_proceso_char = string_itoa(id_proceso);
-
-	strcat(id_proceso_char, nombre);
-	strcat(path_archivo, id_proceso_char);
+	char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_cliente, memoria);
 
 	FILE* archivo_proceso;
 
 	archivo_proceso = fopen(path_archivo, "w" );
-	log_info(memoria->memoria_log, "SE CREA EL ARCHIVO SWAP DEL PROCESO %d EN LA RUTA %s", id_proceso, path_archivo);
+	log_info(memoria->memoria_log, "SE CREA EL ARCHIVO SWAP DEL PROCESO %d EN LA RUTA %s", pcb_cliente->id, path_archivo);
 
 	//_____________________CREACION DE TABLAS______________________________
 	int tamanio_proceso = pcb_cliente->processSize;
-	int cant_marcos = memoria->memoria_config->marcos_proceso;
 
-	int contador_marcos_por_escribir = cant_marcos;
+	int contador_marcos_disponibles_por_proceso = memoria->memoria_config->marcos_proceso;
 
 	int paginas_necesarias = ceil((double) tamanio_proceso/ (double) memoria->memoria_config->tamanio_pagina);
 
 	//obtengo la cantidad de tabla de paginas de segundo nivel necesarias ==> CANTIDAD DE ENTRADAS DE TABLA #1
 	//ej: pag_necesarias = 16, marcos_por_proceso= 4 --> cant_tablas #2 = 4 --> cant_entradas #1 = 4
-	int cant_tablas_segundo_necesarias = ceil(sqrt((double)paginas_necesarias));
+	int cant_tablas_segundo_necesarias = ceil(sqrt((double) paginas_necesarias));
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_entradas_primer_nivel*));
 
@@ -196,9 +202,9 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	t_list* entadas_tabla_nivel_uno = list_create();
 
-	int paginas_guardadas = 0;
+	int tablas_guardadas;
 
-	for(paginas_guardadas = 0; paginas_guardadas < cant_tablas_segundo_necesarias; paginas_guardadas++){
+	for(tablas_guardadas = 0; tablas_guardadas < cant_tablas_segundo_necesarias; tablas_guardadas++){
 
 		t_tabla_paginas_segundo_nivel* tabla_segundo_nivel = malloc(sizeof(t_tabla_paginas_segundo_nivel*));
 
@@ -207,19 +213,18 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 		t_list* paginas_tabla_segundo_nivel = list_create();
 
-		//Ver si paginas guardadas aumenta desp de entrar en el for, sino habria q agregar un +1
-		if((paginas_guardadas + 1) == cant_tablas_segundo_necesarias){ //Creo que este if esta mal, es para la ultima tabla o primer tabla para aquellos q solo tengan una entrada
+		if((tablas_guardadas + 1) == cant_tablas_segundo_necesarias){
 			int i= 0;
 			for(i=0; i < paginas_necesarias; i++){
-				int numero_pagina = 0;
+				int numero_pagina_de_tabla = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
-				pagina_segundo_nivel->id_pagina = numero_pagina + 1;
+				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
 
-           	if(contador_marcos_por_escribir > 0){
+           	if(contador_marcos_disponibles_por_proceso > 0){
            		pagina_segundo_nivel->presencia = 1;
            		//Asignar marco
            		//pagina_segundo_nivel->frame_principal ??
-              	contador_marcos_por_escribir = contador_marcos_por_escribir - 1;
+              	contador_marcos_disponibles_por_proceso = contador_marcos_disponibles_por_proceso - 1;
           			}else{
            			pagina_segundo_nivel->presencia = 0;
            			//pagina_segundo_nivel->frame_principal = NULL
@@ -234,17 +239,17 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 			}
 			tabla_segundo_nivel->paginas_segundo_nivel = paginas_tabla_segundo_nivel;
 		}else{
-			int i= 0;
-			for(i=0; i < cant_tablas_segundo_necesarias; i++){
-				int numero_pagina = 0;
+			int pagina;
+			for(pagina = 0; pagina < cant_tablas_segundo_necesarias; pagina++){
+				int numero_pagina_de_tabla = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
-				pagina_segundo_nivel->id_pagina = numero_pagina + 1;
+				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
 
-        		if(contador_marcos_por_escribir > 0){
+        		if(contador_marcos_disponibles_por_proceso > 0){
            		pagina_segundo_nivel->presencia = 1;
            		//Asignar marco
            		//pagina_segundo_nivel->frame_principal ??
-              	contador_marcos_por_escribir = contador_marcos_por_escribir - 1;
+              	contador_marcos_disponibles_por_proceso = contador_marcos_disponibles_por_proceso - 1;
           			}else{
            			pagina_segundo_nivel->presencia = 0;
            			//pagina_segundo_nivel->frame_principal = NULL
@@ -268,13 +273,16 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	agregar_tabla_de_primer_nivel_a_memoria(memoria, tabla_primer_nivel);
 
-	pcb_cliente->tabla_paginas = tabla_primer_nivel->id_tabla;
+	int* id_tabla = malloc(sizeof(int));
+	*id_tabla = tabla_primer_nivel->id_tabla;
+
+	pcb_cliente->tabla_paginas = id_tabla;
 
 
 	//_________________CERRADO DE ARCHIVO DEL PROCESO_____________________
 
 	fclose(archivo_proceso);
-	log_info(memoria->memoria_log, "SE CIERRA EL ARCHIVO SWAP DEL PROCESO %d DE LA RUTA %s", id_proceso, path_archivo);
+	log_info(memoria->memoria_log, "SE CIERRA EL ARCHIVO SWAP DEL PROCESO %d DE LA RUTA %s", pcb_cliente->id, path_archivo);
 
 	return pcb_cliente;
 
@@ -411,11 +419,69 @@ void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_
 //obtener id archivo del proceso
 
 
-
 }
 
 void eliminar_archivo_swap(t_log* logger, t_pcb* pcb_proceso){
 	// Eliminar archivo del proceso
 	log_info(logger, "ARCHIVO SWAP DEL PROCESO %d ELIMINADO", pcb_proceso->id);
+}
+
+void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
+
+	char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_proceso, memoria);
+
+	FILE* archivo_proceso;
+
+	archivo_proceso = fopen(path_archivo, "w" ); // VER QUE ESTE FLAG ESTA MAL
+	log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
+
+	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
+
+	t_list* lista_de_tablas_de_segundo_nivel = tabla_primer_nivel->entradas;
+
+	int tamanio_lista = list_size(lista_de_tablas_de_segundo_nivel);
+
+	int tabla_actual;
+
+	for(tabla_actual = 0; tabla_actual < tamanio_lista; tabla_actual++){
+		t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion = list_get(lista_de_tablas_de_segundo_nivel, tabla_actual);
+
+		hacer_swap_de_tabla_de_paginas_de_segundo_nivel(tabla_pagina_segundo_nivel_iteracion);
+
+		//CREO QUE HABRIA QUE ACTUALIZAR LA LISTA DE TABLAS DE SEGUNDO NIVEL DE MEMORIA
+		//VALE LA PENA TENER ESTA LISTA?? SI TOTAL CADA TABLA TIENE SU LISTA DE TABLAS. RARO
+
+	}
+
+	fclose(archivo_proceso);
+}
+
+void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion){
+
+}
+
+t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
+
+	int id_tabla_proceso = pcb_proceso->tabla_paginas;
+
+	t_list* tablas_primer_nivel_del_sistema = memoria->tablas_primer_nivel;
+
+	int tamanio_lista_primer_nivel = list_size(tablas_primer_nivel_del_sistema);
+
+	int tabla_actual;
+	for(tabla_actual = 0; tabla_actual < tamanio_lista_primer_nivel; tabla_actual++){
+		if(list_get(tablas_primer_nivel_del_sistema, tabla_actual)!= NULL){
+			t_tabla_entradas_primer_nivel* tabla_primer_nivel_de_la_iteracion = list_get(tablas_primer_nivel_del_sistema, tabla_actual);
+			int id_tabla_de_la_iteracion = tabla_primer_nivel_de_la_iteracion->id_tabla;
+			if(id_tabla_proceso == id_tabla_de_la_iteracion){
+				log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL DEL PROCESO %d es %d", pcb_proceso->id, id_tabla_de_la_iteracion);
+				return tabla_primer_nivel_de_la_iteracion;
+			}
+		}
+
+	}
+	log_info(memoria->memoria_log, "NO SE ENCONTRO LA TABLA DE PRIMER NIVEL DEL PROCESO");
+	return NULL;
+
 }
 
