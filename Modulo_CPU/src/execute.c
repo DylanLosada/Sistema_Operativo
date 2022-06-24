@@ -24,6 +24,21 @@ void sendDataToKernel(int totalInstructionsExecuted, int timeIO, clock_t clock, 
 
 }
 
+void execute_instruction_read_write(int* requerido, t_cpu* cpu, t_pcb* pcb, t_instruct* instruction) {
+	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
+	instruction->param1 = dir_fisica;
+	send_data_to_memoria(cpu->mem_config->socket, instruction);
+	recive_from_memoria(requerido);
+}
+
+void execute_instruction_copy(int* requerido, t_cpu* cpu, t_pcb* pcb, t_instruct* instruction, int dir_fisica_primer_param, int dir_fisica_segundo_param) {
+	instruction->param1 = dir_fisica_primer_param;
+	instruction->param2 = dir_fisica_segundo_param;
+	send_data_to_memoria(cpu->mem_config->socket, instruction);
+	recive_from_memoria(requerido);
+}
+
+
 void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 	int retardo = cpu->cpu_config->RETARDO_NOOP;
 
@@ -36,18 +51,31 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 			//Se deberá leer el valor de memoria correspondiente a esa dirección lógica e imprimirlo por pantalla
 			int dir_fisica = excecute_read(cpu, pcb, instruction);
 			log_info(cpu->cpu_log, "SE LEYO LA SIGUIENTE DIRECCION FISICA: %d", dir_fisica);
+			/*int espacio_leido;
+			execute_instruction_read_write(&espacio_leido, cpu, pcb, instruction);
+			log_info(cpu->cpu_log, "EL ESPACIO DE MEMORIA LEIDO: %d", espacio_leido);*/
 			break;
 		}
-		case COPY:
+		case COPY:{
 			// Se deberá escribir en memoria el valor ubicado en la dirección lógica pasada como segundo parámetro, en la dirección lógica pasada como primer parámetro.
 			// A efectos de esta etapa, el accionar es similar a la instrucción WRITE ya que el valor a escribir ya se debería haber obtenido en la etapa anterior.
 			excecute_copy(cpu, pcb, instruction);
 			log_info(cpu->cpu_log, "SE REALIZA LA COPIA");
+			int op_code;
+			/*int dir_fisica_primer_param = dir_logica_a_fisica(cpu, pcb, instruction->param1);
+			int dir_fisica_segundo_param = dir_logica_a_fisica(cpu, pcb, instruction->param2);
+			execute_instruction_copy(op_code, cpu, pcb, instruction, dir_fisica_primer_param, dir_fisica_segundo_param);*/
+			//log_info(cpu->cpu_log, "EL ESPACIO DE MEMORIA %d FUE ESCRITO POR %d", dir_fisica_primer_param, dir_fisica_segundo_param);
 			break;
+		}
 		case WRITE:{
 			// Se deberá escribir en memoria el valor del segundo parámetro en la dirección lógica del primer parámetro.
 			int dir_fisica = excecute_write(cpu, pcb, instruction);
 			log_info(cpu->cpu_log, "SE ESCRIBIO EN LA SIGUIENTE DIRECCION FISICA: %d, EL SIGUIENTE VALOR %d", dir_fisica, instruction->param2);
+			/*char* ok_code = "OK";
+			int op_code;
+			execute_instruction_read_write(&op_code, cpu, pcb, instruction);
+			log_info(cpu->cpu_log, "EL ESPACIO DE MEMORIA FUE ESCRITO: CODIGO %s", ok_code);*/
 			break;
 		}
 	}
@@ -86,4 +114,14 @@ void excecute_copy(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	memcpy(stream + sizeof(int), &dir_fisica_second, sizeof(int));
 	send_data_to_kernel(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
 	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
+}
+
+void send_data_to_memoria(int socket, t_instruct* instruction){
+	t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
+	void* to_send = serialize_mmu_memoria(paquete, instruction->param1, instruction->param2, instruction->instructions_code);
+	send_data_to_server(socket, to_send, paquete->buffer->size + sizeof(int) + sizeof(int));
+}
+
+void recive_from_memoria(int* requiero, int socket){
+	recv(socket, requiero, sizeof(int), MSG_WAITALL);
 }

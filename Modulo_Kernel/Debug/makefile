@@ -33,7 +33,7 @@ dependents:
 Modulo_Kernel: $(OBJS) $(USER_OBJS) /home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug/libShared.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2022-1c-SanguchitOS/Shared/Debug" -o "Modulo_Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "Modulo_Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
