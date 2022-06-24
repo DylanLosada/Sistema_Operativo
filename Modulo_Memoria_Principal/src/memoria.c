@@ -179,11 +179,11 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
 
 
     if(pcb_actualizado->tabla_paginas != NULL){
-    		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, OPERACION_EXITOSA);
+    		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, NEW);
     		log_info(memoria->memoria_log, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
 
     	}else{
-    		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, OPERACION_FALLIDA);
+    		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, ERROR);
     		log_info(memoria->memoria_log, "----------> No hay lugar para guardar el proceso [%d] en memoria\n", id_proceso);
 
     	}
@@ -196,7 +196,7 @@ void responder_pcb_a_cliente(t_pcb* pcb_actualizado , int cliente_fd, op_memoria
 		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 		void* pcb_serializate = serializate_pcb(pcb_actualizado, paquete, MENSSAGE);
 
-		int code_operation = send_data_to_server(cliente_fd, pcb_actualizado, (paquete->buffer->size + sizeof(int) + sizeof(int)));
+		int code_operation = send(cliente_fd, pcb_serializate, (paquete->buffer->size + sizeof(int) + sizeof(int)), 0);
 		if(code_operation < 0){
 			error_show("OCURRIO UN PROBLEMA INTENTANDO RESPONDERLE AL CLIENTE, ERROR: IMPOSIBLE RESPONDER");
 			exit(1);

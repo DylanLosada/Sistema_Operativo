@@ -6,7 +6,7 @@ int dir_logica_a_fisica(t_cpu* cpu, t_pcb* pcb, int dir_logica) {
 	t_mem_config* mem_config = cpu->mem_config;
 
 
-	int tabla_1er_nivel = *pcb->tabla_paginas;
+	int tabla_1er_nivel = pcb->tabla_paginas;
 	int numero_pagina = floor(dir_logica / mem_config->size_pagina);
 
 

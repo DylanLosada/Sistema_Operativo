@@ -77,34 +77,20 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 	t_list* instruccionesDestokenizadas = destokenizarInstructions(pcb->instrucciones);
 
 	t_instruct* instruct = malloc(sizeof(t_instruct));
-	bool hasInterrupt = false;
 
-	//START EXECUTE
 	clock_t time_excecuted = clock();
 	while(pcb->program_counter < list_size(pcb->instrucciones)){
+		//FETCH
 		instruct = list_get(instruccionesDestokenizadas,pcb->program_counter);
-		if(instruct->instructions_code == COPY){
-			fetch_operands(instruct->param2);
-		}
 
-		pthread_mutex_lock(exist_interrupt->mutex_has_interrupt);
-		if(exist_interrupt->is_interrupt){
-			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
-			int op_code = INTERRUPT;
-			pcb->time_excecuted_rafaga = clock() - time_excecuted;
-			send_data_to_kernel(kernel_socket, cpu, pcb, op_code);
-			exist_interrupt->is_interrupt = false;
-			hasInterrupt = true;
-		}
-		pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
-
-
+		// DECODE / FETCH OPERANDS
+		pcb->program_counter++;
 		if(instruct->instructions_code == EXIT || instruct->instructions_code == I_O){
 
 			pcb->time_excecuted_rafaga = clock() - time_excecuted;
 
 			if(instruct->instructions_code == I_O){
-				pcb->time_blocked = instruct->param1;
+				pcb->time_io = instruct->param1;
 			}
 
 			cpu->args_io_exit->code = instruct->instructions_code;
@@ -112,17 +98,23 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 
 			pthread_mutex_unlock(cpu->args_io_exit->mutex_has_io_exit);
 
-			hasInterrupt = true;
-		}
-
-		if(hasInterrupt){
 			break;
 		}
 
-
+		// EXECUTE
 		execute(instruct, cpu, pcb);
 
-		pcb->program_counter++;
+		// CHECK INTERRUPT
+		pthread_mutex_lock(exist_interrupt->mutex_has_interrupt);
+		if(exist_interrupt->is_interrupt){
+			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
+			int op_code = INTERRUPT;
+			pcb->time_excecuted_rafaga = clock() - time_excecuted;
+			send_data_to_kernel(kernel_socket, cpu, pcb, op_code);
+			exist_interrupt->is_interrupt = false;
+			break;
+		}
+		pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
 	}
 	free(instruct);
 	list_destroy(instruccionesDestokenizadas);

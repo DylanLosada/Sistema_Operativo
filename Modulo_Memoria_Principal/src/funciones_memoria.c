@@ -1,9 +1,7 @@
 #include "funciones_memoria.h"
-#include "memoria.h"
-
 
 t_config_memoria* create_config(t_log* log){
-	t_config* config = config_create("memoria.config");
+	t_config* config = config_create("/home/utnso/tp-2022-1c-SanguchitOS/Modulo_Memoria_Principal/memoria.config");
 	t_config_memoria* memoria_config = malloc(sizeof(t_config_memoria));
 
 	if(config == NULL){
@@ -97,7 +95,6 @@ void agregar_marco_de_memoria_a_lista(t_memoria* memoria, int marco){
 	t_list* marcos_libres = memoria->marcos_libres;
 	list_add(marcos_libres, marco);
 }
-
 
 //void liberar_memoria_paginada(){
 //	bitarray_destroy(frames_ocupados_principal);

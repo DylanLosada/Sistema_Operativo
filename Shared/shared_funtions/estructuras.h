@@ -33,7 +33,8 @@ typedef enum{
 	OPERACION_FALLIDA,
 	DELETE,
 	TABLA_SEGUNDO_NIVEL,
-	MARCO
+	MARCO,
+	OK
 } op_memoria_message;
 
 typedef struct{

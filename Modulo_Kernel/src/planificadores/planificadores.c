@@ -162,29 +162,29 @@ bool comparate_time_rafaga(void* previous, void* next){
 	return prebius_pcb->rafaga<=next_pcb->rafaga;
 }
 
-void order_state(t_list* list_to_oreder, int ALFA){
+void order_state(t_list* list_to_oreder, int ALFA, int rafaga_anterior, int time_excecuted){
 	t_pcb* pcb_anterior = list_get(list_to_oreder, 0);
-	for(int index = 1; index < list_size(list_to_oreder); index++){
-		t_pcb* pcb_to_calculate_rafaga = list_get(list_to_oreder, index);
-		if(!hasCalculateRafaga(pcb_to_calculate_rafaga)){
-			calculate_rafaga(ALFA, pcb_anterior, pcb_to_calculate_rafaga);
+	if(list_size(list_to_oreder) > 1){
+		for(int index = 1; index < list_size(list_to_oreder); index++){
+			t_pcb* pcb_to_calculate_rafaga = list_get(list_to_oreder, index);
+			if(!hasCalculateRafaga(pcb_to_calculate_rafaga)){
+				calculate_rafaga(ALFA, pcb_anterior->rafaga, pcb_anterior->time_excecuted_rafaga, pcb_to_calculate_rafaga);
+			}
+		}
+	} else {
+		if(!hasCalculateRafaga(pcb_anterior)){
+			calculate_rafaga(ALFA, rafaga_anterior, time_excecuted, pcb_anterior);
 		}
 	}
 	list_sort(list_to_oreder, comparate_time_rafaga);
 }
 
 bool hasCalculateRafaga(t_pcb* pcb){
-	bool hasrafaga = true;
-
-	if(pcb->rafaga == NULL){
-		hasrafaga = false;
-	}
-
-	return hasrafaga;
+	return pcb->rafaga > 0;
 }
 
-void calculate_rafaga(int alpha, t_pcb* pcb_anterior, t_pcb* pcb_to_calculate_rafaga){
-	pcb_to_calculate_rafaga->rafaga = (alpha * pcb_anterior->time_excecuted_rafaga) + ((1 - alpha) * pcb_anterior->rafaga);
+void calculate_rafaga(int alpha, int rafaga_anterior, int time_excecuted, t_pcb* pcb_to_calculate_rafaga){
+	pcb_to_calculate_rafaga->rafaga = (alpha * time_excecuted) + ((1 - alpha) * rafaga_anterior);
 }
 
 void long_term_planner(void* args_long_term_planner){
@@ -260,6 +260,8 @@ void check_suspended_ready_state(t_state_list_hanndler* state_suspended_ready,
 }
 
 void short_term_planner(void* args_short_planner){
+	int time_excecuted = 0;
+	int time_rafaga = 0;
 	bool* isExitInstruction = malloc(sizeof(bool));
 	*isExitInstruction = false;
 
@@ -330,10 +332,12 @@ void short_term_planner(void* args_short_planner){
 		// Reviso que algun pcb que este en blocked pueda ser ingresado a READY
 		pthread_mutex_lock(ready->mutex);
 		pthread_mutex_lock(args->states->state_blocked->mutex);
+		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
 		if(!list_is_empty(args->states->state_blocked->state)){
 			// lugar vacio para los bloquedos, mayor procedencia.
-			check_and_update_blocked_to_ready(args->states->state_blocked->state, args->states);
+			check_and_update_blocked_to_ready(args->states->state_blocked->state, args->states, args->monitor_is_new_pcb_in_ready);
 		}
+		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(args->states->state_blocked->mutex);
 		pthread_mutex_unlock(ready->mutex);
 
@@ -366,6 +370,8 @@ void short_term_planner(void* args_short_planner){
 				pthread_mutex_lock(args->states->state_blocked->mutex);
 				list_add(args->states->state_blocked->state, pcb_excecuted);
 				pthread_mutex_unlock(args->states->state_blocked->mutex);
+				time_excecuted = pcb_excecuted->time_excecuted_rafaga;
+				time_rafaga = pcb_excecuted->rafaga;
 			}
 			args_instruction_thread->hasUpdateState = false;
 			hasRunning = false;
@@ -378,8 +384,10 @@ void short_term_planner(void* args_short_planner){
 				t_pcb* pcb_excecuted = queue_pop(running->state);
 				interrupt_cpu(args->sockets_cpu->dispatch, args->sockets_cpu->interrupt, INTERRUPT, pcb_excecuted);
 				list_add_in_index(ready->state, 0, pcb_excecuted);
+				time_excecuted = pcb_excecuted->time_excecuted_rafaga;
+				time_rafaga = pcb_excecuted->rafaga;
 			}
-			order_state(ready->state, args->config_kernel);
+			order_state(ready->state, args->ALFA, time_rafaga, time_excecuted);
 		}
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(args_instruction_thread->mutex_check_instruct);
@@ -407,19 +415,20 @@ bool isNewPcbIntoReady(int pre_evaluate_add_pcb_to_ready_size, t_list* state_rea
 	return pre_evaluate_add_pcb_to_ready_size < list_size(state_ready);
 }
 
-void check_and_update_blocked_to_ready(t_list* state, t_states* states){
+void check_and_update_blocked_to_ready(t_list* state, t_states* states, t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready){
 	t_list* pos_pcbs_with_complete_io = list_create();
 
 	for(int empty_elem = 0; empty_elem < list_size(state); empty_elem++){
 		t_pcb* pcb_to_add = list_get(states->state_blocked->state, empty_elem);
 		int time_blocked = abs(pcb_to_add->time_blocked - clock());
 		if(pcb_to_add != NULL && pcb_to_add->time_io <= time_blocked){
-			add_pcb_to_state(pcb_to_add, states->state_ready->state);
+			list_add(pos_pcbs_with_complete_io, empty_elem);
+			*monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = true;
 		}
 	}
 
 	for(int index = 0; index < list_size(pos_pcbs_with_complete_io); index++){
-		list_add(states->state_ready, list_remove(states->state_blocked, list_get(pos_pcbs_with_complete_io, index)));
+		list_add(states->state_ready->state, list_remove(states->state_blocked->state, list_get(pos_pcbs_with_complete_io, index)));
 	}
 
 	free(pos_pcbs_with_complete_io);
@@ -482,16 +491,16 @@ void check_time_in_blocked_and_pass_to_suspended_blocked(t_state_list_hanndler* 
 }
 
 void recive_information_from_memoria(t_pcb* pcb, int socket_memoria){
-	int* op_code;
+	int op_code;
 	// recibo mensaje y pcb de memoria.
-	t_pcb* pcb_received = deserializate_pcb(socket_memoria, op_code);
+	t_pcb* pcb_received = deserializate_pcb(socket_memoria, &op_code);
 
-	if (*op_code == ERROR || *op_code < 0) {
-		error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON MEMORIA, CODIGO ERROR: %d", *op_code);
+	if (op_code == ERROR || op_code < 0) {
+		error_show("OCURRIO UN PROBLEMA INTENTANDO CONECTARSE CON MEMORIA, CODIGO ERROR: %d", op_code);
 		//exit(1);
-	} else if (*op_code == NEW || *op_code == RE_SWAP) {
+	} else if (op_code == NEW || op_code == RE_SWAP) {
 		pcb->tabla_paginas = pcb_received->tabla_paginas;
-	} else if (*op_code == SWAP) {
+	} else if (op_code == SWAP) {
 		// TODO loggeamos que se realizo la liberacion de espacio memoria.
 	}
 }
@@ -593,6 +602,8 @@ t_pcb* create_pcb(int ESTIMACION_INICIAL, bool* isFirstPcb, t_pre_pcb* pre_pcb){
 	if(*isFirstPcb){
 		pcb->rafaga = ESTIMACION_INICIAL;
 		*isFirstPcb=false;
+	} else {
+		pcb->rafaga = 0;
 	}
 	pcb->time_blocked = malloc(sizeof(clock_t));
 	pcb->time_excecuted_rafaga = 0;
