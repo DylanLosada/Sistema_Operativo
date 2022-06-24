@@ -87,19 +87,15 @@ void liberar_memoria(t_memoria* memoria){
     free(memoria);
 }
 
-char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
+int obtener_marco_de_memoria(t_memoria* memoria){
+	t_list* marcos_libres = memoria->marcos_libres;
 
-	char* path_archivo = memoria->memoria_config->path_swap;
-		int id_proceso = pcb_cliente->id;
+	return list_remove(marcos_libres, 0);
+}
 
-		char nombre[50];
-		strcpy(nombre,  ".swap");
-		char* id_proceso_char = string_itoa(id_proceso);
-
-		strcat(id_proceso_char, nombre);
-		strcat(path_archivo, id_proceso_char);
-
-		return path_archivo;
+void agregar_marco_de_memoria_a_lista(t_memoria* memoria, int marco){
+	t_list* marcos_libres = memoria->marcos_libres;
+	list_add(marcos_libres, marco);
 }
 
 

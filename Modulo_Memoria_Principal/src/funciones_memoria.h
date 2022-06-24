@@ -32,9 +32,6 @@ typedef struct{
 	t_list* marcos_libres;
 }t_memoria;
 
-//Funciones q podrian estar en shared y son utiles para el modulo
-
-//**************************FUNCIONES********************+
 
 #endif
 

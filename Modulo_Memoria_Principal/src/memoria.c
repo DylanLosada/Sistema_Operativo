@@ -1,6 +1,26 @@
 #include "memoria.h"
 
 
+/*
+ *   TODO
+ * * VER TEMA DE CLOCK Y CLOCK MODIFICADO
+ * * SWAP Y RE-SWAP
+ * * HACER CONSULTAS DE SI EL GRADO DE MULTIPROGRAMACION VIENE ACORDE A LA CANTIDAD DE FRAMES DE MEMORIA
+ * *ALGORITMO DE REEMPLAZO ES DEL PROCESO O DEL SISTEMA EN GENERAL?
+ *
+ * CANT FRAMES 20
+ * GRADO MULTI 5
+ * FRAMES POR PROCESO 4
+ *
+ * -------> 20 FRAMES
+ *
+ *
+ * * INSTRUCCIONES READ/COPY/WRITE
+ * * EL TP ACLARA QUE EL OPCODE DELETE NO ELIMINA TABLA DE PAGINAS SINO QUE SOLO BORRA SU CONTENIDO Y ARCHIVO SWAP
+ * * UN PROCESO PUEDE ACCEDER A UN ESPACIO DE MEMORIA DE OTRRO PROCESO? ES POR EL TEMA DE LAS INSTRUCCIONES Y LAS DIRECIIONES QUE LLEGUEN COMO PARAMETRO
+ * * LA LISTA DE ENTRADAS DDE TABLA DE PRIMER NIVEL NO ES UNA LISTA DE TABLAS SINO UNA LISTA DE ID CORREGIR!!
+ */
+
 int main(void) {
 	t_memoria* memoria = malloc(sizeof(t_memoria));
 
@@ -19,12 +39,12 @@ int main(void) {
 
     memoria->tablas_segundo_nivel = list_create();
 
-    memoria->marcos_libres = list_create();
+    int cantidad_de_frames= (memoria->memoria_config->tamanio_memoria)/(memoria->memoria_config->tamanio_pagina);
+
+    inicializar_lista_de_marcos_libres(cantidad_de_frames, memoria);
 
     memoria->id_tablas_primer_nivel = 0;
     memoria->id_tablas_segundo_nivel = 0;
-
-
 
     int tamanio_memoria = memoria->memoria_config->tamanio_memoria;
     memoria->espacio_memoria = malloc(tamanio_memoria);
@@ -52,6 +72,20 @@ int main(void) {
 	//liberar_memoria();
 
 	return 0;
+}
+
+void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memoria){
+
+	int frame_actual;
+	t_list* marcos_libres_para_asignar = list_create();
+
+	for(frame_actual = 0; frame_actual < cantidad_de_frames; frame_actual++){
+
+		//memoria->marcos_libres[frame_actual]= frame_actual+1;
+		list_add(marcos_libres_para_asignar, frame_actual);
+		log_info(memoria->memoria_log,"Se tienen el valor %d en la posicion de la lista %d", list_get(marcos_libres_para_asignar, frame_actual), marcos_libres_para_asignar->elements_count);
+	}
+	memoria->marcos_libres = marcos_libres_para_asignar;
 }
 
 
@@ -113,6 +147,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 					log_warning(memoria->memoria_log, "Operacion desconocida\n");
 				}
 			}
+		600
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
 	}
 	    return EXIT_SUCCESS;
@@ -222,12 +257,12 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
            	if(contador_marcos_disponibles_por_proceso > 0){
            		pagina_segundo_nivel->presencia = 1;
-           		//Asignar marco
-           		//pagina_segundo_nivel->frame_principal ??
+           		int marco_memoria_principal = obtener_marco_de_memoria(memoria);
+           		pagina_segundo_nivel->frame_principal = marco_memoria_principal;
               	contador_marcos_disponibles_por_proceso = contador_marcos_disponibles_por_proceso - 1;
           			}else{
            			pagina_segundo_nivel->presencia = 0;
-           			//pagina_segundo_nivel->frame_principal = NULL
+           			pagina_segundo_nivel->frame_principal = -1;
            	}
 
 				pagina_segundo_nivel->uso = 1;
@@ -247,18 +282,19 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
         		if(contador_marcos_disponibles_por_proceso > 0){
            		pagina_segundo_nivel->presencia = 1;
-           		//Asignar marco
-           		//pagina_segundo_nivel->frame_principal ??
+           		int marco_memoria_principal = obtener_marco_de_memoria(memoria);
+				pagina_segundo_nivel->frame_principal = marco_memoria_principal;
               	contador_marcos_disponibles_por_proceso = contador_marcos_disponibles_por_proceso - 1;
           			}else{
            			pagina_segundo_nivel->presencia = 0;
-           			//pagina_segundo_nivel->frame_principal = NULL
+           			pagina_segundo_nivel->frame_principal = -1;
            	}
 
 				pagina_segundo_nivel->uso = 1;
 				pagina_segundo_nivel->modificado=1; //??
 
 				list_add(paginas_tabla_segundo_nivel, pagina_segundo_nivel);
+
 				paginas_necesarias = paginas_necesarias - 1;
 
 			}
@@ -267,14 +303,14 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 		}
 		list_add(entadas_tabla_nivel_uno, tabla_segundo_nivel);
+
 		agregar_tabla_de_segundo_nivel_a_memoria(memoria, tabla_segundo_nivel);
 }
 	tabla_primer_nivel->entradas = entadas_tabla_nivel_uno;
 
 	agregar_tabla_de_primer_nivel_a_memoria(memoria, tabla_primer_nivel);
 
-	int* id_tabla = malloc(sizeof(int));
-	*id_tabla = tabla_primer_nivel->id_tabla;
+	int id_tabla = tabla_primer_nivel->id_tabla;
 
 	pcb_cliente->tabla_paginas = id_tabla;
 
@@ -340,10 +376,17 @@ int recorrido_tabla;
 
 						eliminar_tabla_de_primer_nivel(tabla_primer_nivel, memoria, id_tabla);
 
-						eliminar_archivo_swap(memoria->memoria_log, pcb_proceso);
+						int pudo_eliminarse = eliminar_archivo_swap(memoria, pcb_proceso);
+
+						if(pudo_eliminarse==0){
+							log_info(memoria->memoria_log, "ARCHIVO SWAP DEL PROCESO %d ELIMINADO", pcb_proceso->id);
+						}else{
+							log_info(memoria->memoria_log, "ARCHIVO SWAP DEL PROCESO %d NO SE PUDO ELIMINAR", pcb_proceso->id);
+						}
+
 						//list_destroy(tabla_primer_nivel->entradas);
 						//free(tabla_primer_nivel);
-						pcb_proceso->tabla_paginas = NULL;
+						pcb_proceso->tabla_paginas = NULL; //??????????????
 						log_info(memoria->memoria_log, "TABLA DE PRIMER NIVEL DEL PROCESO %d ELIMINADA", pcb_proceso->id);
 
 					}
@@ -418,45 +461,6 @@ void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_
 
 //obtener id archivo del proceso
 
-
-}
-
-void eliminar_archivo_swap(t_log* logger, t_pcb* pcb_proceso){
-	// Eliminar archivo del proceso
-	log_info(logger, "ARCHIVO SWAP DEL PROCESO %d ELIMINADO", pcb_proceso->id);
-}
-
-void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
-
-	char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_proceso, memoria);
-
-	FILE* archivo_proceso;
-
-	archivo_proceso = fopen(path_archivo, "w" ); // VER QUE ESTE FLAG ESTA MAL
-	log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
-
-	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
-
-	t_list* lista_de_tablas_de_segundo_nivel = tabla_primer_nivel->entradas;
-
-	int tamanio_lista = list_size(lista_de_tablas_de_segundo_nivel);
-
-	int tabla_actual;
-
-	for(tabla_actual = 0; tabla_actual < tamanio_lista; tabla_actual++){
-		t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion = list_get(lista_de_tablas_de_segundo_nivel, tabla_actual);
-
-		hacer_swap_de_tabla_de_paginas_de_segundo_nivel(tabla_pagina_segundo_nivel_iteracion);
-
-		//CREO QUE HABRIA QUE ACTUALIZAR LA LISTA DE TABLAS DE SEGUNDO NIVEL DE MEMORIA
-		//VALE LA PENA TENER ESTA LISTA?? SI TOTAL CADA TABLA TIENE SU LISTA DE TABLAS. RARO
-
-	}
-
-	fclose(archivo_proceso);
-}
-
-void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion){
 
 }
 

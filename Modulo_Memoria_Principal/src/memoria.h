@@ -51,6 +51,7 @@ typedef struct{
 }t_tabla_paginas_segundo_nivel;
 
 //**************************FUNCIONES********************+
+void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memoria);
 void manejar_conexion(void* void_args);
 int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente);
 void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria);
@@ -69,12 +70,14 @@ t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
 void eliminar_tablas_de_segundo_nivel(t_pcb* pcb_proceso, t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria);
 void eliminar_paginas_de_memoria(t_tabla_paginas_segundo_nivel* tabla_segundo_nivel, t_memoria* memoria);
 void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria, int posicion_tabla_en_lista);
-void eliminar_archivo_swap(t_log* logger, t_pcb* pcb_proceso);
+int eliminar_archivo_swap(t_memoria* memoria, t_pcb* pcb_proceso);
 void eliminar_tabla_de_la_lista_de_tablas_del_sistema(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel);
 void hacer_swap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria);
 char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria);
 t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
 void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion);
+int obtener_marco_de_memoria(t_memoria* memoria);
+void agregar_marco_de_memoria_a_lista(t_memoria* memoria, int marco);
 //////////////////////////////SEMAFOROS////////////////////////////
 
 pthread_mutex_t mutex_memoria_principal_bitmap;
