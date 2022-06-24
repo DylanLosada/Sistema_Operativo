@@ -1,9 +1,7 @@
 #include "funciones_memoria.h"
-#include "memoria.h"
-
 
 t_config_memoria* create_config(t_log* log){
-	t_config* config = config_create("memoria.config");
+	t_config* config = config_create("/home/utnso/tp-2022-1c-SanguchitOS/Modulo_Memoria_Principal/memoria.config");
 	t_config_memoria* memoria_config = malloc(sizeof(t_config_memoria));
 
 	if(config == NULL){
@@ -88,12 +86,12 @@ void liberar_memoria(t_memoria* memoria){
 }
 
 
-//void liberar_memoria_paginada(){
-//	bitarray_destroy(frames_ocupados_principal);
-//	bitarray_destroy(frames_ocupados_virtual);
-//	free(datos_memoria);
-//	free(datos_memoria_virtual);
-//	pthread_mutex_lock(&mutex_tablas_de_paginas);
-//	list_destroy_and_destroy_elements(tablas_de_paginas, (void*)eliminar_tabla_de_paginas);
-//	pthread_mutex_unlock(&mutex_tablas_de_paginas);
-//}
+/*void liberar_memoria_paginada(){
+	bitarray_destroy(frames_ocupados_principal);
+	bitarray_destroy(frames_ocupados_virtual);
+	free(datos_memoria);
+	free(datos_memoria_virtual);
+	pthread_mutex_lock(&mutex_tablas_de_paginas);
+	list_destroy_and_destroy_elements(tablas_de_paginas, (void*)eliminar_tabla_de_paginas);
+	pthread_mutex_unlock(&mutex_tablas_de_paginas);
+}*/
