@@ -17,6 +17,8 @@ void handler_planners(void* void_args){
 	pthread_mutex_init(hasPcbToAddReady, NULL);
 	pthread_mutex_t* hasNewPcbInReady = malloc(sizeof(pthread_mutex_t));;
 	pthread_mutex_init(hasNewPcbInReady, NULL);
+	pthread_mutex_t* gradoMulti = malloc(sizeof(pthread_mutex_t));;
+	pthread_mutex_init(gradoMulti, NULL);
 
 	pthread_mutex_lock(hasPcb);
 	pthread_mutex_lock(hasGradoForNew);
@@ -27,8 +29,6 @@ void handler_planners(void* void_args){
 	t_monitor_grado_multiprogramacion* monitorGradoMulti = malloc(sizeof(t_monitor_grado_multiprogramacion));
 	monitorGradoMulti->gradoMultiprogramacionActual = 0;
 	monitorGradoMulti->mutex = mutex_grado_multi;
-	bool* isFirstPcb = malloc(sizeof(bool));
-	*isFirstPcb = true;
 
 	bool* is_pcb_to_add_ready = malloc(sizeof(bool));
 	*is_pcb_to_add_ready = false;
@@ -74,7 +74,9 @@ void handler_planners(void* void_args){
 	int TIEMPO_MAXIMO_BLOQUEADO = strtol(config_kernel->TIEMPO_MAXIMO_BLOQUEADO, &config_kernel->TIEMPO_MAXIMO_BLOQUEADO, 10);
 	int ESTIMACION_INICIAL = strtol(config_kernel->ESTIMACION_INICIAL, &config_kernel->ESTIMACION_INICIAL, 10);
 	int GRADO_MULTIPROGRAMACION = strtol(config_kernel->GRADO_MULTIPROGRAMACION, &config_kernel->GRADO_MULTIPROGRAMACION, 10);
-	int ALFA = strtol(config_kernel->ALFA, &config_kernel->ALFA, 10);
+	double ALFA = strtod(config_kernel->ALFA, &config_kernel->ALFA);
+
+	//create_grado_multi(GRADO_MULTIPROGRAMACION, gradoMulti);
 
 	// creo estados
 	t_states* states = malloc(sizeof(t_states));
@@ -89,7 +91,6 @@ void handler_planners(void* void_args){
 	// Planificador de largo
 	pthread_t hilo_long_term;
 	t_args_long_term_planner* args_long_term_planner = malloc(sizeof(t_args_long_term_planner));
-	args_long_term_planner->isFirstPcb = isFirstPcb;
 	args_long_term_planner->monitor_add_pcb_ready = monitor_add_pcb_ready;
 	args_long_term_planner->GRADO_MULTIPROGRAMACION = GRADO_MULTIPROGRAMACION;
 	args_long_term_planner->ESTIMACION_INICIAL = ESTIMACION_INICIAL;
@@ -107,7 +108,7 @@ void handler_planners(void* void_args){
 	pthread_detach(hilo_long_term);
 
 	// Planificador de medio
-	pthread_t hilo_mid_term;
+	/*pthread_t hilo_mid_term;
 	t_args_mid_term_planner* args_mid_term_planner = malloc(sizeof(t_args_mid_term_planner));
 	args_mid_term_planner->monitorGradoMulti = monitorGradoMulti;
 	args_mid_term_planner->TIEMPO_MAXIMO_BLOQUEADO = TIEMPO_MAXIMO_BLOQUEADO;
@@ -116,7 +117,7 @@ void handler_planners(void* void_args){
 	args_mid_term_planner->monitor_logger = args->monitor_logger;
 	args_mid_term_planner->hasPcbBlocked = hasPcbBlocked;
 	pthread_create(&hilo_mid_term, NULL, mid_term_planner, args_mid_term_planner);
-	pthread_detach(hilo_mid_term);
+	pthread_detach(hilo_mid_term);*/
 
 	// Planificador de corto
 	pthread_t hilo_short_term;
@@ -162,20 +163,7 @@ bool comparate_time_rafaga(void* previous, void* next){
 	return prebius_pcb->rafaga<=next_pcb->rafaga;
 }
 
-void order_state(t_list* list_to_oreder, int ALFA, int rafaga_anterior, int time_excecuted){
-	t_pcb* pcb_anterior = list_get(list_to_oreder, 0);
-	if(list_size(list_to_oreder) > 1){
-		for(int index = 1; index < list_size(list_to_oreder); index++){
-			t_pcb* pcb_to_calculate_rafaga = list_get(list_to_oreder, index);
-			if(!hasCalculateRafaga(pcb_to_calculate_rafaga)){
-				calculate_rafaga(ALFA, pcb_anterior->rafaga, pcb_anterior->time_excecuted_rafaga, pcb_to_calculate_rafaga);
-			}
-		}
-	} else {
-		if(!hasCalculateRafaga(pcb_anterior)){
-			calculate_rafaga(ALFA, rafaga_anterior, time_excecuted, pcb_anterior);
-		}
-	}
+void order_state(t_list* list_to_oreder){
 	list_sort(list_to_oreder, comparate_time_rafaga);
 }
 
@@ -183,7 +171,7 @@ bool hasCalculateRafaga(t_pcb* pcb){
 	return pcb->rafaga > 0;
 }
 
-void calculate_rafaga(int alpha, int rafaga_anterior, int time_excecuted, t_pcb* pcb_to_calculate_rafaga){
+void calculate_rafaga(double alpha, int rafaga_anterior, int time_excecuted, t_pcb* pcb_to_calculate_rafaga){
 	pcb_to_calculate_rafaga->rafaga = (alpha * time_excecuted) + ((1 - alpha) * rafaga_anterior);
 }
 
@@ -202,7 +190,6 @@ void long_term_planner(void* args_long_term_planner){
 		pthread_mutex_unlock(args->states->state_exit->mutex);
 
 		add_pcbs_to_new(args->monitor_logger,
-				args->isFirstPcb,
 				args->monitor_add_pcb_ready,
 				args->monitor_is_new_pcb_in_ready,
 				args->states,
@@ -243,16 +230,18 @@ void mid_term_planner(void* args_mid_term_planner){
 }
 
 void check_suspended_ready_state(t_state_list_hanndler* state_suspended_ready,
-		t_args_short_term_planner* args, t_state_list_hanndler* ready, op_memoria_message op_code) {
+		t_args_short_term_planner* args, t_state_list_hanndler* ready, op_memoria_message op_code, double ALFA) {
 	if (!list_is_empty(state_suspended_ready->state)) {
 		for (int position_element = 0; position_element < abs(args->monitorGradoMulti->gradoMultiprogramacionActual - 4); position_element++) {
 			t_pcb* pcb_to_add = list_get(state_suspended_ready->state, position_element);
 			if (pcb_to_add != NULL) {
 				send_action_to_memoria(pcb_to_add, args->socket_memoria, op_code);
+				calculate_rafaga(ALFA, pcb_to_add->rafaga, pcb_to_add->time_excecuted_rafaga, pcb_to_add);
 				add_pcb_to_state(pcb_to_add, ready->state);
 				args->monitorGradoMulti->gradoMultiprogramacionActual++;
 			}
 		}
+		order_state(ready->state);
 		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
 		*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = true;
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
@@ -260,14 +249,25 @@ void check_suspended_ready_state(t_state_list_hanndler* state_suspended_ready,
 }
 
 void short_term_planner(void* args_short_planner){
-	int time_excecuted = 0;
-	int time_rafaga = 0;
 	bool* isExitInstruction = malloc(sizeof(bool));
 	*isExitInstruction = false;
+	bool* isBlockedInstruction = malloc(sizeof(bool));
+	*isBlockedInstruction = false;
+
+	pthread_mutex_t* has_pcb_blocked = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_t* has_pcb_suspended_blocked = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_t* has_pcb_suspended_ready = malloc(sizeof(pthread_mutex_t));
+
+	pthread_mutex_init(has_pcb_blocked, NULL);
+	pthread_mutex_init(has_pcb_suspended_ready, NULL);
+	pthread_mutex_init(has_pcb_suspended_blocked, NULL);
+
+	pthread_mutex_lock(has_pcb_blocked);
+	pthread_mutex_lock(has_pcb_suspended_ready);
+	pthread_mutex_lock(has_pcb_suspended_blocked);
 
 	t_args_short_term_planner* args = (t_args_short_term_planner*) args_short_planner;
 
-	use_logger(args->monitor_logger, "PLANIFICADOR DE CORTO PLAZO CREADO");
 	t_state_list_hanndler* ready = args->states->state_ready;
 	t_state_list_hanndler* state_suspended_ready = args->states->state_suspended_ready;
 	t_state_queue_hanndler* running = args->states->state_running;
@@ -285,8 +285,41 @@ void short_term_planner(void* args_short_planner){
 	args_instruction_thread->socket = args->sockets_cpu->check_state_instructions;
 	create_check_instructions_thread(args_instruction_thread);
 
+	// Hilos de apoyo a los planificadores
+	t_args_blocked* args_blocked = malloc(sizeof(t_args_blocked));
+	args_blocked->has_pcb_blocked = has_pcb_blocked;
+	args_blocked->state_ready = ready;
+	args_blocked->has_pcb_suspended_blocked = has_pcb_suspended_blocked;
+	args_blocked->state_blocked = args->states->state_blocked;
+	args_blocked->monitor_is_new_pcb_in_ready = args->monitor_is_new_pcb_in_ready;
+	args_blocked->TIEMPO_MAX_BLOQUEADO = args->TIEMPO_MAXIMO_BLOQUEADO;
+	args_blocked->ALFA = args->ALFA;
+	args_blocked->hasPcb = args->hasPcb;
+	create_blocked_thread(args_blocked);
+
+	// PLANIFICADOR MEDIO PLAZO
+	t_args_suspended_blocked* args_suspended_blocked_thread = malloc(sizeof(t_args_suspended_blocked));
+	args_suspended_blocked_thread->has_pcb_suspended_blocked = has_pcb_suspended_blocked;
+	args_suspended_blocked_thread->TIEMPO_MAX_BLOQUEADO = args->TIEMPO_MAXIMO_BLOQUEADO;
+	args_suspended_blocked_thread->socket_memoria = args->socket_memoria;
+	args_suspended_blocked_thread->blocked = args->states->state_blocked;
+	args_suspended_blocked_thread->state_suspended_blocked = args->states->state_suspended_blocked;
+	args_suspended_blocked_thread->has_pcb_suspended_ready = has_pcb_suspended_ready;
+	create_suspended_blocked_thread(args_suspended_blocked_thread);
+
+	// Hilos de apoyo a los planificadores
+	t_args_suspended_ready* args_suspended_ready_thread = malloc(sizeof(t_args_suspended_ready));
+	args_suspended_ready_thread->hasPcb = args->hasPcb;
+	args_suspended_ready_thread->has_pcb_suspended_ready = has_pcb_suspended_ready;
+	args_suspended_ready_thread->socket_memoria = args->socket_memoria;
+	args_suspended_ready_thread->state_suspended_blocked = args->states->state_suspended_blocked;
+	args_suspended_ready_thread->state_suspended_ready = state_suspended_ready;
+	create_suspended_ready_thread(args_suspended_ready_thread);
+	use_logger(args->monitor_logger, "PLANIFICADOR DE MEDIO PLAZO CREADO");
+	use_logger(args->monitor_logger, "PLANIFICADOR DE CORTO PLAZO CREADO");
+
 	while(1){
-		pthread_mutex_lock(args->states->state_blocked->mutex);
+		/*pthread_mutex_lock(args->states->state_blocked->mutex);
 		if(!list_is_empty(args->states->state_blocked->state)){
 			pthread_mutex_unlock(args->hasPcbBlocked);
 		}
@@ -296,7 +329,7 @@ void short_term_planner(void* args_short_planner){
 		if(args->monitorGradoMulti->gradoMultiprogramacionActual > 0){
 			pthread_mutex_unlock(args->hasPcb);
 		}
-		pthread_mutex_unlock(args->monitorGradoMulti->mutex);
+		pthread_mutex_unlock(args->monitorGradoMulti->mutex);*/
 
 		pthread_mutex_lock(ready->mutex);
 		int pre_evaluate_add_pcb_to_ready_size = list_size(ready->state);
@@ -313,24 +346,13 @@ void short_term_planner(void* args_short_planner){
 
 			pthread_mutex_lock(ready->mutex);
 			pthread_mutex_lock(state_suspended_ready->mutex);
-			check_suspended_ready_state(state_suspended_ready, args, ready, RE_SWAP);
+			check_suspended_ready_state(state_suspended_ready, args, ready, RE_SWAP, args->ALFA);
 			pthread_mutex_unlock(state_suspended_ready->mutex);
 			pthread_mutex_unlock(ready->mutex);
 		}
 
-		// Puedo agregar algun PCB que este suspendido ready y porfalta de grado
-		// no pudiera generar su tabla en memoria ?
-		/*if(args->monitorGradoMulti->gradoMultiprogramacionActual < args->GRADO_MULTIPROGRAMACION){
-
-			pthread_mutex_lock(ready->mutex);
-			pthread_mutex_lock(state_suspended_ready_min->mutex);
-			check_suspended_ready_state(state_suspended_ready_min, args, ready, NEW);
-			pthread_mutex_unlock(state_suspended_ready_min->mutex);
-			pthread_mutex_unlock(ready->mutex);
-		}*/
-
 		// Reviso que algun pcb que este en blocked pueda ser ingresado a READY
-		pthread_mutex_lock(ready->mutex);
+		/*pthread_mutex_lock(ready->mutex);
 		pthread_mutex_lock(args->states->state_blocked->mutex);
 		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
 		if(!list_is_empty(args->states->state_blocked->state)){
@@ -339,7 +361,7 @@ void short_term_planner(void* args_short_planner){
 		}
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(args->states->state_blocked->mutex);
-		pthread_mutex_unlock(ready->mutex);
+		pthread_mutex_unlock(ready->mutex);*/
 
 		// Puedo agregar algun PCB que este en NEW ?
 		pthread_mutex_lock(args->monitor_add_pcb_ready->mutex);
@@ -351,12 +373,22 @@ void short_term_planner(void* args_short_planner){
 		pthread_mutex_unlock(args->monitor_add_pcb_ready->mutex);
 		pthread_mutex_unlock(args->monitorGradoMulti->mutex);
 
+		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
+		if(*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready && strcmp(args->ALGORITMO_PLANIFICACION, "SRT") == 0){
+			// desalojamos al proceso en CPU.
+			if(hasRunning){
+				interrupt_cpu(args->sockets_cpu->dispatch, args->sockets_cpu->interrupt, INTERRUPT);
+			}
+		}
+		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
+
 		pthread_mutex_lock(ready->mutex);
 		pthread_mutex_lock(args_instruction_thread->mutex_check_instruct);
+		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
 		if(hasRunning && args_instruction_thread->hasUpdateState){
 			t_pcb* pcb_excecuted = queue_pop(running->state);
 			//update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction);
-			update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction);
+			update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction, isBlockedInstruction);
 			if(*isExitInstruction){
 				pthread_mutex_lock(exit->mutex);
 				queue_push(exit->state, pcb_excecuted);
@@ -365,40 +397,28 @@ void short_term_planner(void* args_short_planner){
 				args->monitorGradoMulti->gradoMultiprogramacionActual--;
 				pthread_mutex_unlock(args->monitorGradoMulti->mutex);
 				pthread_mutex_unlock(args->hasNewConsole);
-			}else{
-				pcb_excecuted->time_blocked = clock();
+			}
+			else if (*isBlockedInstruction) {
 				pthread_mutex_lock(args->states->state_blocked->mutex);
 				list_add(args->states->state_blocked->state, pcb_excecuted);
 				pthread_mutex_unlock(args->states->state_blocked->mutex);
-				time_excecuted = pcb_excecuted->time_excecuted_rafaga;
-				time_rafaga = pcb_excecuted->rafaga;
+				pthread_mutex_unlock(has_pcb_blocked);
+			}
+			else{
+				list_add(ready->state, pcb_excecuted);
+				*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = true;
 			}
 			args_instruction_thread->hasUpdateState = false;
 			hasRunning = false;
 		}
-
-		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
-		if(*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready && strcmp(args->ALGORITMO_PLANIFICACION, "SRT") == 0){
-			// desalojamos al proceso en CPU.
-			if(hasRunning){
-				t_pcb* pcb_excecuted = queue_pop(running->state);
-				interrupt_cpu(args->sockets_cpu->dispatch, args->sockets_cpu->interrupt, INTERRUPT, pcb_excecuted);
-				list_add_in_index(ready->state, 0, pcb_excecuted);
-				time_excecuted = pcb_excecuted->time_excecuted_rafaga;
-				time_rafaga = pcb_excecuted->rafaga;
-			}
-			order_state(ready->state, args->ALFA, time_rafaga, time_excecuted);
-		}
-		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(args_instruction_thread->mutex_check_instruct);
+		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 
 		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
-		// es responsabilidad de la CPU enviarnos el clock del proceso, la siguiente instruccion y.......
-		if(!list_is_empty(ready->state) && *args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready){
+		if(!list_is_empty(ready->state) && *args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready && queue_is_empty(running->state)){
 			*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = false;
 			t_pcb* pcb_ready_to_run = list_remove(ready->state, 0);
 			queue_push(running->state, pcb_ready_to_run);
-			// introducimos logger para avisar que va aempezar a correr cierto pcb
 			send_pcb_to_cpu(pcb_ready_to_run, args->sockets_cpu->dispatch);
 			//TODO funcion para liberar memoria del pcb.
 			pthread_mutex_unlock(args->hasPcbRunning);
@@ -407,7 +427,6 @@ void short_term_planner(void* args_short_planner){
 		}
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(ready->mutex);
-		//pthread_mutex_unlock(args->hasPcbBlocked);
 	}
 }
 
@@ -416,22 +435,14 @@ bool isNewPcbIntoReady(int pre_evaluate_add_pcb_to_ready_size, t_list* state_rea
 }
 
 void check_and_update_blocked_to_ready(t_list* state, t_states* states, t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready){
-	t_list* pos_pcbs_with_complete_io = list_create();
-
-	for(int empty_elem = 0; empty_elem < list_size(state); empty_elem++){
-		t_pcb* pcb_to_add = list_get(states->state_blocked->state, empty_elem);
+	if(list_size(state) > 0){
+		t_pcb* pcb_to_add = list_get(states->state_blocked->state, 0);
 		int time_blocked = abs(pcb_to_add->time_blocked - clock());
 		if(pcb_to_add != NULL && pcb_to_add->time_io <= time_blocked){
-			list_add(pos_pcbs_with_complete_io, empty_elem);
+			list_add(states->state_ready->state, list_remove(states->state_blocked->state, 0));
 			*monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = true;
 		}
 	}
-
-	for(int index = 0; index < list_size(pos_pcbs_with_complete_io); index++){
-		list_add(states->state_ready->state, list_remove(states->state_blocked->state, list_get(pos_pcbs_with_complete_io, index)));
-	}
-
-	free(pos_pcbs_with_complete_io);
 }
 
 void use_logger(t_monitor_log* monitor, char* log_message){
@@ -445,23 +456,14 @@ bool hasRunningPcb(t_queue* state_running){
 }
 
 void check_process_finished_io_and_pass_to_suspended_ready(t_state_list_hanndler* state_suspended_blocked, t_state_list_hanndler* state_suspended_ready){
-	t_list* pos_pcbs_with_io_finished = list_create();
-
+	// TODO DEBERIA SER UNA COLA ?
 	pthread_mutex_lock(state_suspended_blocked->mutex);
-	for(int index = 0; index < list_size(state_suspended_blocked->state); index++){
-		t_pcb* pcb_blocked = list_get(state_suspended_blocked->state, index);
-		int time_blocked = abs(pcb_blocked->time_blocked - clock());
-
-		// se checkea en short que se haya terminado su tiempo de bloqueado.
-
-		if(time_blocked >= pcb_blocked->time_io){
-			add_pcb_to_suspended_blocked(pcb_blocked, state_suspended_ready);
-			list_add(pos_pcbs_with_io_finished, index);
+	if(list_size(state_suspended_blocked->state) > 0){
+		t_pcb* pcb_to_add = list_get(state_suspended_blocked->state, 0);
+		int time_blocked = abs(pcb_to_add->time_blocked - clock());
+		if(pcb_to_add != NULL && time_blocked >= pcb_to_add->time_io){
+			add_pcb_to_suspended_blocked(list_remove(state_suspended_blocked->state, 0), state_suspended_ready);
 		}
-	}
-
-	for(int index = 0; index < list_size(pos_pcbs_with_io_finished); index++){
-		list_remove(state_suspended_blocked->state, list_get(pos_pcbs_with_io_finished, index));
 	}
 	pthread_mutex_unlock(state_suspended_blocked->mutex);
 }
@@ -528,12 +530,12 @@ int total_pcbs_short_mid_term(t_states* states){
 	return list_size(states->state_ready->state) + list_size(states->state_blocked->state) + queue_size(states->state_running->state);
 }
 
-void add_pcbs_to_new(t_monitor_log* monitor_logger, bool* isFirstPcb, t_monitor_pcb_to_add_ready* monitor_add_pcb_ready, t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready, t_states* states, t_queue* pre_pbcs, int socket_memoria, t_monitor_grado_multiprogramacion* monitorGradoMulti, pthread_mutex_t* mutex, pthread_mutex_t* hasGradoForNew, int ESTIMACION_INICIAL){
+void add_pcbs_to_new(t_monitor_log* monitor_logger, t_monitor_pcb_to_add_ready* monitor_add_pcb_ready, t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready, t_states* states, t_queue* pre_pbcs, int socket_memoria, t_monitor_grado_multiprogramacion* monitorGradoMulti, pthread_mutex_t* mutex, pthread_mutex_t* hasGradoForNew, int ESTIMACION_INICIAL){
 	int queue_pre_pcbs_size = queue_size(pre_pbcs);
 	for(int position_element = 0; position_element < queue_pre_pcbs_size; position_element++){
 		pthread_mutex_lock(mutex);
 		use_logger(monitor_logger, "TENEMOS UN NUEVO PCB POR CREAR.");
-		t_pcb* pcb = create_pcb(ESTIMACION_INICIAL, isFirstPcb, queue_pop(pre_pbcs));
+		t_pcb* pcb = create_pcb(ESTIMACION_INICIAL, queue_pop(pre_pbcs));
 		pthread_mutex_unlock(mutex);
 		pthread_mutex_lock(monitor_logger->mutex);
 		log_info(monitor_logger->logger, "PCB CON ID: %d, CREADO. LO ENVIAMOS A NEW", pcb->id);
@@ -569,22 +571,6 @@ void add_pcbs_to_new(t_monitor_log* monitor_logger, bool* isFirstPcb, t_monitor_
 		pthread_mutex_lock(monitor_is_new_pcb_in_ready->mutex);
 		*monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = true;
 		pthread_mutex_unlock(monitor_is_new_pcb_in_ready->mutex);
-		/*if(pcb->tabla_paginas == NULL){
-			// CASO DONDE EL GRADO DE MULTI. NO NOS LO PERMITE
-			//agrego a cola de menos prioridad.
-			use_logger(monitor_logger, "PCB CREADO, LO PASAMOS A SUSPENDED READY POR FALTA DE GRADO DE MULTIPROGRAMACION.");
-			pthread_mutex_lock(states->state_suspended_ready_min->mutex);
-			list_add(states->state_suspended_ready_min->state, pcb);
-			pthread_mutex_unlock(states->state_suspended_ready_min->mutex);
-		}else{
-			// CASO DONDE EL GRADO DE MULTI. NOS LO PERMITE
-			use_logger(monitor_logger, "PCB CREADO, MANDAMOS A MEMORIA.");
-			send_action_to_memoria(pcb, socket_memoria, NEW);
-			pthread_mutex_lock(states->state_new->mutex);
-			queue_push(states->state_new->state, pcb);
-			pthread_mutex_unlock(states->state_new->mutex);
-			use_logger(monitor_logger, "TABLA DE PAGINAS CARGADA, LO PASAMOS A NEW.");
-		}*/
 	}
 }
 
@@ -592,19 +578,14 @@ void add_pcb_to_state(t_pcb* pcb, t_list* state){
 	list_add(state, pcb);
 }
 
-t_pcb* create_pcb(int ESTIMACION_INICIAL, bool* isFirstPcb, t_pre_pcb* pre_pcb){
+t_pcb* create_pcb(int ESTIMACION_INICIAL, t_pre_pcb* pre_pcb){
 	t_pcb* pcb = malloc(sizeof(t_pcb));
 	// aca va la conexion con memoria.
 	pcb->id = pre_pcb->pcb_id;
 	pcb->processSize = pre_pcb->processSize;
 	pcb->program_counter = 0;
 	pcb->instrucciones = pre_pcb->instructions;
-	if(*isFirstPcb){
-		pcb->rafaga = ESTIMACION_INICIAL;
-		*isFirstPcb=false;
-	} else {
-		pcb->rafaga = 0;
-	}
+	pcb->rafaga = ESTIMACION_INICIAL;
 	pcb->time_blocked = malloc(sizeof(clock_t));
 	pcb->time_excecuted_rafaga = 0;
 	pcb->time_io = 0;
@@ -640,7 +621,7 @@ void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 	}
 }
 
-void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool* isExitInstruction){
+void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool* isExitInstruction, bool* isBlockedInstruction){
 	op_memoria_message op_code;
 	t_pcb* pcb_excecuted = deserializate_pcb(socket_kernel_interrupt_cpu, &op_code);
 
@@ -653,6 +634,7 @@ void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool*
 		pcb->time_excecuted_rafaga += pcb_excecuted->time_excecuted_rafaga;
 
 		if(op_code == I_O){
+			*isBlockedInstruction = true;
 			pcb->time_io = pcb_excecuted->time_io;
 		}
 
@@ -660,12 +642,12 @@ void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool*
 	}
 }
 
-int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted){
+int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT){
 	int op_code = INTERRUPT;
 	bool* isExitInstruction = malloc(sizeof(bool));
 	*isExitInstruction = false;
 	send_data_to_server(socket_kernel_interrupt_cpu, &op_code, sizeof(int), 0);
-	update_pcb_with_cpu_data(socket_kernel_dispatch_cpu, pcb_excecuted, isExitInstruction);
+	//update_pcb_with_cpu_data(socket_kernel_dispatch_cpu, pcb_excecuted, isExitInstruction);
 }
 
 int connect_to_interrupt_cpu(t_config_kernel* config_kernel){
@@ -705,6 +687,7 @@ void check_state_of_pcb(void* void_args){
 		pthread_mutex_lock(args->mutex_check_instruct);
 		if(code == BLOCKED_FINISHED){
 			args->hasUpdateState = true;
+			pthread_mutex_unlock(args->hasPcb);
 		}
 		pthread_mutex_unlock(args->mutex_check_instruct);
 	}
@@ -716,8 +699,101 @@ t_pcb* send_action_to_memoria(t_pcb* pcb, int socket_memoria, op_memoria_message
 	return pcb;
 }
 
+void state_blocked (t_args_blocked* args) {
+	while (1) {
+		pthread_mutex_lock(args->has_pcb_blocked);
+
+		pthread_mutex_lock(args->state_blocked->mutex);
+		t_pcb* pcb_blocked = list_get(args->state_blocked->state, 0);
+		pthread_mutex_unlock(args->state_blocked->mutex);
+
+		if (args->TIEMPO_MAX_BLOQUEADO >= pcb_blocked->time_io) {
+			sleep(pcb_blocked->time_io/1000);
+			pthread_mutex_lock(args->state_ready->mutex);
+			pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
+			calculate_rafaga(args->ALFA, pcb_blocked->rafaga, pcb_blocked->time_excecuted_rafaga, pcb_blocked);
+			list_add(args->state_ready->state, pcb_blocked);
+			order_state(args->state_ready->state);
+			*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = true;
+			pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
+			pthread_mutex_unlock(args->state_ready->mutex);
+			pthread_mutex_unlock(args->hasPcb);
+			pthread_mutex_lock(args->state_blocked->mutex);
+			list_remove(args->state_blocked->state, 0);
+			pthread_mutex_unlock(args->state_blocked->mutex);
+
+		}
+		else {
+			sleep(args->TIEMPO_MAX_BLOQUEADO/1000);
+			pthread_mutex_unlock(args->has_pcb_suspended_blocked);
+		}
+
+	}
+}
+
+
+void state_suspended_blocked (t_args_suspended_blocked* args) {
+	while (1) {
+		pthread_mutex_lock(args->has_pcb_suspended_blocked);
+
+		pthread_mutex_lock(args->blocked->mutex);
+		t_pcb* pcb_blocked = list_remove(args->blocked->state, 0);
+		pthread_mutex_unlock(args->blocked->mutex);
+		send_action_to_memoria(pcb_blocked, args->socket_memoria, SWAP);
+		int diff_tiempo_max = pcb_blocked->time_io - args->TIEMPO_MAX_BLOQUEADO;
+		sleep(diff_tiempo_max/1000);
+		pthread_mutex_lock(args->blocked->mutex);
+		pthread_mutex_lock(args->state_suspended_blocked->mutex);
+		list_add(args->state_suspended_blocked->state, pcb_blocked);
+		pthread_mutex_unlock(args->state_suspended_blocked->mutex);
+		pthread_mutex_unlock(args->blocked->mutex);
+		pthread_mutex_unlock(args->has_pcb_suspended_ready);
+	}
+}
+
+void state_suspended_ready (t_args_suspended_ready* args) {
+	while (1) {
+		pthread_mutex_lock(args->has_pcb_suspended_ready);
+
+		pthread_mutex_lock(args->state_suspended_blocked->mutex);
+		pthread_mutex_lock(args->state_suspended_ready->mutex);
+		t_pcb* pcb_to_add = list_remove(args->state_suspended_blocked->state, 0);
+		pthread_mutex_unlock(args->state_suspended_blocked->mutex);
+		if (pcb_to_add != NULL) {
+			send_action_to_memoria(pcb_to_add, args->socket_memoria, RE_SWAP);
+			add_pcb_to_state(pcb_to_add, args->state_suspended_ready->state);
+		}
+		pthread_mutex_unlock(args->state_suspended_ready->mutex);
+		pthread_mutex_unlock(args->hasPcb);
+	}
+}
+
 void create_check_instructions_thread(t_args_check_instructions* args){
 	pthread_t hilo_check_instructions;
 	pthread_create(&hilo_check_instructions, NULL, check_state_of_pcb, args);
 	pthread_detach(hilo_check_instructions);
+}
+
+void create_suspended_blocked_thread(t_args_suspended_blocked* args){
+	pthread_t hilo_suspended_blocked;
+	pthread_create(&hilo_suspended_blocked, NULL, state_suspended_blocked, args);
+	pthread_detach(hilo_suspended_blocked);
+}
+
+void create_suspended_ready_thread(t_args_suspended_ready* args){
+	pthread_t hilo_suspended_ready;
+	pthread_create(&hilo_suspended_ready, NULL, state_suspended_ready, args);
+	pthread_detach(hilo_suspended_ready);
+}
+
+void create_blocked_thread(t_args_blocked* args){
+	pthread_t hilo_blocked;
+	pthread_create(&hilo_blocked, NULL, state_blocked, args);
+	pthread_detach(hilo_blocked);
+}
+
+void create_grado_multi(int GRADO_MULTIPROGRAMACION,pthread_mutex_t* gradoMulti){
+	for(int i = 1; i <= GRADO_MULTIPROGRAMACION; i++){
+		pthread_mutex_unlock(gradoMulti);
+	}
 }

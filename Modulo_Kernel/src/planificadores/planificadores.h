@@ -5,6 +5,8 @@
 #include <commons/error.h>
 #include <stdbool.h>
 #include <time.h>
+#include<unistd.h>
+#include <stdlib.h>
 
 typedef enum{
 	FIFO,
@@ -61,6 +63,34 @@ typedef struct {
 } t_state_list_hanndler;
 
 typedef struct{
+	t_state_list_hanndler* state_ready;
+	t_state_list_hanndler* state_blocked;
+	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
+	pthread_mutex_t* has_pcb_blocked;
+	pthread_mutex_t* hasPcb;
+	pthread_mutex_t* has_pcb_suspended_blocked;
+	int TIEMPO_MAX_BLOQUEADO;
+	double ALFA;
+} t_args_blocked;
+
+typedef struct{
+	t_state_list_hanndler* state_suspended_ready;
+	t_state_list_hanndler* state_suspended_blocked;
+	pthread_mutex_t* hasPcb;
+	pthread_mutex_t* has_pcb_suspended_ready;
+	int socket_memoria;
+} t_args_suspended_ready;
+
+typedef struct{
+	t_state_list_hanndler* blocked;
+	t_state_list_hanndler* state_suspended_blocked;
+	pthread_mutex_t* has_pcb_suspended_blocked;
+	pthread_mutex_t* has_pcb_suspended_ready;
+	int TIEMPO_MAX_BLOQUEADO;
+	int socket_memoria;
+} t_args_suspended_blocked;
+
+typedef struct{
 	int gradoMultiprogramacionActual;
 	pthread_mutex_t* mutex;
 } t_monitor_grado_multiprogramacion;
@@ -79,7 +109,6 @@ typedef struct{
 	int GRADO_MULTIPROGRAMACION;
 	int ESTIMACION_INICIAL;
 	int socket_memoria;
-	bool* isFirstPcb;
 	t_monitor_pcb_to_add_ready* monitor_add_pcb_ready;
 	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
 	pthread_mutex_t* pre_pcbs_mutex;
@@ -102,7 +131,7 @@ typedef struct{
 } t_args_mid_term_planner;
 
 typedef struct{
-	int ALFA;
+	double ALFA;
 	int GRADO_MULTIPROGRAMACION;
 	int TIEMPO_MAXIMO_BLOQUEADO;
 	int socket_memoria;
@@ -130,8 +159,8 @@ int connect_to_interrupt_cpu(t_config_kernel* config_kernel);
 bool hasCalculateRafaga(t_pcb* pcb);
 bool hasRunningPcb(t_queue* state_ready);
 bool isNewPcbIntoReady(int pre_evaluate_add_pcb_to_ready_size, t_list* state_ready);
-t_pcb* create_pcb(int ESTIMACION_INICIAL, bool* isFirstPcb, t_pre_pcb* pre_pcb);
-int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT, t_pcb* pcb_excecuted);
+t_pcb* create_pcb(int ESTIMACION_INICIAL, t_pre_pcb* pre_pcb);
+int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT);
 t_pcb* send_action_to_memoria(t_pcb* pcb, int socket_memoria, op_memoria_message ACTION);
 void check_time_in_blocked_and_pass_to_suspended_blocked(t_state_list_hanndler* state_suspended_blocked, t_state_list_hanndler* state_blocked, t_monitor_grado_multiprogramacion* monitorGradoMulti, int socket_memoria, int TIEMPO_MAXIMO_BLOQUEADO);
 

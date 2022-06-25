@@ -9,7 +9,7 @@ int main(int argc, char** argv){
 	char* puerto;
 	t_log* logger = iniciar_logger();
 	// TODO por parametros.
-	t_config* config = config_create("consola.config");
+	t_config* config = config_create("/home/utnso/tp-2022-1c-SanguchitOS/Modulo_Consola/consola.config");
 
 	log_info(logger, "INICIANDO CONSOLA.....");
 
@@ -89,8 +89,8 @@ void checkCodeOperation(char* instructRead, char** instructs, t_log* logger){
 		appendOperationToInstructionsString(instructRead, instructs, logger);
 	}
 
-	//free_instruction_split(intructrReadSplitBySpaces);
-	free(intructrReadSplitBySpaces);
+	//string_array_destroy(intructrReadSplitBySpaces);
+	//free(intructrReadSplitBySpaces);
 }
 
 void free_instruction_split(char** intructrReadSplitBySpaces){

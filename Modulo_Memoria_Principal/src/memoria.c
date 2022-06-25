@@ -181,9 +181,10 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 				log_info(memoria->memoria_log, "SE SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, OPERACION_EXITOSA);
 
-				}else{
-					log_warning(memoria->memoria_log, "Operacion desconocida\n");
-				}
+			}
+			else{
+				log_warning(memoria->memoria_log, "Operacion desconocida\n");
+			}
 			}
 		//600
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);

@@ -45,11 +45,6 @@ void execute_dispatch(void* void_args){
 		int code;
 		//SE RECIBE EL PCB DEL KERNEL
 		t_pcb* pcb = deserializate_pcb(kernel_socket, &code);
-		/*
-			if(code < 0){
-				//TODO
-			}
-		*/
 		//INICIA EL CICLO DE FETCH AND DECODE
 		fetch_and_decode(kernel_socket, pcb, cpu, cpu->exist_interrupt);
 	}
