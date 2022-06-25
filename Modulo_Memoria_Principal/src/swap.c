@@ -73,6 +73,6 @@ void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_paginas_segundo_niv
 
 }
 
-int obtener_espacio_de_memoria_a_acceder(t_memoria memoria, int frame){
+int obtener_espacio_de_memoria_a_acceder(t_memoria* memoria, int frame){
 	return (memoria->espacio_memoria) + (frame * memoria->memoria_config->tamanio_pagina);
 }

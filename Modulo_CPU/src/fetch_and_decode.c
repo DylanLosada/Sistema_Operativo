@@ -23,7 +23,7 @@ t_instruct* destokenizarInstruction(char* stringInstruction){
 
 	char** vec = string_split(stringInstruction, " ");
 
-	op_instructions_code code = NO_OP;
+	op_memoria_message code = NO_OP;
 
 	bool hasParams = false;
 	bool hasOneParam = false;

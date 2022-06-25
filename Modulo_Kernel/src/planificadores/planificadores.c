@@ -641,7 +641,7 @@ void send_pcb_to_cpu(t_pcb* pcb , int socket_cpu_dispatch){
 }
 
 void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool* isExitInstruction){
-	op_instructions_code op_code;
+	op_memoria_message op_code;
 	t_pcb* pcb_excecuted = deserializate_pcb(socket_kernel_interrupt_cpu, &op_code);
 
 	if(op_code < 0){

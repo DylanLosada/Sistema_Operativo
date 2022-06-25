@@ -323,9 +323,13 @@ void* serialize_mmu_memoria(t_cpu_paquete* paquete, int tabla_nivel, int entrada
 }
 
 
-void deserialize_mmu_memoria(int* tabla_nivel, int* entrada_nivel, int socket){
-	recv(socket, tabla_nivel, sizeof(int), MSG_WAITALL);
-	recv(socket, entrada_nivel, sizeof(int), MSG_WAITALL);
+void deserialize_mmu_memoria(t_administrar_mmu* administrar_mmu, int socket){
+	int size;
+	recv(socket, &size, sizeof(int), MSG_WAITALL);
+	void* stream = malloc(size);
+	recv(socket, stream, size, MSG_WAITALL);
+	memcpy(&administrar_mmu->tabla_nivel, stream, sizeof(int));
+	memcpy(&administrar_mmu->entrada_nivel, stream + sizeof(int), sizeof(int));
 }
 
 void free_serialize(t_cpu_paquete* paquete){

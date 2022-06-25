@@ -23,7 +23,7 @@ int dir_logica_a_fisica(t_cpu* cpu, t_pcb* pcb, int dir_logica) {
 	int marco = get_marco(cpu, tabla_2do_nivel, entrada_tabla_2do_nivel); // Preguntar a memoria, pasando tabla_2do_nivel y entrada_tabla_2do_nivel como datos.
 	agregar_entry_tlb(cpu, numero_pagina, marco);
 
-	return marco;
+	return marco + desplazamiento;
 }
 
 int get_tabla_segundo_nivel(t_cpu* cpu, int tabla_nivel, int entrada_tabla_nivel){

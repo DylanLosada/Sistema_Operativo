@@ -120,11 +120,49 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 		pthread_mutex_lock(args_administrar_cliente->semaforo_conexion);
 		op_memoria_message op_code_memoria = op_code;
 
+
 		if(op_code_memoria == HANDSHAKE){
 
 			hacer_handshake_con_cpu(cliente_fd, memoria);
 
-		}else{
+		}
+		// CPU Y SUS PEDIDOS
+		else if (op_code_memoria == READ){
+			// ESTE ESTA BIEN
+			int dir_fisica;
+			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
+			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
+		}
+		else if (op_code_memoria == COPY){
+			// PUSE CUALQUIER COSA ACA, MIREN EN EL ARCHIVO excecute.c en cpu
+			// VAN A VER UNA FUNCION PARA CADA INSTRUCCION Y COMO DEBEN DESERIALIZARLO
+			// BESOS EN LA COLA
+			int dir_fisica;
+			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
+			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
+		}
+		else if (op_code_memoria == WRITE){
+			// PUSE CUALQUIER COSA ACA, MIREN LA EL ARCHIVO excecute.c en cpu
+			// VAN A VER UNA FUNCION PARA CADA INSTRUCCION Y COMO DEBEN DESERIALIZARLO
+			// BESOS EN LA COLA
+			int dir_fisica;
+			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
+			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
+		}
+		else if (op_code_memoria == TABLA_SEGUNDO_NIVEL){
+			// ESTA BIEN ESTO
+			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
+			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
+			log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+		}
+		else if (op_code_memoria == MARCO){
+			// ESTA BIEN ESTO
+			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
+			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
+			log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+		}
+		// KERNEL
+		else{
 			t_pcb* pcb_cliente = deserializate_pcb_memoria(cliente_fd);
 
 			if(op_code_memoria == NEW){
@@ -147,7 +185,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 					log_warning(memoria->memoria_log, "Operacion desconocida\n");
 				}
 			}
-		600
+		//600
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
 	}
 	    return EXIT_SUCCESS;

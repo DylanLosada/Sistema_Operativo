@@ -52,7 +52,7 @@ typedef struct{
 	int socket_cpu;
 	t_log* cpu_log;
 	t_pcb* pcb;
-	op_instructions_code code;
+	op_memoria_message code;
 	pthread_mutex_t* mutex_has_io_exit;
 }t_args_io_exit;
 
