@@ -330,7 +330,7 @@ void short_term_planner(void* args_short_planner){
 			pthread_mutex_unlock(args->hasPcb);
 		}
 		pthread_mutex_unlock(args->monitorGradoMulti->mutex);*/
-
+		bool is_next_pcb = false;
 		pthread_mutex_lock(ready->mutex);
 		int pre_evaluate_add_pcb_to_ready_size = list_size(ready->state);
 		pthread_mutex_unlock(ready->mutex);
@@ -374,18 +374,21 @@ void short_term_planner(void* args_short_planner){
 		pthread_mutex_unlock(args->monitorGradoMulti->mutex);
 
 		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
+		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
 		if(*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready && strcmp(args->ALGORITMO_PLANIFICACION, "SRT") == 0){
 			// desalojamos al proceso en CPU.
 			if(hasRunning){
 				interrupt_cpu(args->sockets_cpu->dispatch, args->sockets_cpu->interrupt, INTERRUPT);
+				*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = false;
 			}
 		}
+		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 
 		pthread_mutex_lock(ready->mutex);
 		pthread_mutex_lock(args_instruction_thread->mutex_check_instruct);
 		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
-		if(hasRunning && args_instruction_thread->hasUpdateState){
+		if(args_instruction_thread->hasUpdateState){
 			t_pcb* pcb_excecuted = queue_pop(running->state);
 			//update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction);
 			update_pcb_with_cpu_data(args->sockets_cpu->check_state_instructions, pcb_excecuted, isExitInstruction, isBlockedInstruction);
@@ -397,12 +400,14 @@ void short_term_planner(void* args_short_planner){
 				args->monitorGradoMulti->gradoMultiprogramacionActual--;
 				pthread_mutex_unlock(args->monitorGradoMulti->mutex);
 				pthread_mutex_unlock(args->hasNewConsole);
+				is_next_pcb = true;
 			}
 			else if (*isBlockedInstruction) {
 				pthread_mutex_lock(args->states->state_blocked->mutex);
 				list_add(args->states->state_blocked->state, pcb_excecuted);
 				pthread_mutex_unlock(args->states->state_blocked->mutex);
 				pthread_mutex_unlock(has_pcb_blocked);
+				is_next_pcb = true;
 			}
 			else{
 				list_add(ready->state, pcb_excecuted);
@@ -415,7 +420,7 @@ void short_term_planner(void* args_short_planner){
 		pthread_mutex_unlock(args->monitor_is_new_pcb_in_ready->mutex);
 
 		pthread_mutex_lock(args->monitor_is_new_pcb_in_ready->mutex);
-		if(!list_is_empty(ready->state) && *args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready && queue_is_empty(running->state)){
+		if(!list_is_empty(ready->state) && (*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready || is_next_pcb)){
 			*args->monitor_is_new_pcb_in_ready->is_new_pcb_in_ready = false;
 			t_pcb* pcb_ready_to_run = list_remove(ready->state, 0);
 			queue_push(running->state, pcb_ready_to_run);

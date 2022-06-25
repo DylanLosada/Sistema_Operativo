@@ -87,7 +87,7 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 		pcb->program_counter++;
 		if(instruct->instructions_code == EXIT || instruct->instructions_code == I_O){
 
-			pcb->time_excecuted_rafaga = clock() - time_excecuted;
+			pcb->time_excecuted_rafaga += clock() - time_excecuted;
 
 			if(instruct->instructions_code == I_O){
 				pcb->time_io = instruct->param1;
