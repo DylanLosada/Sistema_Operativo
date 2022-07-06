@@ -40,11 +40,13 @@ void execute_dispatch(void* void_args){
 	t_cpu* cpu = (t_cpu*) void_args;
 
 	int kernel_socket = wait_kernel(cpu->cpu_log, cpu->dispatch->socket, cpu->dispatch->puerto);
-
+	log_info(cpu->cpu_log, "SE CONECTO EL KERNEL AL PUERTO DISPATCH");
 	while(1){
 		int code;
 		//SE RECIBE EL PCB DEL KERNEL
+		log_info(cpu->cpu_log, "QUEDO A LA ESPERA DEUN PCB");
 		t_pcb* pcb = deserializate_pcb(kernel_socket, &code);
+		log_info(cpu->cpu_log, "SE RECIBIO EL PCB %d", pcb->id);
 		//INICIA EL CICLO DE FETCH AND DECODE
 		fetch_and_decode(kernel_socket, pcb, cpu, cpu->exist_interrupt);
 	}

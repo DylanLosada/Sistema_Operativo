@@ -27,7 +27,7 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 
 	FILE* archivo_proceso;
 
-	archivo_proceso = fopen(path_archivo, "w" ); // VER QUE ESTE FLAG ESTA MAL
+	archivo_proceso = fopen(path_archivo, "w+" ); // VER QUE ESTE FLAG ESTA MAL
 	log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);

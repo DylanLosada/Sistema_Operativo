@@ -79,34 +79,48 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 	t_instruct* instruct = malloc(sizeof(t_instruct));
 
 	clock_t time_excecuted = clock();
+	log_info(cpu->cpu_log, "SE COMIENZA EL CILO DE INSTRUCCIONES");
 	while(pcb->program_counter < list_size(pcb->instrucciones)){
 		//FETCH
 		instruct = list_get(instruccionesDestokenizadas,pcb->program_counter);
+		log_info(cpu->cpu_log, "INSTRUCCION LEIDA");
 
 		// DECODE / FETCH OPERANDS
 		pcb->program_counter++;
+		log_info(cpu->cpu_log, "ES UNA INSTRUCCION BLOQUEANTE O DE SALIDA ?");
 		if(instruct->instructions_code == EXIT || instruct->instructions_code == I_O){
-
 			pcb->time_excecuted_rafaga += clock() - time_excecuted;
 
 			if(instruct->instructions_code == I_O){
 				pcb->time_io = instruct->param1;
+				log_info(cpu->cpu_log, "ES UNA I_O");
+			}else {
+				log_info(cpu->cpu_log, "ES UNA SALIDA");
 			}
 
 			cpu->args_io_exit->code = instruct->instructions_code;
 			cpu->args_io_exit->pcb = pcb;
 
 			pthread_mutex_unlock(cpu->args_io_exit->mutex_has_io_exit);
-
+			log_info(cpu->cpu_log, "SE LE AVISA AL KERNEL");
 			break;
+		}
+		else {
+			log_info(cpu->cpu_log, "ES UNA INSTRUCCION NO BLOQUEANTE NI DE SALIDA");
 		}
 
 		// EXECUTE
+		log_info(cpu->cpu_log, "SE EJECUTA LA INSTRUCCION: ");
 		execute(instruct, cpu, pcb);
 
 		// CHECK INTERRUPT
+		log_info(cpu->cpu_log, "CHECKEAMOS SI HAY INTERRUPCION");
 		pthread_mutex_lock(exist_interrupt->mutex_has_interrupt);
 		if(exist_interrupt->is_interrupt){
+			log_info(cpu->cpu_log, "HAY INTERRUPCION");
+			log_info(cpu->cpu_log, "SE INTERRUMPE EJECUCION Y SE ENVIAN LOS DATOS AL KERNEL");
+			log_info(cpu->cpu_log, "SE TERMINA LA EJECUCION");
+			log_info(cpu->cpu_log, "SE DUERME LA CPU");
 			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
 			int op_code = INTERRUPT;
 			pcb->time_excecuted_rafaga += clock() - time_excecuted;
@@ -114,7 +128,11 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 			exist_interrupt->is_interrupt = false;
 			break;
 		}
+		else {
+			log_info(cpu->cpu_log, "NO HAY INTERRUPCION");
+		}
 		pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
+		log_info(cpu->cpu_log, "COMIENZA EL CICLO");
 	}
 	free(instruct);
 	list_destroy(instruccionesDestokenizadas);

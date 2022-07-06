@@ -132,34 +132,57 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			int dir_fisica;
 			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
 			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
+			// data es el valor leido.
+			send(cliente_fd, &data, sizeof(int), 0);
 		}
 		else if (op_code_memoria == COPY){
-			// PUSE CUALQUIER COSA ACA, MIREN EN EL ARCHIVO excecute.c en cpu
-			// VAN A VER UNA FUNCION PARA CADA INSTRUCCION Y COMO DEBEN DESERIALIZARLO
-			// BESOS EN LA COLA
-			int dir_fisica;
-			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
-			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
+			int size;
+			int primera_direccion;
+			int segunda_direccion;
+			recv(socket, &size, sizeof(int), MSG_WAITALL);
+			void* stream = malloc(size);
+			recv(socket, stream, size, MSG_WAITALL);
+			memcpy(&primera_direccion, stream, sizeof(int));
+			memcpy(&segunda_direccion, stream + sizeof(int), sizeof(int));
+
+
+
+			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DE DATOS DE %d A %d", primera_direccion, segunda_direccion);
+			send(cliente_fd, &OK, sizeof(int), 0);
 		}
 		else if (op_code_memoria == WRITE){
-			// PUSE CUALQUIER COSA ACA, MIREN LA EL ARCHIVO excecute.c en cpu
-			// VAN A VER UNA FUNCION PARA CADA INSTRUCCION Y COMO DEBEN DESERIALIZARLO
-			// BESOS EN LA COLA
-			int dir_fisica;
-			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
-			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
+			int size;
+			int direccion;
+			int valor;
+			recv(socket, &size, sizeof(int), MSG_WAITALL);
+			void* stream = malloc(size);
+			recv(socket, stream, size, MSG_WAITALL);
+			memcpy(&direccion, stream, sizeof(int));
+			memcpy(&valor, stream + sizeof(int), sizeof(int));
+
+
+
+			log_info(memoria->memoria_log, "SE EJECUTO LA ESCRITURA EN LA DIR. %d, VALOR: %d", direccion, valor);
+			send(cliente_fd, &OK, sizeof(int), 0);
 		}
 		else if (op_code_memoria == TABLA_SEGUNDO_NIVEL){
 			// ESTA BIEN ESTO
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+
+
+
+			send(cliente_fd, &tabla_segundo_nivel, sizeof(int), 0);
 		}
 		else if (op_code_memoria == MARCO){
 			// ESTA BIEN ESTO
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+
+
+			send(cliente_fd, &marco, sizeof(int), 0);
 		}
 		// KERNEL
 		else{
@@ -186,7 +209,6 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");
 			}
 			}
-		//600
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
 	}
 	    return EXIT_SUCCESS;
