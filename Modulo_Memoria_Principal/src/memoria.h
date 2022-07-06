@@ -34,19 +34,34 @@ typedef struct{
 typedef struct{
 	int id_proceso;
     int id_tabla;
+    t_list* marcos_usados; // TODO: antes esto era un INT, revisar codigo por cambios.
+    t_list* marcos_libres; // TODO: agregar todos los frames en carga de proceso.
+    int puntero_clock;
     t_list* entradas;
 }t_tabla_entradas_primer_nivel;
 
-typedef struct{
+
+// Dependencia circular entre t_marco_usado y t_pagina_segundo_nivel.
+typedef struct t_marco_usado t_marco_usado;
+typedef struct t_pagina_segundo_nivel t_pagina_segundo_nivel;
+
+struct t_marco_usado {
+	int numero_marco;
+	t_pagina_segundo_nivel* pagina;
+};
+
+struct t_pagina_segundo_nivel {
     int id_pagina;
-    int frame_principal;
+    t_marco_usado* marco_usado; // TODO Cambio: antes era ---> int frame_principal
     int presencia;
     int uso;
     int modificado;
-}t_pagina_segundo_nivel;
+};
+
 
 typedef struct{
 	int id_tabla;
+	t_tabla_entradas_primer_nivel* tabla_1er_nivel; // TODO: implementar.
 	t_list* paginas_segundo_nivel;
 }t_tabla_paginas_segundo_nivel;
 

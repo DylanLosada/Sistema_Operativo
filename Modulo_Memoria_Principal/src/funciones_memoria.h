@@ -8,13 +8,18 @@
 #include <dirent.h>
 #include<string.h>
 
+typedef enum{
+	CLOCK,
+	CLOCK_MODIFICADO
+} t_algoritmo_reemplazo_mem;
+
 typedef struct{
 	char* puerto;
 	int tamanio_memoria;
 	int tamanio_pagina;
 	int entradas_por_tabla;
 	int retardo_memoria;
-	char * algoritmo_reemplazo;
+	t_algoritmo_reemplazo_mem algoritmo_reemplazo;
 	int marcos_proceso;
 	int retardo_swap;
 	char * path_swap;
