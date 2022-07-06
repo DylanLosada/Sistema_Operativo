@@ -65,6 +65,9 @@ typedef struct{
 	t_list* paginas_segundo_nivel;
 }t_tabla_paginas_segundo_nivel;
 
+#include "clock.h"
+#include "instrucciones.h"
+
 //**************************FUNCIONES********************+
 void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memoria);
 void manejar_conexion(void* void_args);

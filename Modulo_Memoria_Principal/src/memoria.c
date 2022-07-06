@@ -132,22 +132,23 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			int dir_fisica;
 			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
 			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
-			// data es el valor leido.
+
+			int data = leer_memoria(memoria, dir_fisica);
 			send(cliente_fd, &data, sizeof(int), 0);
 		}
 		else if (op_code_memoria == COPY){
 			int size;
-			int primera_direccion;
-			int segunda_direccion;
+			int direccion_hacia;
+			int direccion_desde;
 			recv(socket, &size, sizeof(int), MSG_WAITALL);
 			void* stream = malloc(size);
 			recv(socket, stream, size, MSG_WAITALL);
-			memcpy(&primera_direccion, stream, sizeof(int));
-			memcpy(&segunda_direccion, stream + sizeof(int), sizeof(int));
+			memcpy(&direccion_hacia, stream, sizeof(int));
+			memcpy(&direccion_desde, stream + sizeof(int), sizeof(int));
 
+			int valor_copiado = copiar_memoria(memoria, direccion_desde, direccion_hacia);
 
-
-			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DE DATOS DE %d A %d", primera_direccion, segunda_direccion);
+			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DEL VALOR %d DE %d A %d", valor_copiado, direccion_desde, direccion_hacia);
 			send(cliente_fd, &OK, sizeof(int), 0);
 		}
 		else if (op_code_memoria == WRITE){
@@ -160,7 +161,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			memcpy(&direccion, stream, sizeof(int));
 			memcpy(&valor, stream + sizeof(int), sizeof(int));
 
-
+			escribir_memoria(memoria, direccion, valor);
 
 			log_info(memoria->memoria_log, "SE EJECUTO LA ESCRITURA EN LA DIR. %d, VALOR: %d", direccion, valor);
 			send(cliente_fd, &OK, sizeof(int), 0);
@@ -171,6 +172,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
+			int tabla_segundo_nivel = get_tabla_segundo_nivel(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
 
 			send(cliente_fd, &tabla_segundo_nivel, sizeof(int), 0);
@@ -181,6 +183,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
+			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
 			send(cliente_fd, &marco, sizeof(int), 0);
 		}
