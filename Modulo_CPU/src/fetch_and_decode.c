@@ -109,7 +109,7 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 		if(exist_interrupt->is_interrupt){
 			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
 			int op_code = INTERRUPT;
-			pcb->time_excecuted_rafaga = clock() - time_excecuted;
+			pcb->time_excecuted_rafaga += clock() - time_excecuted;
 			send_data_to_kernel(kernel_socket, cpu, pcb, op_code);
 			exist_interrupt->is_interrupt = false;
 			break;
