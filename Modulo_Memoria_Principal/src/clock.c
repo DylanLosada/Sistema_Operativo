@@ -2,7 +2,7 @@
 
 void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina) {
 
-	if (list_size(tabla_1er_nivel->marcos_libres) == 0) return clock(memoria, tabla_1er_nivel, pagina);
+	if (list_size(tabla_1er_nivel->marcos_libres) == 0) return clock_algoritmo(memoria, tabla_1er_nivel, pagina);
 
 
 	// TODO: si el proceso vuelve a memoria el clock empieza en 0?
@@ -20,7 +20,7 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 }
 
 
-void clock(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame){
+void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame){
 
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
 	t_marco_usado* marco_usado;

@@ -39,9 +39,6 @@ int get_tabla_marco_from_memoria(t_cpu* cpu, int tabla_nivel, int entrada_tabla_
 	t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 	void* to_send = serialize_mmu_memoria(paquete, tabla_nivel, entrada_tabla_nivel, OPERACION);
 	send_data_to_server(cpu->mem_config->socket, to_send, paquete->buffer->size + sizeof(int) + sizeof(int));
-	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
-	if(op_code == OPERACION){
-		recv(cpu->mem_config->socket, &tabla_segundo_nivel, sizeof(int), MSG_WAITALL);
-	}
+	recv(cpu->mem_config->socket, &tabla_segundo_nivel, sizeof(int), MSG_WAITALL);
 	return tabla_segundo_nivel;
 }

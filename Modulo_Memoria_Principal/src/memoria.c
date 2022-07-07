@@ -137,34 +137,32 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			send(cliente_fd, &data, sizeof(int), 0);
 		}
 		else if (op_code_memoria == COPY){
+			int op_code = OK;
 			int size;
 			int direccion_hacia;
 			int direccion_desde;
-			recv(socket, &size, sizeof(int), MSG_WAITALL);
+			recv(cliente_fd, &size, sizeof(int), MSG_WAITALL);
 			void* stream = malloc(size);
-			recv(socket, stream, size, MSG_WAITALL);
+			recv(cliente_fd, stream, size, MSG_WAITALL);
 			memcpy(&direccion_hacia, stream, sizeof(int));
 			memcpy(&direccion_desde, stream + sizeof(int), sizeof(int));
 
 			int valor_copiado = copiar_memoria(memoria, direccion_desde, direccion_hacia);
 
 			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DEL VALOR %d DE %d A %d", valor_copiado, direccion_desde, direccion_hacia);
-			send(cliente_fd, &OK, sizeof(int), 0);
+			send(cliente_fd, &op_code, sizeof(int), 0);
 		}
 		else if (op_code_memoria == WRITE){
-			int size;
+			int op_code = OK;
 			int direccion;
 			int valor;
-			recv(socket, &size, sizeof(int), MSG_WAITALL);
-			void* stream = malloc(size);
-			recv(socket, stream, size, MSG_WAITALL);
-			memcpy(&direccion, stream, sizeof(int));
-			memcpy(&valor, stream + sizeof(int), sizeof(int));
+			recv(cliente_fd, &valor, sizeof(int), MSG_WAITALL);
+			recv(cliente_fd, &direccion, sizeof(int), MSG_WAITALL);
 
 			escribir_memoria(memoria, direccion, valor);
 
 			log_info(memoria->memoria_log, "SE EJECUTO LA ESCRITURA EN LA DIR. %d, VALOR: %d", direccion, valor);
-			send(cliente_fd, &OK, sizeof(int), 0);
+			send(cliente_fd, &op_code, sizeof(int), 0);
 		}
 		else if (op_code_memoria == TABLA_SEGUNDO_NIVEL){
 			// ESTA BIEN ESTO
@@ -242,7 +240,7 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
     t_pcb* pcb_actualizado = guardar_proceso_en_paginacion(pcb_cliente, memoria);
 
 
-    if(pcb_actualizado->tabla_paginas != NULL){
+    if(pcb_actualizado->tabla_paginas > 0){
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, NEW);
     		log_info(memoria->memoria_log, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
 
@@ -293,90 +291,83 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	//ej: pag_necesarias = 16, marcos_por_proceso= 4 --> cant_tablas #2 = 4 --> cant_entradas #1 = 4
 	int cant_tablas_segundo_necesarias = ceil(sqrt((double) paginas_necesarias));
 
-	t_tabla_entradas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_entradas_primer_nivel*));
+	t_tabla_entradas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_entradas_primer_nivel));
 
 	aumentar_contador_tablas_primer_nivel(memoria);
 	tabla_primer_nivel->id_proceso = pcb_cliente->id;
 	tabla_primer_nivel->id_tabla = memoria->id_tablas_primer_nivel;
 
-	t_list* entadas_tabla_nivel_uno = list_create();
-
 	int tablas_guardadas;
+	tabla_primer_nivel->entradas = list_create();
 
 	for(tablas_guardadas = 0; tablas_guardadas < cant_tablas_segundo_necesarias; tablas_guardadas++){
 
-		t_tabla_paginas_segundo_nivel* tabla_segundo_nivel = malloc(sizeof(t_tabla_paginas_segundo_nivel*));
+		t_tabla_paginas_segundo_nivel* tabla_segundo_nivel = malloc(sizeof(t_tabla_paginas_segundo_nivel));
 
 		aumentar_contador_tablas_segundo_nivel(memoria);
 		tabla_segundo_nivel->id_tabla = memoria->id_tablas_segundo_nivel;
 
-		t_list* paginas_tabla_segundo_nivel = list_create();
+		tabla_segundo_nivel->paginas_segundo_nivel = list_create();
 
 		if((tablas_guardadas + 1) == cant_tablas_segundo_necesarias){
 			int i= 0;
 			for(i=0; i < paginas_necesarias; i++){
 				int numero_pagina_de_tabla = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
+				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco_usado));
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
 
            	if(contador_marcos_disponibles_por_proceso > 0){
            		pagina_segundo_nivel->presencia = 1;
            		int marco_memoria_principal = obtener_marco_de_memoria(memoria);
-           		pagina_segundo_nivel->frame_principal = marco_memoria_principal;
+           		pagina_segundo_nivel->marco_usado->numero_marco = marco_memoria_principal;
               	contador_marcos_disponibles_por_proceso = contador_marcos_disponibles_por_proceso - 1;
-          			}else{
-           			pagina_segundo_nivel->presencia = 0;
-           			pagina_segundo_nivel->frame_principal = -1;
+			}else{
+				pagina_segundo_nivel->presencia = 0;
+				pagina_segundo_nivel->marco_usado->numero_marco = -1;
            	}
 
 				pagina_segundo_nivel->uso = 1;
 				pagina_segundo_nivel->modificado= 1; //??
 
-				list_add(paginas_tabla_segundo_nivel, pagina_segundo_nivel);
+				list_add(tabla_segundo_nivel->paginas_segundo_nivel, pagina_segundo_nivel);
 				//tabla_nivel_dos = agregar pagina
 
 			}
-			tabla_segundo_nivel->paginas_segundo_nivel = paginas_tabla_segundo_nivel;
 		}else{
 			int pagina;
 			for(pagina = 0; pagina < cant_tablas_segundo_necesarias; pagina++){
 				int numero_pagina_de_tabla = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
+				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco_usado));
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
 
         		if(contador_marcos_disponibles_por_proceso > 0){
            		pagina_segundo_nivel->presencia = 1;
            		int marco_memoria_principal = obtener_marco_de_memoria(memoria);
-				pagina_segundo_nivel->frame_principal = marco_memoria_principal;
+				pagina_segundo_nivel->marco_usado->numero_marco = marco_memoria_principal;
               	contador_marcos_disponibles_por_proceso = contador_marcos_disponibles_por_proceso - 1;
           			}else{
            			pagina_segundo_nivel->presencia = 0;
-           			pagina_segundo_nivel->frame_principal = -1;
+           			pagina_segundo_nivel->marco_usado->numero_marco = -1;
            	}
 
 				pagina_segundo_nivel->uso = 1;
 				pagina_segundo_nivel->modificado=1; //??
 
-				list_add(paginas_tabla_segundo_nivel, pagina_segundo_nivel);
+				list_add(tabla_segundo_nivel->paginas_segundo_nivel, pagina_segundo_nivel);
 
 				paginas_necesarias = paginas_necesarias - 1;
 
 			}
-
-			tabla_segundo_nivel->paginas_segundo_nivel = paginas_tabla_segundo_nivel;
-
 		}
-		list_add(entadas_tabla_nivel_uno, tabla_segundo_nivel);
+		list_add(tabla_primer_nivel->entradas, tabla_segundo_nivel);
 
 		agregar_tabla_de_segundo_nivel_a_memoria(memoria, tabla_segundo_nivel);
 }
-	tabla_primer_nivel->entradas = entadas_tabla_nivel_uno;
-
 	agregar_tabla_de_primer_nivel_a_memoria(memoria, tabla_primer_nivel);
 
-	int id_tabla = tabla_primer_nivel->id_tabla;
-
-	pcb_cliente->tabla_paginas = id_tabla;
+	pcb_cliente->tabla_paginas = tabla_primer_nivel->id_tabla;
 
 
 	//_________________CERRADO DE ARCHIVO DEL PROCESO_____________________
@@ -389,13 +380,11 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 }
 
 void agregar_tabla_de_primer_nivel_a_memoria(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_primer_nivel){
-	t_list* tablas_actuales = memoria->tablas_primer_nivel;
-	list_add(tablas_actuales, tabla_primer_nivel);
+	list_add(memoria->tablas_primer_nivel, tabla_primer_nivel);
 }
 
 void agregar_tabla_de_segundo_nivel_a_memoria(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel){
-	t_list* tablas_actuales = memoria->tablas_segundo_nivel;
-	list_add(tablas_actuales, tabla_segundo_nivel);
+	list_add(memoria->tablas_segundo_nivel, tabla_segundo_nivel);
 }
 
 void aumentar_contador_tablas_primer_nivel(t_memoria* memoria){

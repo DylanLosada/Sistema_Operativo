@@ -49,9 +49,8 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 			break;
 		case READ: {
 			//Se deberá leer el valor de memoria correspondiente a esa dirección lógica e imprimirlo por pantalla
-			int valor_leido;
-			int dir_fisica = excecute_read(cpu, pcb, instruction, &valor_leido);
-			log_info(cpu->cpu_log, "READ ===> SE LEYO LA SIGUIENTE DIRECCION FISICA: %d, ENCONTRANDO EL VALOR: %d", dir_fisica, 7);
+			int valor_leido = excecute_read(cpu, pcb, instruction);
+			log_info(cpu->cpu_log, "READ ===> SE LEYO  EL VALOR: %d", valor_leido);
 			/*int espacio_leido;
 			execute_instruction_read_write(&espacio_leido, cpu, pcb, instruction);
 			log_info(cpu->cpu_log, "EL ESPACIO DE MEMORIA LEIDO: %d", espacio_leido);*/
@@ -80,26 +79,31 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 	}
 }
 
-int excecute_read(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction, int* valor_leido){
+int excecute_read(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int op_code;
+	int valor_leido;
 	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
 	void* stream = malloc(2*sizeof(int));
 	memcpy(stream, &instruction->instructions_code, sizeof(int));
 	memcpy(stream + sizeof(int), &dir_fisica, sizeof(int));
-	send_data_to_kernel(cpu->mem_config->socket, &dir_fisica, sizeof(int), 0);
+	send(cpu->mem_config->socket, stream, 2*sizeof(int), 0);
 	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
-	recv(cpu->mem_config->socket + sizeof(int), valor_leido, sizeof(int), MSG_WAITALL);
-	return dir_fisica;
+	recv(cpu->mem_config->socket + sizeof(int), &valor_leido, sizeof(int), MSG_WAITALL);
+	return valor_leido;
 }
 
 int excecute_write(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int op_code;
+	int valor = instruction->param2;
+	int op_code_write = instruction->instructions_code;
 	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
 	void* stream = malloc(3*sizeof(int));
-	memcpy(stream, &instruction->instructions_code, sizeof(int));
-	memcpy(stream + sizeof(int), &instruction->param2, sizeof(int));
-	memcpy(stream + sizeof(int), &dir_fisica, sizeof(int));
-	send_data_to_kernel(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
+	memcpy(stream, &op_code_write, sizeof(int));
+	stream += sizeof(int);
+	memcpy(stream, &valor, sizeof(int));
+	stream += sizeof(int);
+	memcpy(stream, &dir_fisica, sizeof(int));
+	send(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
 	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
 	log_info(cpu->cpu_log, "WRITE ===> SE EJECUTO LA ESCRITURA EN LA DIR. %d, VALOR: %d", dir_fisica, instruction->param2);
 	return dir_fisica;
@@ -111,9 +115,11 @@ void excecute_copy(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int dir_fisica_second = dir_logica_a_fisica(cpu, pcb, instruction->param2);
 	void* stream = malloc(3*sizeof(int));
 	memcpy(stream, &instruction->instructions_code, sizeof(int));
-	memcpy(stream + sizeof(int), &dir_fisica_first, sizeof(int));
-	memcpy(stream + sizeof(int), &dir_fisica_second, sizeof(int));
-	send_data_to_kernel(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
+	stream += sizeof(int);
+	memcpy(stream, &dir_fisica_first, sizeof(int));
+	stream += sizeof(int);
+	memcpy(stream, &dir_fisica_second, sizeof(int));
+	send(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
 	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
 	log_info(cpu->cpu_log, "COPY ===> SE EJECUTO EL COPIADO DE DATOS DE %d A %d", dir_fisica_first, dir_fisica_second);
 }

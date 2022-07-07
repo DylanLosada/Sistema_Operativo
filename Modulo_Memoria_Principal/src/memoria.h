@@ -7,6 +7,7 @@
 #include<unistd.h>
 #include<sys/socket.h>
 #include<netdb.h>
+#include<pthread.h>
 #include <commons/error.h>
 #include "funciones_memoria.h"
 #include<unistd.h>
@@ -45,10 +46,11 @@ typedef struct{
 typedef struct t_marco_usado t_marco_usado;
 typedef struct t_pagina_segundo_nivel t_pagina_segundo_nivel;
 
-struct t_marco_usado {
-	int numero_marco;
-	t_pagina_segundo_nivel* pagina;
-};
+typedef struct{
+	int id_tabla;
+	t_tabla_entradas_primer_nivel* tabla_1er_nivel; // TODO: implementar.
+	t_list* paginas_segundo_nivel;
+}t_tabla_paginas_segundo_nivel;
 
 struct t_pagina_segundo_nivel {
     int id_pagina;
@@ -58,12 +60,10 @@ struct t_pagina_segundo_nivel {
     int modificado;
 };
 
-
-typedef struct{
-	int id_tabla;
-	t_tabla_entradas_primer_nivel* tabla_1er_nivel; // TODO: implementar.
-	t_list* paginas_segundo_nivel;
-}t_tabla_paginas_segundo_nivel;
+struct t_marco_usado {
+	int numero_marco;
+	t_pagina_segundo_nivel* pagina;
+};
 
 #include "clock.h"
 #include "instrucciones.h"
