@@ -18,6 +18,7 @@
 #include<commons/error.h>
 #include<shared_funtions/estructuras.h>
 #include<shared_funtions/conexion_servidor.h>
+#include<shared_funtions/conexion_cliente.h>
 
 
 typedef struct {

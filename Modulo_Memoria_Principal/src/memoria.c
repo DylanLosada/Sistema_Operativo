@@ -138,14 +138,10 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 		}
 		else if (op_code_memoria == COPY){
 			int op_code = OK;
-			int size;
 			int direccion_hacia;
 			int direccion_desde;
-			recv(cliente_fd, &size, sizeof(int), MSG_WAITALL);
-			void* stream = malloc(size);
-			recv(cliente_fd, stream, size, MSG_WAITALL);
-			memcpy(&direccion_hacia, stream, sizeof(int));
-			memcpy(&direccion_desde, stream + sizeof(int), sizeof(int));
+			recv(cliente_fd, &direccion_hacia, sizeof(int), MSG_WAITALL);
+			recv(cliente_fd, &direccion_desde, sizeof(int), MSG_WAITALL);
 
 			int valor_copiado = copiar_memoria(memoria, direccion_desde, direccion_hacia);
 
@@ -209,7 +205,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			else{
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");
 			}
-			}
+		}
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
 	}
 	    return EXIT_SUCCESS;

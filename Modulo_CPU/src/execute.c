@@ -80,15 +80,15 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 }
 
 int excecute_read(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
-	int op_code;
 	int valor_leido;
+	int offset = 0;
 	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
 	void* stream = malloc(2*sizeof(int));
 	memcpy(stream, &instruction->instructions_code, sizeof(int));
-	memcpy(stream + sizeof(int), &dir_fisica, sizeof(int));
+	offset += sizeof(int);
+	memcpy(stream + offset, &dir_fisica, sizeof(int));
 	send(cpu->mem_config->socket, stream, 2*sizeof(int), 0);
-	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
-	recv(cpu->mem_config->socket + sizeof(int), &valor_leido, sizeof(int), MSG_WAITALL);
+	recv(cpu->mem_config->socket, &valor_leido, sizeof(int), MSG_WAITALL);
 	return valor_leido;
 }
 
@@ -97,15 +97,16 @@ int excecute_write(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int valor = instruction->param2;
 	int op_code_write = instruction->instructions_code;
 	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
-	void* stream = malloc(3*sizeof(int));
+	int offset = 0;
+	int size = sizeof(int) + sizeof(int) + sizeof(int);
+	void* stream = malloc(size);
 	memcpy(stream, &op_code_write, sizeof(int));
-	stream += sizeof(int);
-	memcpy(stream, &valor, sizeof(int));
-	stream += sizeof(int);
-	memcpy(stream, &dir_fisica, sizeof(int));
-	send(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
+	offset += sizeof(int);
+	memcpy(stream + offset, &valor, sizeof(int));
+	offset += sizeof(int);
+	memcpy(stream + offset, &dir_fisica, sizeof(int));
+	send_data_to_server(cpu->mem_config->socket, stream, (sizeof(int) + sizeof(int) + sizeof(int)));
 	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
-	log_info(cpu->cpu_log, "WRITE ===> SE EJECUTO LA ESCRITURA EN LA DIR. %d, VALOR: %d", dir_fisica, instruction->param2);
 	return dir_fisica;
 }
 
@@ -113,12 +114,14 @@ void excecute_copy(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int op_code;
 	int dir_fisica_first = dir_logica_a_fisica(cpu, pcb, instruction->param1);
 	int dir_fisica_second = dir_logica_a_fisica(cpu, pcb, instruction->param2);
-	void* stream = malloc(3*sizeof(int));
+	int offset = 0;
+	int size = sizeof(int) + sizeof(int) + sizeof(int);
+	void* stream = malloc(size);
 	memcpy(stream, &instruction->instructions_code, sizeof(int));
-	stream += sizeof(int);
-	memcpy(stream, &dir_fisica_first, sizeof(int));
-	stream += sizeof(int);
-	memcpy(stream, &dir_fisica_second, sizeof(int));
+	offset += sizeof(int);
+	memcpy(stream + offset, &dir_fisica_first, sizeof(int));
+	offset += sizeof(int);
+	memcpy(stream + offset, &dir_fisica_second, sizeof(int));
 	send(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
 	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
 	log_info(cpu->cpu_log, "COPY ===> SE EJECUTO EL COPIADO DE DATOS DE %d A %d", dir_fisica_first, dir_fisica_second);
