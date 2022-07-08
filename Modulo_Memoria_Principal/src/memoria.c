@@ -76,14 +76,14 @@ int main(void) {
 
 void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memoria){
 
-	int frame_actual;
 	t_list* marcos_libres_para_asignar = list_create();
 
-	for(frame_actual = 0; frame_actual < cantidad_de_frames; frame_actual++){
+	for(int frame_actual = 0; frame_actual < cantidad_de_frames; frame_actual++){
 
-		//memoria->marcos_libres[frame_actual]= frame_actual+1;
-		list_add(marcos_libres_para_asignar, frame_actual);
-		log_info(memoria->memoria_log,"Se tienen el valor %d en la posicion de la lista %d", list_get(marcos_libres_para_asignar, frame_actual), marcos_libres_para_asignar->elements_count);
+		t_marco* marco = malloc(sizeof(t_marco));
+		marco->numero_marco = frame_actual;
+		marco->pagina = NULL;
+		list_add(marcos_libres_para_asignar, marco);
 	}
 	memoria->marcos_libres = marcos_libres_para_asignar;
 }
@@ -162,24 +162,31 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 		}
 		else if (op_code_memoria == TABLA_SEGUNDO_NIVEL){
 			// ESTA BIEN ESTO
+			int marco_to_swap = -1;
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
 			int tabla_segundo_nivel = get_tabla_segundo_nivel(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
-
-			send(cliente_fd, &tabla_segundo_nivel, sizeof(int), 0);
+			void* stream = malloc(sizeof(int)*2);
+			memcpy(stream, &tabla_segundo_nivel, sizeof(int));
+			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
+			send(cliente_fd, stream, 2*sizeof(int), 0);
 		}
 		else if (op_code_memoria == MARCO){
 			// ESTA BIEN ESTO
+			int marco_to_swap;
+
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
-			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
-
-			send(cliente_fd, &marco, sizeof(int), 0);
+			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel, &marco_to_swap);
+			void* stream = malloc(sizeof(int)*2);
+			memcpy(stream, &marco, sizeof(int));
+			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
+			send(cliente_fd, stream, 2*sizeof(int), 0);
 		}
 		// KERNEL
 		else{
@@ -321,7 +328,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 			int numero_pagina_de_tabla = 0;
 			for(i=0; i < paginas_necesarias; i++){
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
-				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco_usado));
+				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco));
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
 
            	if(contador_marcos_disponibles_por_proceso > 0){
@@ -346,7 +353,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 			int numero_pagina_de_tabla = 0;
 			for(pagina = 0; pagina < cant_tablas_segundo_necesarias; pagina++){
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
-				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco_usado));
+				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco));
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
 
         		if(contador_marcos_disponibles_por_proceso > 0){

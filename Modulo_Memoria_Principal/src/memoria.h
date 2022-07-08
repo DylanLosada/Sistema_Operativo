@@ -42,8 +42,8 @@ typedef struct{
 }t_tabla_entradas_primer_nivel;
 
 
-// Dependencia circular entre t_marco_usado y t_pagina_segundo_nivel.
-typedef struct t_marco_usado t_marco_usado;
+// Dependencia circular entre t_marco y t_pagina_segundo_nivel.
+typedef struct t_marco t_marco;
 typedef struct t_pagina_segundo_nivel t_pagina_segundo_nivel;
 
 typedef struct{
@@ -54,13 +54,13 @@ typedef struct{
 
 struct t_pagina_segundo_nivel {
     int id_pagina;
-    t_marco_usado* marco_usado; // TODO Cambio: antes era ---> int frame_principal
+    t_marco* marco_usado; // TODO Cambio: antes era ---> int frame_principal
     int presencia;
     int uso;
     int modificado;
 };
 
-struct t_marco_usado {
+struct t_marco {
 	int numero_marco;
 	t_pagina_segundo_nivel* pagina;
 };

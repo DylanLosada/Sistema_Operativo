@@ -2,6 +2,7 @@
 #define SRC_FETCH_AND_DECODE_H_
 
 #include "pcb.h"
+#include "tlb.h"
 #include "execute.h"
 #include <commons/log.h>
 #include <commons/collections/list.h>
