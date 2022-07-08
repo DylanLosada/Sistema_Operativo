@@ -5,18 +5,16 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 	if (list_size(tabla_1er_nivel->marcos_libres) == 0) return clock_algoritmo(memoria, tabla_1er_nivel, pagina, marco_to_swap);
 
 
-	// TODO: si el proceso vuelve a memoria el clock empieza en 0?
+
 	tabla_1er_nivel->puntero_clock = 0;
 
 	// Dato: por norma, nunca nos va a tocar pedir un marco y que no haya ninguno disponible.
-	int marco = list_remove(tabla_1er_nivel->marcos_libres, 0); // TODO: free?
+	t_marco* marco = list_remove(tabla_1er_nivel->marcos_libres, 0);
 
-	t_marco* marco_usado = malloc(sizeof(t_marco));
-	marco_usado->numero_marco = marco;
-	marco_usado->pagina = pagina;
-	list_add(tabla_1er_nivel->marcos_usados, marco_usado);
+	marco->pagina = pagina;
+	list_add(tabla_1er_nivel->marcos_usados, marco);
 
-	pagina->marco_usado = marco_usado;
+	pagina->marco_usado = marco;
 	pagina->presencia = 1;
 }
 

@@ -35,8 +35,8 @@ typedef struct{
 typedef struct{
 	int id_proceso;
     int id_tabla;
-    t_list* marcos_usados; // TODO: antes esto era un INT, revisar codigo por cambios.
-    t_list* marcos_libres; // TODO: agregar todos los frames en carga de proceso.
+    t_list* marcos_usados;
+    t_list* marcos_libres; // TODO: llamar a funcion de reserva en reswap y actualizar bits.
     int puntero_clock;
     t_list* entradas;
 }t_tabla_entradas_primer_nivel;
@@ -48,13 +48,13 @@ typedef struct t_pagina_segundo_nivel t_pagina_segundo_nivel;
 
 typedef struct{
 	int id_tabla;
-	t_tabla_entradas_primer_nivel* tabla_1er_nivel; // TODO: implementar.
+	t_tabla_entradas_primer_nivel* tabla_1er_nivel;
 	t_list* paginas_segundo_nivel;
 }t_tabla_paginas_segundo_nivel;
 
 struct t_pagina_segundo_nivel {
     int id_pagina;
-    t_marco* marco_usado; // TODO Cambio: antes era ---> int frame_principal
+    t_marco* marco_usado;
     int presencia;
     int uso;
     int modificado;
@@ -90,7 +90,7 @@ void eliminar_paginas_de_memoria(t_tabla_paginas_segundo_nivel* tabla_segundo_ni
 void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria, int posicion_tabla_en_lista);
 void eliminar_tabla_de_la_lista_de_tablas_del_sistema(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel);
 t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
-int obtener_marco_de_memoria(t_memoria* memoria);
+void reservar_marcos_libres_proceso(t_memoria* memoria,t_tabla_entradas_primer_nivel* tabla_primer_nivel);
 void agregar_marco_de_memoria_a_lista(t_memoria* memoria, int marco);
 //////////////////////////////SEMAFOROS////////////////////////////
 
