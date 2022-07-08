@@ -47,3 +47,16 @@ void limpiar_tlb(t_cpu* cpu) {
 		free(first_entry);
 	}
 }
+
+void eliminar_marco_tlb(t_cpu* cpu, int marco) {
+    t_list* tlb = cpu->tlb;
+
+    for (int i = 0; i < list_size(tlb); i++){
+        t_tlb_entry* entry = list_get(tlb, i);
+        if (entry->marco == marco) {
+            list_remove(tlb, i);
+            free(entry);
+            break;
+        }
+    }
+}

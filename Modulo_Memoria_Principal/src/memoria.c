@@ -162,24 +162,31 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 		}
 		else if (op_code_memoria == TABLA_SEGUNDO_NIVEL){
 			// ESTA BIEN ESTO
+			int marco_to_swap = -1;
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
 			int tabla_segundo_nivel = get_tabla_segundo_nivel(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
-
-			send(cliente_fd, &tabla_segundo_nivel, sizeof(int), 0);
+			void* stream = malloc(sizeof(int)*2);
+			memcpy(stream, &tabla_segundo_nivel, sizeof(int));
+			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
+			send(cliente_fd, stream, 2*sizeof(int), 0);
 		}
 		else if (op_code_memoria == MARCO){
 			// ESTA BIEN ESTO
+			int marco_to_swap;
+
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
-			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
-
-			send(cliente_fd, &marco, sizeof(int), 0);
+			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel, &marco_to_swap);
+			void* stream = malloc(sizeof(int)*2);
+			memcpy(stream, &marco, sizeof(int));
+			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
+			send(cliente_fd, stream, 2*sizeof(int), 0);
 		}
 		// KERNEL
 		else{

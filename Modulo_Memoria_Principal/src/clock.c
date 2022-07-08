@@ -1,8 +1,8 @@
 #include "clock.h"
 
-void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina) {
+void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina, int* marco_to_swap) {
 
-	if (list_size(tabla_1er_nivel->marcos_libres) == 0) return clock_algoritmo(memoria, tabla_1er_nivel, pagina);
+	if (list_size(tabla_1er_nivel->marcos_libres) == 0) return clock_algoritmo(memoria, tabla_1er_nivel, pagina, marco_to_swap);
 
 
 	// TODO: si el proceso vuelve a memoria el clock empieza en 0?
@@ -17,10 +17,11 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 	list_add(tabla_1er_nivel->marcos_usados, marco_usado);
 
 	pagina->marco_usado = marco_usado;
+	pagina->presencia = 1;
 }
 
 
-void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame){
+void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame, int* marco_to_swap){
 
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
 	t_marco_usado* marco_usado;
@@ -78,6 +79,7 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 	if (pagina_a_desalojar->modificado == 1) {
 		// TODO: --- DESALOJAR pagina_a_desalojar ---
+		*marco_to_swap = pagina_a_desalojar->marco_usado->numero_marco;
 	}
 
 

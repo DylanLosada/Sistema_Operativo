@@ -101,6 +101,7 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 			cpu->args_io_exit->code = instruct->instructions_code;
 			cpu->args_io_exit->pcb = pcb;
 
+			limpiar_tlb(cpu);
 			pthread_mutex_unlock(cpu->args_io_exit->mutex_has_io_exit);
 			log_info(cpu->cpu_log, "SE LE AVISA AL KERNEL");
 			break;
