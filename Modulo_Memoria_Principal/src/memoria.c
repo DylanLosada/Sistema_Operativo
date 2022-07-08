@@ -197,12 +197,20 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			} else if(op_code_memoria == SWAP){
 
+				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
+				//Es necesario responder?
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, OPERACION_EXITOSA);
 
-			}
-			else{
+			}else if(op_code_memoria == RE_SWAP){
+				sleep(memoria->memoria_config->retardo_swap/1000);
+				hacer_reswap_del_proceso(pcb_cliente, memoria);
+				log_info(memoria->memoria_log, "SE SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
+				//Es necesario responder?
+				responder_pcb_a_cliente(pcb_cliente, cliente_fd, OPERACION_EXITOSA);
+
+			}else{
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");
 			}
 		}
@@ -296,6 +304,8 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	int tablas_guardadas;
 	tabla_primer_nivel->entradas = list_create();
 
+
+	//Este for crea las tablas de segundo nivel
 	for(tablas_guardadas = 0; tablas_guardadas < cant_tablas_segundo_necesarias; tablas_guardadas++){
 
 		t_tabla_paginas_segundo_nivel* tabla_segundo_nivel = malloc(sizeof(t_tabla_paginas_segundo_nivel));
@@ -305,10 +315,11 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 		tabla_segundo_nivel->paginas_segundo_nivel = list_create();
 
+		//Este if es para la ultima tabla de segundo nivel en la cual puede o no usar todas sus paginas
 		if((tablas_guardadas + 1) == cant_tablas_segundo_necesarias){
 			int i= 0;
+			int numero_pagina_de_tabla = 0;
 			for(i=0; i < paginas_necesarias; i++){
-				int numero_pagina_de_tabla = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
 				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco_usado));
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
@@ -332,8 +343,8 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 			}
 		}else{
 			int pagina;
+			int numero_pagina_de_tabla = 0;
 			for(pagina = 0; pagina < cant_tablas_segundo_necesarias; pagina++){
-				int numero_pagina_de_tabla = 0;
 				t_pagina_segundo_nivel* pagina_segundo_nivel = malloc(sizeof(t_pagina_segundo_nivel));
 				pagina_segundo_nivel->marco_usado = malloc(sizeof(t_marco_usado));
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla + 1;
@@ -357,7 +368,8 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 			}
 		}
-		list_add(tabla_primer_nivel->entradas, tabla_segundo_nivel);
+		//Aca agregamos el id de la tabla de segundo nivel
+		list_add(tabla_primer_nivel->entradas, tabla_segundo_nivel->id_tabla);
 
 		agregar_tabla_de_segundo_nivel_a_memoria(memoria, tabla_segundo_nivel);
 }
@@ -521,7 +533,7 @@ t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb
 
 	int tamanio_lista_primer_nivel = list_size(tablas_primer_nivel_del_sistema);
 
-	int tabla_actual;
+	int tabla_actual = 0;
 	for(tabla_actual = 0; tabla_actual < tamanio_lista_primer_nivel; tabla_actual++){
 		if(list_get(tablas_primer_nivel_del_sistema, tabla_actual)!= NULL){
 			t_tabla_entradas_primer_nivel* tabla_primer_nivel_de_la_iteracion = list_get(tablas_primer_nivel_del_sistema, tabla_actual);
