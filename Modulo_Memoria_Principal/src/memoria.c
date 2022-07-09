@@ -182,7 +182,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
 			log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
-			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel, &marco_to_swap);
+			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel, &marco_to_swap, administrar_mmu->instruccion, administrar_mmu->pcb_id);
 			void* stream = malloc(sizeof(int)*2);
 			memcpy(stream, &marco, sizeof(int));
 			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
@@ -284,7 +284,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	//_________________CREACION DE ARCHIVO DEL PROCESO_____________________
 
-	char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_cliente, memoria);
+	char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_cliente->id, memoria);
 
 	FILE* archivo_proceso;
 

@@ -1,8 +1,8 @@
 #include "clock.h"
 
-void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina, int* marco_to_swap) {
+void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina, int* marco_to_swap, int pcb_id) {
 
-	if (list_size(tabla_1er_nivel->marcos_libres) == 0) return clock_algoritmo(memoria, tabla_1er_nivel, pagina, marco_to_swap);
+	if (list_size(tabla_1er_nivel->marcos_libres) == 0) return clock_algoritmo(memoria, tabla_1er_nivel, pagina, marco_to_swap, pcb_id);
 
 	tabla_1er_nivel->puntero_clock = 0;
 
@@ -16,11 +16,11 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 	pagina->presencia = 1;
 
 	//CARGAR LA PAG A MEMORIA
-	//sacar_pagina_de_archivo(pcb_proceso, memoria, marco, pagina); //TODO: PCB?
+	sacar_pagina_de_archivo(pcb_id, memoria, marco, pagina); //TODO: PCB?
 }
 
 
-void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame, int* marco_to_swap){
+void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame, int* marco_to_swap, int pcb_id){
 
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
 	t_marco* marco_usado;
@@ -79,8 +79,7 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 
 	if (pagina_a_desalojar->modificado == 1) {
-		// TODO: --- DESALOJAR pagina_a_desalojar ---
-		//swapear_pagina_en_disco(pcb_proceso, memoria, marco_usado, pagina_a_desalojar);
+		swapear_pagina_en_disco(pcb_id, memoria, marco_usado, pagina_a_desalojar);
 		*marco_to_swap = pagina_a_desalojar->marco_usado->numero_marco;
 	}
 
@@ -89,5 +88,5 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 	marco_usado->pagina = pagina_sin_frame;
 
 	//CARGAR LA PAG A MEMORIA
-	//sacar_pagina_de_archivo(pcb_proceso, memoria, marco_usado, pagina_sin_frame);//TODO: PCB?
+	sacar_pagina_de_archivo(pcb_id, memoria, marco_usado, pagina_sin_frame);
 }

@@ -6,10 +6,10 @@ int eliminar_archivo_swap(t_memoria* memoria, t_pcb* pcb_proceso){
 	return remove(path_archivo);
 }
 
-char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
+char* obtener_path_swap_del_archivo_del_proceso(int pcb_id, t_memoria* memoria){
 
 	char* path_archivo = memoria->memoria_config->path_swap;
-		int id_proceso = pcb_cliente->id;
+		int id_proceso = pcb_id;
 
 		char nombre[10];
 		strcpy(nombre,  ".swap");
@@ -159,7 +159,7 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	for(int marco_iteracion = 0; marco_iteracion < marcos_por_proceso; marco_iteracion++){
 		t_marco* marco_asignado = malloc(sizeof(t_marco));
-		marco_asignado->numero_marco = obtener_marco_de_memoria(memoria);
+		marco_asignado->numero_marco = obtener_marco_de_memoria(memoria); // TODO que onda esto ?
 		marco_asignado->pagina = NULL;
 	}
 
@@ -175,10 +175,17 @@ void sacar_pagina_de_archivo(t_pcb* pcb_proceso, t_memoria* memoria, t_marco* ma
     fseek(archivo_proceso, 0, SEEK_SET);
     int tamanio = tamanio_actual_del_archivo(archivo_proceso);
 
-    void* contenidoArchivo = malloc(tamanio);//TODO: Chequear de sumar 2 enteros mas al recorrido del contenido, uno para la pag, otro para tabla
+    void* contenidoArchivo = malloc(tamanio);
     fread(contenidoArchivo, tamanio, 1, archivo_proceso);//Ver que lee
 
-    memcpy(contenido_pagina, contenidoArchivo + pagina_a_sacar->id_pagina * (memoria->memoria_config->tamanio_pagina), (memoria->memoria_config->tamanio_pagina));
+    int offset = 0;
+    int direccion = pagina_a_sacar->id_pagina * (memoria->memoria_config->tamanio_pagina);
+    memcpy(contenido_pagina, contenidoArchivo + direccion, (memoria->memoria_config->tamanio_pagina));
+    offset += memoria->memoria_config->tamanio_pagina;
+    memcpy(pagina_a_sacar->id_pagina, contenidoArchivo + offset, sizeof(int));
+	offset += sizeof(int);
+	memcpy(pagina_a_sacar->tabla_segundo_nivel, contenidoArchivo + offset, sizeof(int));
+	offset += sizeof(int);
 
     fclose(archivo_proceso);
     free(contenidoArchivo);
@@ -187,8 +194,8 @@ void sacar_pagina_de_archivo(t_pcb* pcb_proceso, t_memoria* memoria, t_marco* ma
     free(contenido_pagina);
 }
 
-void swapear_pagina_en_disco(t_pcb* pcb_proceso, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_agregar) {
-    char* path_proceso = obtener_path_swap_del_archivo_del_proceso(pcb_proceso, memoria);
+void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_agregar) {
+    char* path_proceso = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
     void* contenido_pagina = malloc(memoria->memoria_config->tamanio_pagina);
     memcpy(contenido_pagina, memoria->espacio_memoria + marco->numero_marco * (memoria->memoria_config->tamanio_pagina), memoria->memoria_config->tamanio_pagina);
 
@@ -198,7 +205,15 @@ void swapear_pagina_en_disco(t_pcb* pcb_proceso, t_memoria* memoria, t_marco* ma
 
     void* contenido_archivo = malloc(tamanio);
     fread(contenido_archivo, tamanio, 1, archivo_proceso);
-    memcpy(contenido_archivo + pagina_a_agregar->id_pagina * (memoria->memoria_config->tamanio_pagina), contenido_pagina, (memoria->memoria_config->tamanio_pagina));
+    int offset = 0;
+    int direccion = pagina_a_agregar->id_pagina * (memoria->memoria_config->tamanio_pagina);
+
+    memcpy(contenido_archivo + direccion, contenido_pagina, (memoria->memoria_config->tamanio_pagina));
+    offset += memoria->memoria_config->tamanio_pagina;
+    memcpy(contenido_archivo + offset, pagina_a_agregar->id_pagina, sizeof(int));
+    offset += sizeof(int);
+    memcpy(contenido_archivo + offset, pagina_a_agregar->tabla_segundo_nivel, sizeof(int));
+
     fclose(archivo_proceso);
     archivo_proceso = fopen(path_proceso, "wb");
     fseek(archivo_proceso, 0, SEEK_SET);

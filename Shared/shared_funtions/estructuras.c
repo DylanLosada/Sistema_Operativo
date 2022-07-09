@@ -289,10 +289,11 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 
 }
 
-void* serialize_mmu_memoria(t_cpu_paquete* paquete, int tabla_nivel, int entrada_nivel, int MENSSAGE, op_memoria_message ES_MODIFICADO){
+void* serialize_mmu_memoria(t_cpu_paquete* paquete, int tabla_nivel, int entrada_nivel, int MENSSAGE, op_memoria_message ES_MODIFICADO, int pcb_id){
 	paquete->buffer = malloc(sizeof(t_buffer));
 	paquete->buffer->size = sizeof(int) // tabla
 			+ sizeof(int) // instruccion
+			+ sizeof(int) // id pcb
 			+ sizeof(int); // entrada
 
 	paquete->buffer->stream = malloc(paquete->buffer->size);
@@ -309,6 +310,10 @@ void* serialize_mmu_memoria(t_cpu_paquete* paquete, int tabla_nivel, int entrada
 
 	// INSTRUCCION
 	memcpy(paquete->buffer->stream + offset, &ES_MODIFICADO, sizeof(int));
+	offset += sizeof(int);
+
+	// INSTRUCCION
+	memcpy(paquete->buffer->stream + offset, &pcb_id, sizeof(int));
 	offset += sizeof(int);
 
 	// Segundo: completo el paquete.
@@ -336,6 +341,7 @@ void deserialize_mmu_memoria(t_administrar_mmu* administrar_mmu, int socket){
 	memcpy(&administrar_mmu->tabla_nivel, stream, sizeof(int));
 	memcpy(&administrar_mmu->entrada_nivel, stream + sizeof(int), sizeof(int));
 	memcpy(&administrar_mmu->instruccion, stream + sizeof(int) + sizeof(int), sizeof(int));
+	memcpy(&administrar_mmu->pcb_id, stream + sizeof(int) + sizeof(int) + sizeof(int), sizeof(int));
 }
 
 void free_serialize(t_cpu_paquete* paquete){

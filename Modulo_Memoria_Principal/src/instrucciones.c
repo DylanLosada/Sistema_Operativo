@@ -28,13 +28,13 @@ int get_tabla_segundo_nivel(t_memoria* memoria, int id_tabla_primer_nivel, int e
 	return segunda_tabla->id_tabla;
 }
 
-int get_marco(t_memoria* memoria, int id_tabla_segundo_nivel, int entrada, int* marco_to_swap, op_memoria_message INSTRUCCION) {
+int get_marco(t_memoria* memoria, int id_tabla_segundo_nivel, int entrada, int* marco_to_swap, op_memoria_message INSTRUCCION, int pcb_id) {
 
 	t_tabla_paginas_segundo_nivel* tabla= list_get(memoria->tablas_segundo_nivel, id_tabla_segundo_nivel);
 	t_pagina_segundo_nivel* pagina = list_get(tabla->paginas_segundo_nivel, entrada);
 
 	if (pagina->presencia == 0) {
-		asignar_frame_a_pagina(memoria, tabla->tabla_1er_nivel, pagina, marco_to_swap);
+		asignar_frame_a_pagina(memoria, tabla->tabla_1er_nivel, pagina, marco_to_swap, pcb_id);
 	}
 
 	if (INSTRUCCION == WRITE || INSTRUCCION == COPY) {

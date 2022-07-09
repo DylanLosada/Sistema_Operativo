@@ -2,7 +2,7 @@
 #define SWAP_H_
 
 int eliminar_archivo_swap(t_memoria* memoria, t_pcb* pcb_proceso);
-char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria);
+char* obtener_path_swap_del_archivo_del_proceso(int pcb_id t_memoria* memoria);
 void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria);
 t_tabla_paginas_segundo_nivel* obtener_tabla_segundo_nivel_del_proceso(int id_tabla_pagina_segundo_nivel, t_memoria* memoria);
 void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion, FILE* archivo_proceso, t_memoria* memoria);
