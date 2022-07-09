@@ -54,6 +54,12 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){ //TODO: AHo
 t_tabla_paginas_segundo_nivel* obtener_tabla_segundo_nivel_del_proceso(int id_tabla_pagina_segundo_nivel, t_memoria* memoria){
 
 	// TODO: refactor/ recorrer marcos_usados de la tabla de primer nivel (en vez de recorrer tabla por tabla y hacerlo con paginas en presencia 1).
+	// Para hacer un swap del proceso entero:
+	// - Recorrer tabla_primer_nivel->marcos_usados
+	// - cada marco_usado va a apuntar a una pagina con presencia 1 -----> el conjunto de marcos_usados va a apuntar a TODAS las paginas con presencia 1.
+	// hacer swap de cada pagina con presencia 1
+	// proceso swapeado!
+	
 	t_list* tablas_segundo_nivel_del_sistema = memoria->tablas_segundo_nivel;
 
 	int tamanio_lista_segundo_nivel = list_size(tablas_segundo_nivel_del_sistema);
