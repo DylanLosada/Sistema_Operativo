@@ -85,7 +85,7 @@ void liberar_memoria(t_memoria* memoria){
     free(memoria);
 }
 
-void reservar_marcos_libres_proceso(t_memoria* memoria,t_tabla_entradas_primer_nivel* tabla_primer_nivel) {
+void reservar_marcos_libres_proceso(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_primer_nivel) {
 	for (int i = 0; i < memoria->memoria_config->marcos_proceso; i++) {
 		t_marco* marco = list_remove(memoria->marcos_libres, 0);
 		list_add(tabla_primer_nivel->marcos_libres, marco);

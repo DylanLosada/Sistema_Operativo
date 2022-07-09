@@ -16,7 +16,7 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 	pagina->presencia = 1;
 
 	//CARGAR LA PAG A MEMORIA
-	sacar_pagina_de_archivo(pcb_id, memoria, marco, pagina); //TODO: PCB?
+	sacar_pagina_de_archivo(pcb_id, memoria, marco, pagina);
 }
 
 

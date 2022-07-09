@@ -32,20 +32,25 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){ //TODO: AHo
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 
+	t_list* paginas_con_marcos_asignados = tabla_primer_nivel->marcos_usados;
+
 	t_list* lista_de_id_de_tablas_de_segundo_nivel = tabla_primer_nivel->entradas;
 
-	int tamanio_lista = list_size(lista_de_id_de_tablas_de_segundo_nivel);
+	int cantidad_de_frames_usados = list_size(lista_de_id_de_tablas_de_segundo_nivel);
 
-	int tabla_actual;
+	for(int index = 0; index < cantidad_de_frames_usados; index++){
 
-	for(tabla_actual = 0; tabla_actual < tamanio_lista; tabla_actual++){
-		int id_tabla_pagina_segundo_nivel_iteracion = list_get(lista_de_id_de_tablas_de_segundo_nivel, tabla_actual);
-		t_tabla_paginas_segundo_nivel* tabla_pagina_segundo_nivel_iteracion = obtener_tabla_segundo_nivel_del_proceso(id_tabla_pagina_segundo_nivel_iteracion,  memoria);
+		t_marco* marco_iteracion = list_get(lista_de_id_de_tablas_de_segundo_nivel, index);
 
-		hacer_swap_de_tabla_de_paginas_de_segundo_nivel(tabla_primer_nivel, tabla_pagina_segundo_nivel_iteracion, archivo_proceso, memoria);
+		t_pagina_segundo_nivel* pagina_iteracion = marco_iteracion->pagina;
+
+		swapear_pagina_en_disco(pcb_proceso->id, memoria, marco_iteracion, pagina_iteracion);
+
+		marco_iteracion->pagina = NULL;
+
 
 	}
-
+	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
 
 	fclose(archivo_proceso);
@@ -105,40 +110,30 @@ void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_entradas_primer_niv
 
 }
 
-//TODO: VER
-void hacer_swap_de_pagina(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_pagina_segundo_nivel* pagina_iteracion, int id_tabla_segundo_nivel, FILE* archivo_proceso, t_memoria* memoria){
+//Solamente se usa al principio! Esta funcion solo escribe
+void hacer_swap_de_pagina_inicio(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_pagina_segundo_nivel* pagina_iteracion, int id_tabla_segundo_nivel, FILE* archivo_proceso, t_memoria* memoria){
 
-	int marco_memoria_de_pagina = pagina_iteracion->marco_usado->numero_marco;
 	int id_pagina = pagina_iteracion->id_pagina;
-	int desplazamiento = marco_memoria_de_pagina * memoria->memoria_config->tamanio_pagina;
-	void* contenido_de_marco = malloc(memoria->memoria_config->tamanio_pagina);
-	memcpy(contenido_de_marco, memoria->espacio_memoria + desplazamiento, memoria->memoria_config->tamanio_pagina);
+	void* contenido_de_pagina = malloc(memoria->memoria_config->tamanio_pagina);
+	memcpy(contenido_de_pagina, memoria->espacio_memoria, memoria->memoria_config->tamanio_pagina);//No nos importa que escriba, solo que ocupe los bytes que ocupa una pag
 
-	fwrite(contenido_de_marco, memoria->memoria_config->tamanio_pagina, 1, archivo_proceso);//TODO: hay que ver cuantos caracteres tiene contenido de marco
+	log_info(memoria->memoria_log, "SE SUBE AL ARCHIVO SWAP LA PAGINA %d DE LA TABLA %d DE SEGUNDO NIVEL", id_pagina, id_tabla_segundo_nivel);
+	fwrite(contenido_de_pagina, memoria->memoria_config->tamanio_pagina, 1, archivo_proceso);
 	fwrite((void*)id_pagina, sizeof(int), 1, archivo_proceso);
 	fwrite((void*)id_tabla_segundo_nivel, sizeof(int), 1, archivo_proceso);
 
-	free(contenido_de_marco);
-	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, marco_memoria_de_pagina, memoria);
-	pagina_iteracion->marco_usado= NULL;
-	pagina_iteracion->modificado=0;
-	pagina_iteracion->presencia=0;
-	pagina_iteracion->uso=0; // Podriamos usar este bit como para chequear si la pag fue alguna vez usada? por q si fue alguna vez usada y su presencia esta en 0 quiere decir q esta en el archivo
-
+	free(contenido_de_pagina);
 }
 
-void pasar_marco_ocupado_a_marco_libre_global(t_tabla_entradas_primer_nivel* tabla_primer_nivel, int marco_memoria_de_pagina, t_memoria* memoria){
+void pasar_marco_ocupado_a_marco_libre_global(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria){
 	int tamanio_lista_usados = list_size(tabla_primer_nivel->marcos_usados);
-	int marco_actual = 0;
 
-	for(marco_actual = 0; marco_actual < tamanio_lista_usados; marco_actual++){
+	for(int marco_actual = 0; marco_actual < tamanio_lista_usados; marco_actual++){
 
 		t_marco* marco_iteracion = list_get(tabla_primer_nivel->marcos_usados, marco_actual);
 
-		if(marco_iteracion->numero_marco == marco_memoria_de_pagina){
-			list_remove(tabla_primer_nivel->marcos_usados, marco_actual);
-			list_add(memoria->marcos_libres, marco_iteracion);
-		}
+		list_remove(tabla_primer_nivel->marcos_usados, marco_actual);
+		list_add(memoria->marcos_libres, marco_iteracion);
 
 	}
 
@@ -212,19 +207,40 @@ void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
     void* contenido_archivo = malloc(tamanio);
     fread(contenido_archivo, tamanio, 1, archivo_proceso);
     int offset = 0;
-    int direccion = pagina_a_agregar->id_pagina * (memoria->memoria_config->tamanio_pagina) + sizeof(int) + sizeof(int);
+    int tamanio_pagina_con_ids =(memoria->memoria_config->tamanio_pagina) + sizeof(int) + sizeof(int);
 
-    memcpy(contenido_archivo + direccion, contenido_pagina, (memoria->memoria_config->tamanio_pagina));
-    offset += memoria->memoria_config->tamanio_pagina;
-    memcpy(contenido_archivo + offset, pagina_a_agregar->id_pagina, sizeof(int));
-    offset += sizeof(int);
-    memcpy(contenido_archivo + offset, pagina_a_agregar->tabla_segundo_nivel, sizeof(int));
+    while(!feof(archivo_proceso)){
+    	int iterador;
+    	int offset = 0;
+    	int id_pagina;
+    	int id_tabla_segundo_nivel;
+    	void* contenido_pagina_iteracion = malloc(memoria->memoria_config->tamanio_pagina); //?
+    	void* contenido_archivo_iteracion = malloc(tamanio_pagina_con_ids);
+    	fread(contenido_archivo_iteracion, tamanio_pagina_con_ids, 1, archivo_proceso);
+    	memcpy(contenido_pagina_iteracion, contenido_archivo, (memoria->memoria_config->tamanio_pagina));
+    	offset+= memoria->memoria_config->tamanio_pagina;
+		memcpy(&id_pagina, contenido_archivo + offset, sizeof(int));
+		offset += sizeof(int);
+		memcpy(&id_tabla_segundo_nivel, contenido_archivo + offset, sizeof(int));
 
-    fclose(archivo_proceso);
-    archivo_proceso = fopen(path_proceso, "wb");
-    fseek(archivo_proceso, 0, SEEK_SET);
-    fwrite(contenido_archivo, tamanio, 1, archivo_proceso);
-    fclose(archivo_proceso);
+		if(id_pagina == pagina_a_agregar->id_pagina && id_tabla_segundo_nivel == pagina_a_agregar->tabla_segundo_nivel){
+			int posicion_puntero = ftell(archivo_proceso) - tamanio_pagina_con_ids;
+			fclose(archivo_proceso);
+			archivo_proceso = fopen(path_proceso, "wb");
+			fseek(archivo_proceso, 0, posicion_puntero);
+			fwrite(contenido_pagina, memoria->memoria_config->tamanio_pagina, 1, archivo_proceso);
+			fclose(archivo_proceso);
+
+			free(contenido_archivo);
+			free(contenido_pagina);
+			free(contenido_pagina_iteracion);
+			free(contenido_archivo_iteracion);
+			break;
+		}
+		free(contenido_pagina_iteracion);
+		free(contenido_archivo_iteracion);
+    }
+
     free(contenido_archivo);
     free(contenido_pagina);
 }

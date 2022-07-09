@@ -343,6 +343,11 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 				pagina_segundo_nivel->modificado=0;
 
 				list_add(tabla_segundo_nivel->paginas_segundo_nivel, pagina_segundo_nivel);
+				hacer_swap_de_pagina_inicio(tabla_primer_nivel, pagina_segundo_nivel, tabla_segundo_nivel->id_tabla, archivo_proceso, memoria);
+
+				//Para probar cuanto va subiendo tamaño del archivo
+				int tamanio = tamanio_actual_del_archivo(archivo_proceso);
+				log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
 			}
 
 		} else {
@@ -358,7 +363,12 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 				pagina_segundo_nivel->modificado=0;
 
 				list_add(tabla_segundo_nivel->paginas_segundo_nivel, pagina_segundo_nivel);
+				hacer_swap_de_pagina_inicio(tabla_primer_nivel, pagina_segundo_nivel, tabla_segundo_nivel->id_tabla, archivo_proceso, memoria);
 				paginas_necesarias--;
+
+				//Para probar cuanto va subiendo tamaño del archivo
+				int tamanio = tamanio_actual_del_archivo(archivo_proceso);
+				log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
 
 			}
 		}
