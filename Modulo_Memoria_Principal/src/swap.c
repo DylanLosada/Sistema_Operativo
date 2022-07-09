@@ -11,7 +11,7 @@ char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* m
 	char* path_archivo = memoria->memoria_config->path_swap;
 		int id_proceso = pcb_cliente->id;
 
-		char nombre[50];
+		char nombre[10];
 		strcpy(nombre,  ".swap");
 		char* id_proceso_char = string_itoa(id_proceso);
 
@@ -21,14 +21,14 @@ char* obtener_path_swap_del_archivo_del_proceso(t_pcb* pcb_cliente, t_memoria* m
 		return path_archivo;
 }
 
-void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
+void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){ //TODO: AHora se hace swap de todas las pags fijandose la presencia. hacer con la lista de marcos ocupados
 
 	char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_proceso, memoria);
 
 	FILE* archivo_proceso;
 
-	archivo_proceso = fopen(path_archivo, "r+");
-	log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
+	archivo_proceso = fopen(path_archivo, "rb");
+	log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO SWAP DEL PROCESO %d CON EL NOMBRE %s", pcb_proceso->id, path_archivo);
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 
@@ -99,6 +99,7 @@ void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_entradas_primer_niv
 
 }
 
+//TODO: VER
 void hacer_swap_de_pagina(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_pagina_segundo_nivel* pagina_iteracion, int id_tabla_segundo_nivel, FILE* archivo_proceso, t_memoria* memoria){
 
 	int marco_memoria_de_pagina = pagina_iteracion->marco_usado->numero_marco;
@@ -107,12 +108,16 @@ void hacer_swap_de_pagina(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_p
 	void* contenido_de_marco = malloc(memoria->memoria_config->tamanio_pagina);
 	memcpy(contenido_de_marco, memoria->espacio_memoria + desplazamiento, memoria->memoria_config->tamanio_pagina);
 
-	fwrite(contenido_de_marco, memoria->memoria_config->tamanio_pagina, 1, archivo_proceso);//DUDASAS
+	fwrite(contenido_de_marco, memoria->memoria_config->tamanio_pagina, 1, archivo_proceso);//TODO: hay que ver cuantos caracteres tiene contenido de marco
 	fwrite((void*)id_pagina, sizeof(int), 1, archivo_proceso);
 	fwrite((void*)id_tabla_segundo_nivel, sizeof(int), 1, archivo_proceso);
 
 	free(contenido_de_marco);
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, marco_memoria_de_pagina, memoria);
+	pagina_iteracion->marco_usado= NULL;
+	pagina_iteracion->modificado=0;
+	pagina_iteracion->presencia=0;
+	pagina_iteracion->uso=0; // Podriamos usar este bit como para chequear si la pag fue alguna vez usada? por q si fue alguna vez usada y su presencia esta en 0 quiere decir q esta en el archivo
 
 }
 
@@ -152,16 +157,63 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
 	t_tabla_entradas_primer_nivel tabla_primer_nivel_del_proceso = obtener_tabla_primer_nivel_del_proceso(pcb_cliente);
 
-	int marco_iteracion;
-	for(marco_iteracion = 0; marco_iteracion < marcos_por_proceso; marco_iteracion++){
+	for(int marco_iteracion = 0; marco_iteracion < marcos_por_proceso; marco_iteracion++){
 		t_marco* marco_asignado = malloc(sizeof(t_marco));
 		marco_asignado->numero_marco = obtener_marco_de_memoria(memoria);
-		//marco_asignado->pagina ??????????????
+		marco_asignado->pagina = NULL;
 	}
 
 }
 
-//El reswap de paginas tiene q leer el archivo del proceso y toda la logica hablada hoy
+//CARGAR TODAS LAS PAGS EN EL ARCHIVO DE ENTRADA PARA QUE ESTA FUNCION SIEMPRE!!! ENCUENTRE LA PAG EN EL ARCHIVO
+//Esta funcion recibe una pagina y la busca en el archivo del proceso
+void sacar_pagina_de_archivo(t_pcb* pcb_proceso, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_sacar) {
+    char* path = obtener_path_swap_del_archivo_del_proceso(pcb_proceso, memoria);
+    void* contenido_pagina = malloc(memoria->memoria_config->tamanio_pagina);
+
+    FILE* archivo_proceso = fopen(path, "rb");
+    fseek(archivo_proceso, 0, SEEK_SET);
+    int tamanio = tamanio_actual_del_archivo(archivo_proceso);
+
+    void* contenidoArchivo = malloc(tamanio);//TODO: Chequear de sumar 2 enteros mas al recorrido del contenido, uno para la pag, otro para tabla
+    fread(contenidoArchivo, tamanio, 1, archivo_proceso);//Ver que lee
+
+    memcpy(contenido_pagina, contenidoArchivo + pagina_a_sacar->id_pagina * (memoria->memoria_config->tamanio_pagina), (memoria->memoria_config->tamanio_pagina));
+
+    fclose(archivo_proceso);
+    free(contenidoArchivo);
+
+    memcpy(memoria->espacio_memoria + marco->numero_marco * (memoria->memoria_config->tamanio_pagina), contenido_pagina, (memoria->memoria_config->tamanio_pagina));
+    free(contenido_pagina);
+}
+
+void swapear_pagina_en_disco(t_pcb* pcb_proceso, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_agregar) {
+    char* path_proceso = obtener_path_swap_del_archivo_del_proceso(pcb_proceso, memoria);
+    void* contenido_pagina = malloc(memoria->memoria_config->tamanio_pagina);
+    memcpy(contenido_pagina, memoria->espacio_memoria + marco->numero_marco * (memoria->memoria_config->tamanio_pagina), memoria->memoria_config->tamanio_pagina);
+
+    FILE* archivo_proceso = fopen(path_proceso, "rb");
+    fseek(archivo_proceso, 0, SEEK_SET);
+    int tamanio = tamanio_actual_del_archivo(archivo_proceso);
+
+    void* contenido_archivo = malloc(tamanio);
+    fread(contenido_archivo, tamanio, 1, archivo_proceso);
+    memcpy(contenido_archivo + pagina_a_agregar->id_pagina * (memoria->memoria_config->tamanio_pagina), contenido_pagina, (memoria->memoria_config->tamanio_pagina));
+    fclose(archivo_proceso);
+    archivo_proceso = fopen(path_proceso, "wb");
+    fseek(archivo_proceso, 0, SEEK_SET);
+    fwrite(contenido_archivo, tamanio, 1, archivo_proceso);
+    fclose(archivo_proceso);
+    free(contenido_archivo);
+    free(contenido_pagina);
+}
+
+int tamanio_actual_del_archivo(FILE* archivo_proceso) {    // en bytes
+    fseek(archivo_proceso, 0, SEEK_END);
+    int tamanio = ftell(archivo_proceso);
+    fseek(archivo_proceso, 0, SEEK_SET);
+    return tamanio;
+}
 
 int obtener_espacio_de_memoria_a_acceder(t_memoria* memoria, int frame){
 	return (memoria->espacio_memoria) + (frame * memoria->memoria_config->tamanio_pagina);

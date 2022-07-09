@@ -204,10 +204,10 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			} else if(op_code_memoria == SWAP){
 
+				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap);
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
-				//Es necesario responder?
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, OPERACION_EXITOSA);
 
 			}else if(op_code_memoria == RE_SWAP){
@@ -337,7 +337,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 				pagina_segundo_nivel->marco_usado = NULL;
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla;
 				numero_pagina_de_tabla++;
-
+				pagina_segundo_nivel->tabla_segundo_nivel = tabla_segundo_nivel->id_tabla;
 				pagina_segundo_nivel->presencia = 0;
 				pagina_segundo_nivel->uso = 0;
 				pagina_segundo_nivel->modificado=0;
@@ -352,7 +352,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 				pagina_segundo_nivel->marco_usado = NULL;
 				pagina_segundo_nivel->id_pagina = numero_pagina_de_tabla;
 				numero_pagina_de_tabla++;
-
+				pagina_segundo_nivel->tabla_segundo_nivel = tabla_segundo_nivel->id_tabla;
 				pagina_segundo_nivel->presencia = 0;
 				pagina_segundo_nivel->uso = 0;
 				pagina_segundo_nivel->modificado=0;
@@ -405,7 +405,7 @@ void aumentar_contador_tablas_segundo_nivel(t_memoria* memoria){
 }
 
 //-------------------------------ELIMINAR PROCESO----------------------------------------------------
-t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
+t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria){ //TODO
 
 log_info(memoria->memoria_log, "INICIO A BORRAR LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_proceso->id);
 

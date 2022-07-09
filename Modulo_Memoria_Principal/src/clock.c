@@ -16,6 +16,9 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 
 	pagina->marco_usado = marco;
 	pagina->presencia = 1;
+
+	//CARGAR LA PAG A MEMORIA
+	//sacar_pagina_de_archivo(pcb_proceso, memoria, marco, pagina); //TODO: PCB?
 }
 
 
@@ -28,6 +31,8 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 	while (1) {
 		marco_usado = list_get(tabla_1er_nivel->marcos_usados, tabla_1er_nivel->puntero_clock);
 		pagina_a_desalojar = marco_usado->pagina;
+
+
 
 
 		if (memoria->memoria_config->algoritmo_reemplazo == CLOCK) {
@@ -77,10 +82,14 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 	if (pagina_a_desalojar->modificado == 1) {
 		// TODO: --- DESALOJAR pagina_a_desalojar ---
+		//swapear_pagina_en_disco(pcb_proceso, memoria, marco_usado, pagina_a_desalojar);
 		*marco_to_swap = pagina_a_desalojar->marco_usado->numero_marco;
 	}
 
 
 	pagina_sin_frame->marco_usado = marco_usado;
 	marco_usado->pagina = pagina_sin_frame;
+
+	//CARGAR LA PAG A MEMORIA
+	//sacar_pagina_de_archivo(pcb_proceso, memoria, marco_usado, pagina_sin_frame);//TODO: PCB?
 }

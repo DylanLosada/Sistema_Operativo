@@ -55,6 +55,7 @@ typedef struct{
 struct t_pagina_segundo_nivel {
     int id_pagina;
     t_marco* marco_usado;
+    int tabla_segundo_nivel;
     int presencia;
     int uso;
     int modificado;
