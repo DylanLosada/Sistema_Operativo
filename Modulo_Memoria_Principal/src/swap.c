@@ -179,7 +179,7 @@ void sacar_pagina_de_archivo(t_pcb* pcb_proceso, t_memoria* memoria, t_marco* ma
     fread(contenidoArchivo, tamanio, 1, archivo_proceso);//Ver que lee
 
     int offset = 0;
-    int direccion = pagina_a_sacar->id_pagina * (memoria->memoria_config->tamanio_pagina);
+    int direccion = pagina_a_sacar->id_pagina * (memoria->memoria_config->tamanio_pagina) + sizeof(int) + sizeof(int);
     memcpy(contenido_pagina, contenidoArchivo + direccion, (memoria->memoria_config->tamanio_pagina));
     offset += memoria->memoria_config->tamanio_pagina;
     memcpy(pagina_a_sacar->id_pagina, contenidoArchivo + offset, sizeof(int));
@@ -206,7 +206,7 @@ void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
     void* contenido_archivo = malloc(tamanio);
     fread(contenido_archivo, tamanio, 1, archivo_proceso);
     int offset = 0;
-    int direccion = pagina_a_agregar->id_pagina * (memoria->memoria_config->tamanio_pagina);
+    int direccion = pagina_a_agregar->id_pagina * (memoria->memoria_config->tamanio_pagina) + sizeof(int) + sizeof(int);
 
     memcpy(contenido_archivo + direccion, contenido_pagina, (memoria->memoria_config->tamanio_pagina));
     offset += memoria->memoria_config->tamanio_pagina;
