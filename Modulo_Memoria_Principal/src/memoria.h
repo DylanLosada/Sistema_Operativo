@@ -41,7 +41,6 @@ typedef struct{
     t_list* entradas;
 }t_tabla_entradas_primer_nivel;
 
-
 // Dependencia circular entre t_marco y t_pagina_segundo_nivel.
 typedef struct t_marco t_marco;
 typedef struct t_pagina_segundo_nivel t_pagina_segundo_nivel;
@@ -68,6 +67,7 @@ struct t_marco {
 
 #include "clock.h"
 #include "instrucciones.h"
+#include "swap.h"
 
 //**************************FUNCIONES********************+
 void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memoria);
