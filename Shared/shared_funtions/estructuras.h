@@ -46,6 +46,7 @@ typedef enum{
 typedef struct{
     int tabla_nivel;
     int entrada_nivel;
+    op_memoria_message instruccion;
 } t_administrar_mmu;
 
 typedef struct{

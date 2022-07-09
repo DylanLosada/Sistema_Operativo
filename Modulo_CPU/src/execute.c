@@ -82,7 +82,7 @@ void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 int excecute_read(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int valor_leido;
 	int offset = 0;
-	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
+	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1, instruction->instructions_code);
 	void* stream = malloc(2*sizeof(int));
 	memcpy(stream, &instruction->instructions_code, sizeof(int));
 	offset += sizeof(int);
