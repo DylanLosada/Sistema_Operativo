@@ -17,15 +17,15 @@ int copiar_memoria(t_memoria* memoria, int direccion_desde, int direccion_hacia)
 }
 
 int get_tabla_segundo_nivel(t_memoria* memoria, int id_tabla_primer_nivel, int entrada) {
-	t_tabla_paginas_segundo_nivel* segunda_tabla;
+	int segunda_tabla_id;
 	for (int index = 0; index < list_size(memoria->tablas_primer_nivel); index++){
 		t_tabla_entradas_primer_nivel* tabla = list_get(memoria->tablas_primer_nivel, index);
 		if (tabla->id_tabla == id_tabla_primer_nivel) {
-			segunda_tabla = list_get(tabla->entradas, entrada);
+			segunda_tabla_id = list_get(tabla->entradas, entrada);
 			break;
 		}
 	}
-	return segunda_tabla->id_tabla;
+	return segunda_tabla_id;
 }
 
 int get_marco(t_memoria* memoria, int id_tabla_segundo_nivel, int entrada, int* marco_to_swap, op_memoria_message INSTRUCCION, int pcb_id) {

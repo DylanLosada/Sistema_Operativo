@@ -531,10 +531,7 @@ void close_console_process(t_queue* state_exit, int socket_memoria, t_log* logge
 		send_action_to_memoria(pcb_to_deleat, socket_memoria, DELETE);
 		close(pcb_to_deleat->id);
 		log_info(logger_long, "CERRAMOS AL PROCESO %d", pcb_to_deleat->id);
-		free(pcb_to_deleat->instrucciones);
-		free(pcb_to_deleat->program_counter);
-		free(pcb_to_deleat->rafaga);
-		free(pcb_to_deleat->rafaga);
+		list_destroy(pcb_to_deleat->instrucciones);
 		free(pcb_to_deleat);
 	}
 }

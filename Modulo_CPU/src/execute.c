@@ -25,7 +25,7 @@ void sendDataToKernel(int totalInstructionsExecuted, int timeIO, clock_t clock, 
 }
 
 void execute_instruction_read_write(int* requerido, t_cpu* cpu, t_pcb* pcb, t_instruct* instruction) {
-	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
+	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1, instruction->instructions_code);
 	instruction->param1 = dir_fisica;
 	send_data_to_memoria(cpu->mem_config->socket, instruction);
 	recive_from_memoria(requerido);
@@ -96,7 +96,7 @@ int excecute_write(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int op_code;
 	int valor = instruction->param2;
 	int op_code_write = instruction->instructions_code;
-	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1);
+	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1, instruction->instructions_code);
 	int offset = 0;
 	int size = sizeof(int) + sizeof(int) + sizeof(int);
 	void* stream = malloc(size);
@@ -112,8 +112,8 @@ int excecute_write(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 
 void excecute_copy(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	int op_code;
-	int dir_fisica_first = dir_logica_a_fisica(cpu, pcb, instruction->param1);
-	int dir_fisica_second = dir_logica_a_fisica(cpu, pcb, instruction->param2);
+	int dir_fisica_first = dir_logica_a_fisica(cpu, pcb, instruction->param1, instruction->instructions_code);
+	int dir_fisica_second = dir_logica_a_fisica(cpu, pcb, instruction->param2, instruction->instructions_code);
 	int offset = 0;
 	int size = sizeof(int) + sizeof(int) + sizeof(int);
 	void* stream = malloc(size);

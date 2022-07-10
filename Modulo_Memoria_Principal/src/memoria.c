@@ -1,25 +1,5 @@
 #include "memoria.h"
 
-
-/*
- * * VER TEMA DE CLOCK Y CLOCK MODIFICADO
- * * SWAP Y RE-SWAP
- * * HACER CONSULTAS DE SI EL GRADO DE MULTIPROGRAMACION VIENE ACORDE A LA CANTIDAD DE FRAMES DE MEMORIA
- * *ALGORITMO DE REEMPLAZO ES DEL PROCESO O DEL SISTEMA EN GENERAL?
- *
- * CANT FRAMES 20
- * GRADO MULTI 5
- * FRAMES POR PROCESO 4
- *
- * -------> 20 FRAMES
- *
- *
- * * INSTRUCCIONES READ/COPY/WRITE
- * * EL TP ACLARA QUE EL OPCODE DELETE NO ELIMINA TABLA DE PAGINAS SINO QUE SOLO BORRA SU CONTENIDO Y ARCHIVO SWAP
- * * UN PROCESO PUEDE ACCEDER A UN ESPACIO DE MEMORIA DE OTRRO PROCESO? ES POR EL TEMA DE LAS INSTRUCCIONES Y LAS DIRECIIONES QUE LLEGUEN COMO PARAMETRO
- * * LA LISTA DE ENTRADAS DDE TABLA DE PRIMER NIVEL NO ES UNA LISTA DE TABLAS SINO UNA LISTA DE ID CORREGIR!!
- */
-
 int main(void) {
 	t_memoria* memoria = malloc(sizeof(t_memoria));
 
@@ -53,13 +33,7 @@ int main(void) {
 
     //-------------------CREO DIRECTORIO PARA LOS ARCHIVOS SWAP------------------------------
 
-    	char* ruta_directorio = "/home/utnso/tp-2022-1c-SanguchitOS/";
-
-    	char* swap = "swap";
-
-    	//strcat(ruta_directorio, swap);
-
-    	int directorio = mkdir("/home/utnso/tp-2022-1c-SanguchitOS/swap", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	int directorio = mkdir(memoria->memoria_config->path_swap, 0777);
 
 
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
@@ -90,24 +64,23 @@ void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memor
 
 //----------Tema de creacion de hilos-------------------
 void manejar_conexion(void* void_args){
-	t_memoria* memoria = (t_memoria*) void_args;
+t_memoria* memoria = (t_memoria*) void_args;
 
 	pthread_mutex_t* semaforo_conexion = malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init(semaforo_conexion, NULL);
 
 	int server_fd = memoria->server_fd;
-	    while(1){
-	    	t_args_administrar_cliente* args_administrar_cliente = malloc(sizeof(t_args_administrar_cliente));
-	    	args_administrar_cliente->semaforo_conexion = semaforo_conexion;
-	        int cliente_fd = wait_client(server_fd, memoria->memoria_log, "Cliente", "Memoria");
-	        args_administrar_cliente->socket = cliente_fd;
-	        args_administrar_cliente->memoria = memoria;
-	        pthread_t hilo_servidor;
-	        pthread_create (&hilo_servidor, NULL, (void*)administrar_cliente,(void*) args_administrar_cliente);
-	        pthread_detach(hilo_servidor);
-	    }
+	while(1){
+		t_args_administrar_cliente* args_administrar_cliente = malloc(sizeof(t_args_administrar_cliente));
+		args_administrar_cliente->semaforo_conexion = semaforo_conexion;
+		int cliente_fd = wait_client(server_fd, memoria->memoria_log, "Cliente", "Memoria");
+		args_administrar_cliente->socket = cliente_fd;
+		args_administrar_cliente->memoria = memoria;
+		pthread_t hilo_servidor;
+		pthread_create (&hilo_servidor, NULL, (void*)administrar_cliente,(void*) args_administrar_cliente);
+		pthread_detach(hilo_servidor);
 	}
-
+}
 
 int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 	int cliente_fd = args_administrar_cliente->socket;
@@ -238,7 +211,6 @@ void hacer_handshake_con_cpu(int cliente_fd, t_memoria* memoria){
 	log_info(memoria->memoria_log, "DATOS ENVIADOS.");
 }
 
-
 void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
 
 	int id_proceso = pcb_cliente->id;
@@ -250,7 +222,7 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
     t_pcb* pcb_actualizado = guardar_proceso_en_paginacion(pcb_cliente, memoria);
 
 
-    if(pcb_actualizado->tabla_paginas > 0){
+    if(pcb_actualizado->tabla_paginas >= 0){
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, NEW);
     		log_info(memoria->memoria_log, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
 
@@ -277,8 +249,6 @@ void responder_pcb_a_cliente(t_pcb* pcb_actualizado , int cliente_fd, op_memoria
 	}
 }
 
-
-
 t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	//_________________CREACION DE ARCHIVO DEL PROCESO_____________________
@@ -287,13 +257,13 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	FILE* archivo_proceso;
 
-	archivo_proceso = fopen(path_archivo, "w" );
+	archivo_proceso = fopen(path_archivo, "wt");
 	log_info(memoria->memoria_log, "SE CREA EL ARCHIVO SWAP DEL PROCESO %d EN LA RUTA %s", pcb_cliente->id, path_archivo);
 
 	//_____________________CREACION DE TABLAS______________________________
 	int tamanio_proceso = pcb_cliente->processSize;
 
-	int paginas_necesarias = ceil((double) tamanio_proceso/ (double) memoria->memoria_config->tamanio_pagina);
+	int paginas_necesarias = ceil((double) tamanio_proceso / (double) memoria->memoria_config->tamanio_pagina);
 
 	//obtengo la cantidad de tabla de paginas de segundo nivel necesarias ==> CANTIDAD DE ENTRADAS DE TABLA #1
 	//ej: pag_necesarias = 16, marcos_por_proceso= 4 --> cant_tablas #2 = 4 --> cant_entradas #1 = 4

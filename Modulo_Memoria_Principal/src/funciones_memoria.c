@@ -17,7 +17,7 @@ t_config_memoria* create_config(t_log* log){
 	memoria_config->algoritmo_reemplazo = strcmp(config_get_string_value(config, "ALGORITMO_REEMPLAZO"), "CLOCK") == 0 ? CLOCK : CLOCK_MODIFICADO;
 	memoria_config->marcos_proceso = config_get_int_value(config, "MARCOS_POR_PROCESO");
 	memoria_config->retardo_swap = config_get_int_value(config, "RETARDO_SWAP");
-	memoria_config->path_swap = config_get_string_value(config, "PATH_SWAP");
+	memoria_config->path_swap = strcat(config_get_string_value(config, "PATH_SWAP"), "/");
 
 	log_info(log, "Archivo de configuracion cargado con exito");
 

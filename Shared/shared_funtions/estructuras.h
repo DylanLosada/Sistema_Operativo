@@ -83,7 +83,7 @@ void loggear_pcb(t_pcb* pcb);
 t_pcb* deserializate_pcb(int socket, int* op_code);
 t_pcb* deserializate_pcb_memoria(int socket);
 void deserialize_mmu_memoria(t_administrar_mmu* administrar_mmu, int socket);
-void* serialize_mmu_memoria(t_cpu_paquete* paquete, int tabla_nivel, int entrada_nivel, int MENSSAGE);
+void* serialize_mmu_memoria(t_cpu_paquete* paquete, int tabla_nivel, int entrada_nivel, int MENSSAGE, op_memoria_message ES_MODIFICADO, int pcb_id);
 void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE);
 
 #endif /* SHARED_FUNTIONS_ESTRUCTURAS_H_ */

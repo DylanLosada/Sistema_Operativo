@@ -86,11 +86,10 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 		log_info(cpu->cpu_log, "INSTRUCCION LEIDA");
 
 		// DECODE / FETCH OPERANDS
-		pcb->program_counter++;
 		log_info(cpu->cpu_log, "ES UNA INSTRUCCION BLOQUEANTE O DE SALIDA ?");
 		if(instruct->instructions_code == EXIT || instruct->instructions_code == I_O){
 			pcb->time_excecuted_rafaga += clock() - time_excecuted;
-
+			pcb->program_counter++;
 			if(instruct->instructions_code == I_O){
 				pcb->time_io = instruct->param1;
 				log_info(cpu->cpu_log, "ES UNA I_O");
@@ -113,6 +112,7 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 		// EXECUTE
 		log_info(cpu->cpu_log, "SE EJECUTA LA INSTRUCCION: ");
 		execute(instruct, cpu, pcb);
+		pcb->program_counter++;
 
 		// CHECK INTERRUPT
 		log_info(cpu->cpu_log, "CHECKEAMOS SI HAY INTERRUPCION");
