@@ -22,6 +22,8 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 
 void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame, int* marco_to_swap, int pcb_id){
 
+	log_info(memoria->memoria_log, "EL PROCESO OCUPA TODOS LOS MARCOS POR PROCESO DISPONIBLE, INICIANDO ALGORITMO DE REEMPLAZO");
+
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
 	t_marco* marco_usado;
 	t_pagina_segundo_nivel* pagina_a_desalojar;
@@ -31,10 +33,9 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 		pagina_a_desalojar = marco_usado->pagina;
 
 
-
-
 		if (memoria->memoria_config->algoritmo_reemplazo == CLOCK) {
 
+		log_info(memoria->memoria_log, "EL ALGORITMO DE REEMPLAZO DEL SISTEMA ES CLOCK");
 			// CLOCK NORMAL
 			if (pagina_a_desalojar->uso == 1) pagina_a_desalojar->uso = 0;
 			else break;
@@ -42,6 +43,7 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 		} else {
 
+			log_info(memoria->memoria_log, "EL ALGORITMO DE REEMPLAZO DEL SISTEMA ES CLOCK-M");
 			// CLOCK MODIFICADO
 			int encontrado = 0;
 
@@ -68,8 +70,6 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 
 			}
-
-
 
 
 		}

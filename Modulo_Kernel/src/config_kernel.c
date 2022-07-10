@@ -1,7 +1,7 @@
 #include "config_kernel.h"
 
 t_config_kernel* create_config(t_log* log){
-	t_config* cfg = config_create("kernel.config");
+	t_config* cfg = config_create("/home/utnso/tp-2022-1c-SanguchitOS/Modulo_Kernel/kernel.config");
 	t_config_kernel* kernel_config = malloc(sizeof(t_config_kernel));
 
 	if(cfg == NULL){

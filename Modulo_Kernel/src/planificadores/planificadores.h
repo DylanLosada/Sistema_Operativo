@@ -7,6 +7,7 @@
 #include <time.h>
 #include<unistd.h>
 #include <stdlib.h>
+#include <semaphore.h>
 
 typedef enum{
 	FIFO,
@@ -71,14 +72,21 @@ typedef struct{
 	pthread_mutex_t* has_pcb_suspended_blocked;
 	int TIEMPO_MAX_BLOQUEADO;
 	double ALFA;
+	char* ALGORITMO;
 } t_args_blocked;
 
 typedef struct{
+	char* ALGORITMO;
+	double ALFA;
 	t_state_list_hanndler* state_suspended_ready;
+	t_state_list_hanndler* state_ready;
 	t_state_list_hanndler* state_suspended_blocked;
 	pthread_mutex_t* hasPcb;
+	pthread_mutex_t* grado_multiprogramacion;
 	pthread_mutex_t* has_pcb_suspended_ready;
+	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
 	int socket_memoria;
+	sem_t* sem;
 } t_args_suspended_ready;
 
 typedef struct{
@@ -86,6 +94,7 @@ typedef struct{
 	t_state_list_hanndler* state_suspended_blocked;
 	pthread_mutex_t* has_pcb_suspended_blocked;
 	pthread_mutex_t* has_pcb_suspended_ready;
+	pthread_mutex_t* grado_multiprogramacion;
 	int TIEMPO_MAX_BLOQUEADO;
 	int socket_memoria;
 } t_args_suspended_blocked;
@@ -108,6 +117,7 @@ typedef struct{
 typedef struct{
 	int GRADO_MULTIPROGRAMACION;
 	int ESTIMACION_INICIAL;
+	char* ALGORITMO;
 	int socket_memoria;
 	t_monitor_pcb_to_add_ready* monitor_add_pcb_ready;
 	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
@@ -116,7 +126,8 @@ typedef struct{
 	pthread_mutex_t* hasPcb;
 	pthread_mutex_t* hasGradoForNew;
 	t_monitor_log* monitor_logger;
-	t_monitor_grado_multiprogramacion* monitorGradoMulti;
+	pthread_mutex_t* grado_multiprogramacion;
+	sem_t* sem;
 	t_queue* pre_pcbs;
 	t_states* states;
 } t_args_long_term_planner;
@@ -143,12 +154,28 @@ typedef struct{
 	pthread_mutex_t* hasNewConsole;
 	pthread_mutex_t* hasGradoForNew;
 	t_monitor_log* monitor_logger;
-	t_monitor_grado_multiprogramacion* monitorGradoMulti;
+	pthread_mutex_t* grado_multiprogramacion;
 	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
 	t_sockets_cpu* sockets_cpu;
+	sem_t* sem;
 	t_config_kernel* config_kernel;
 	t_states* states;
 } t_args_short_term_planner;
+
+typedef struct{
+	t_log* logger_long;
+	t_monitor_pcb_to_add_ready* monitor_add_pcb_ready;
+	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
+	t_states* states;
+	t_pre_pcb* pre_pcb;
+	int socket_memoria;
+	pthread_mutex_t* grado_multiprogramacion;
+	pthread_mutex_t* pre_pcbs_mutex;
+	pthread_mutex_t* hasPcb;
+	sem_t* sem;
+	int ESTIMACION_INICIAL;
+	char* ALGORITMO;
+} t_args_add_pcbs;
 
 void long_term_planner(void* args_long_term_planner);
 void mid_term_planner(void* args_mid_term_planner);
@@ -163,5 +190,6 @@ t_pcb* create_pcb(int ESTIMACION_INICIAL, t_pre_pcb* pre_pcb);
 int interrupt_cpu(int socket_kernel_dispatch_cpu, int socket_kernel_interrupt_cpu, op_code INTERRUPT);
 t_pcb* send_action_to_memoria(t_pcb* pcb, int socket_memoria, op_memoria_message ACTION);
 void check_time_in_blocked_and_pass_to_suspended_blocked(t_state_list_hanndler* state_suspended_blocked, t_state_list_hanndler* state_blocked, t_monitor_grado_multiprogramacion* monitorGradoMulti, int socket_memoria, int TIEMPO_MAXIMO_BLOQUEADO);
+void* add_pcbs_to_new(t_args_add_pcbs* args);
 
 #endif;

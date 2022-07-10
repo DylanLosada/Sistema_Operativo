@@ -89,11 +89,3 @@ void agregar_marco_de_memoria_a_lista(t_memoria* memoria, int marco){
 	t_list* marcos_libres = memoria->marcos_libres;
 	list_add(marcos_libres, marco);
 }
-
-//void liberar_memoria_paginada(){
-//	bitarray_destroy(frames_ocupados_principal);
-//	free(datos_memoria);
-//	pthread_mutex_lock(&mutex_tablas_de_paginas);
-//	list_destroy_and_destroy_elements(tablas_de_paginas, (void*)eliminar_tabla_de_paginas);
-//	pthread_mutex_unlock(&mutex_tablas_de_paginas);
-//}

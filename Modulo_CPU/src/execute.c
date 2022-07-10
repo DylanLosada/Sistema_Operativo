@@ -24,21 +24,6 @@ void sendDataToKernel(int totalInstructionsExecuted, int timeIO, clock_t clock, 
 
 }
 
-void execute_instruction_read_write(int* requerido, t_cpu* cpu, t_pcb* pcb, t_instruct* instruction) {
-	int dir_fisica = dir_logica_a_fisica(cpu, pcb, instruction->param1, instruction->instructions_code);
-	instruction->param1 = dir_fisica;
-	send_data_to_memoria(cpu->mem_config->socket, instruction);
-	recive_from_memoria(requerido);
-}
-
-void execute_instruction_copy(int* requerido, t_cpu* cpu, t_pcb* pcb, t_instruct* instruction, int dir_fisica_primer_param, int dir_fisica_segundo_param) {
-	instruction->param1 = dir_fisica_primer_param;
-	instruction->param2 = dir_fisica_segundo_param;
-	send_data_to_memoria(cpu->mem_config->socket, instruction);
-	recive_from_memoria(requerido);
-}
-
-
 void execute(t_instruct* instruction, t_cpu* cpu, t_pcb* pcb) {
 	int retardo = cpu->cpu_config->RETARDO_NOOP;
 
@@ -125,14 +110,4 @@ void excecute_copy(t_cpu* cpu, t_pcb* pcb, t_instruct* instruction){
 	send(cpu->mem_config->socket, stream, 3*sizeof(int), 0);
 	recv(cpu->mem_config->socket, &op_code, sizeof(int), MSG_WAITALL);
 	log_info(cpu->cpu_log, "COPY ===> SE EJECUTO EL COPIADO DE DATOS DE %d A %d", dir_fisica_first, dir_fisica_second);
-}
-
-void send_data_to_memoria(int socket, t_instruct* instruction){
-	t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
-	void* to_send = serialize_mmu_memoria(paquete, instruction->param1, instruction->param2, instruction->instructions_code);
-	send_data_to_server(socket, to_send, paquete->buffer->size + sizeof(int) + sizeof(int));
-}
-
-void recive_from_memoria(int* requiero, int socket){
-	recv(socket, requiero, sizeof(int), MSG_WAITALL);
 }

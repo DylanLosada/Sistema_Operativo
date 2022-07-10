@@ -1,5 +1,6 @@
 #include "kernel.h"
 
+
 int main(void) {
 	pthread_mutex_t* mutex_logger = malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init(mutex_logger, NULL);

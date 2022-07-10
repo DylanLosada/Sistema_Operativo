@@ -13,6 +13,11 @@ typedef struct {
     t_queue* cola_pre_pcb;
 } t_process_conexion;
 
+typedef struct {
+	t_process_conexion* structs;
+	int  socket;
+} t_structs_process_conexion;
+
 void create_thread(t_queue* cola_pre_pcb, char* algoritmo_planificacion);
 
 #endif
