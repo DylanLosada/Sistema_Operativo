@@ -66,6 +66,7 @@ typedef struct{
 	t_list* tlb;
 	t_interrupt_message* exist_interrupt;
 	t_args_io_exit* args_io_exit;
+	int last_executed_pcb;
 }t_cpu;
 
 t_mem_config* deserialize_handshake(t_cpu* cpu, int socket);

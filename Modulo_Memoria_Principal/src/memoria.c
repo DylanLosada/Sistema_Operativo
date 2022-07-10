@@ -29,13 +29,13 @@ int main(void) {
     memoria->espacio_memoria = malloc(tamanio_memoria);
 
     int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
-    log_info(memoria->memoria_log,"/// Se tienen %d marcos de %d bytes en memoria principal", tamanio_memoria / tamanio_paginas, tamanio_paginas);
+    log_info(memoria->memoria_log,"SE TIENEN %d MARCOS DE %d BYTES EN MEMORIA PRINCIPAL", ceil(tamanio_memoria / tamanio_paginas), tamanio_paginas);
 
     //-------------------CREO DIRECTORIO PARA LOS ARCHIVOS SWAP------------------------------
 
 	int directorio = mkdir(memoria->memoria_config->path_swap, 0777);
 
-
+	log_info(memoria->memoria_log,"SE CREA EL DIRECTORIO SWAP EN LA RUTA %s", memoria->memoria_config->path_swap);
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
 	pthread_t hilo_servidor;
 	pthread_create(&hilo_servidor, NULL, manejar_conexion,(void*)memoria);
@@ -59,6 +59,7 @@ void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memor
 		list_add(marcos_libres_para_asignar, marco);
 	}
 	memoria->marcos_libres = marcos_libres_para_asignar;
+	log_info(memoria->memoria_log,"SE COLOCAN TODOS LOS MARCOS DE MEMORIA COMO MARCOS LIBRES");
 }
 
 
@@ -74,6 +75,7 @@ t_memoria* memoria = (t_memoria*) void_args;
 		t_args_administrar_cliente* args_administrar_cliente = malloc(sizeof(t_args_administrar_cliente));
 		args_administrar_cliente->semaforo_conexion = semaforo_conexion;
 		int cliente_fd = wait_client(server_fd, memoria->memoria_log, "Cliente", "Memoria");
+		log_info(memoria->memoria_log,"LLEGA UN CLIENTE A MEMORIA...");
 		args_administrar_cliente->socket = cliente_fd;
 		args_administrar_cliente->memoria = memoria;
 		pthread_t hilo_servidor;
@@ -208,7 +210,7 @@ void hacer_handshake_con_cpu(int cliente_fd, t_memoria* memoria){
 	memcpy(a_enviar, &tamanio_pagina, sizeof(int));
 	memcpy(a_enviar + sizeof(int), &entradas_por_tabla, sizeof(int));
 	send_data_to_server(cliente_fd, a_enviar, 2*sizeof(int));
-	log_info(memoria->memoria_log, "DATOS ENVIADOS.");
+	log_info(memoria->memoria_log, "DATOS ENVIADOS A CPU.");
 }
 
 void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
@@ -217,18 +219,18 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
     int tamanio_proceso = pcb_cliente->processSize;
 
 
-    log_info(memoria->memoria_log, "Iniciando proceso %d que pesa %d...", id_proceso, tamanio_proceso);
+    log_info(memoria->memoria_log, "INICIANDO PROCESO %d QUE PESA %d BYTES", id_proceso, tamanio_proceso);
 
     t_pcb* pcb_actualizado = guardar_proceso_en_paginacion(pcb_cliente, memoria);
 
 
     if(pcb_actualizado->tabla_paginas >= 0){
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, NEW);
-    		log_info(memoria->memoria_log, "----------> Se guarda el proceso [%d] en memoria\n", id_proceso);
+    		log_info(memoria->memoria_log, "SE GUARDA EL PROCESO [%d] EN MEMORIA\n", id_proceso);
 
     	}else{
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, ERROR);
-    		log_info(memoria->memoria_log, "----------> No hay lugar para guardar el proceso [%d] en memoria\n", id_proceso);
+    		log_info(memoria->memoria_log, "NO HAY LUGAR PARA GUARDAR EL PROCESO [%d] EN MEMORIA\n", id_proceso);
 
     	}
     //free(pcb_actualizado->tabla_paginas);
@@ -391,12 +393,15 @@ t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 	// PASAR MARCOS OCUPADOS A LIBRES GLOBALES
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
+	log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS OCUPADOS LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
 
 	// PASAR LIBRES A LIBRES GLOBALES
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
+	log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS LIBRES LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
 
 	// ELIMINAR SWAP
 	eliminar_archivo_swap(memoria, pcb_proceso);
+	log_info(memoria->memoria_log,"ELIMINAMOS ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
 
 	return pcb_proceso;
 }

@@ -29,7 +29,7 @@ void execute_blocked_exit(void* void_args){
 		t_cpu_paquete* paquete = malloc(sizeof(t_cpu_paquete));
 		void* pcp_to_send = serializate_pcb(args->pcb, paquete, args->code);
 		send(kernel_socket, &op_code, sizeof(int), 0);
-		send(args->cpu->socket_dispatch, pcp_to_send, (paquete->buffer->size + sizeof(int) + sizeof(int)), 0);
+		send(args->socket_cpu, pcp_to_send, (paquete->buffer->size + sizeof(int) + sizeof(int)), 0);
 	}
 }
 
@@ -37,7 +37,8 @@ void execute_dispatch(void* void_args){
 	t_cpu* cpu = (t_cpu*) void_args;
 
 	int kernel_socket = wait_kernel(cpu->cpu_log, cpu->dispatch->socket, cpu->dispatch->puerto);
-	cpu->socket_dispatch = kernel_socket;
+
+	cpu->args_io_exit->socket_cpu = kernel_socket;
 	log_info(cpu->cpu_log, "SE CONECTO EL KERNEL AL PUERTO DISPATCH");
 	while(1){
 		int code;
@@ -45,6 +46,12 @@ void execute_dispatch(void* void_args){
 		log_info(cpu->cpu_log, "QUEDO A LA ESPERA DE UN PCB");
 		t_pcb* pcb = deserializate_pcb(kernel_socket, &code);
 		log_info(cpu->cpu_log, "SE RECIBIO EL PCB %d", pcb->id);
+
+		if (pcb->id != cpu->last_executed_pcb) {
+			limpiar_tlb(cpu);
+		}
+		cpu->last_executed_pcb = pcb->id;
+
 		//INICIA EL CICLO DE FETCH AND DECODE
 		fetch_and_decode(kernel_socket, pcb, cpu, cpu->exist_interrupt);
 	}

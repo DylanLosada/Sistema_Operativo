@@ -41,8 +41,9 @@ void agregar_entry_tlb(t_cpu* cpu, int pagina, int marco) {
 
 void limpiar_tlb(t_cpu* cpu) {
 	t_list* tlb = cpu->tlb;
+	int size = list_size(tlb);
 
-	for (int i = 0; i < list_size(tlb); i++){
+	for (int i = 0; i < size; i++){
 		t_tlb_entry* first_entry = list_remove(tlb, 0);
 		free(first_entry);
 	}

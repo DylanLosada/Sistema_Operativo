@@ -26,21 +26,21 @@ t_list* destokenizar_instructions(char* message){
 }
 
 void process_connection(void* void_args) {
-	t_process_conexion* args = (t_process_conexion*) void_args;
-    op_code cod_op = recive_operation(args->fd, args->kernel->kernel_log);
+	t_structs_process_conexion* args = (t_structs_process_conexion*) void_args;
+    op_code cod_op = recive_operation(args->socket, args->structs->kernel->kernel_log);
 
 	switch (cod_op) {
 		case CONSOLA:{
 			t_consola* consolaRecv = malloc(sizeof(t_consola));
-			char* instructions = recive_buffer(args->fd, consolaRecv);
+			char* instructions = recive_buffer(args->socket, consolaRecv);
 			t_list* list_instructions = destokenizar_instructions(instructions);
 
-			t_pre_pcb* pre_pcb = create_pre_pcb(list_instructions, consolaRecv->processSize, args->fd);
+			t_pre_pcb* pre_pcb = create_pre_pcb(list_instructions, consolaRecv->processSize, args->socket);
 
-			pthread_mutex_lock(args->semaforo);
-			queue_push(args->cola_pre_pcb, pre_pcb);
-			pthread_mutex_unlock(args->semaforo);
-			pthread_mutex_unlock(args->hasNewConsole);
+			pthread_mutex_lock(args->structs->semaforo);
+			queue_push(args->structs->cola_pre_pcb, pre_pcb);
+			pthread_mutex_unlock(args->structs->semaforo);
+			pthread_mutex_unlock(args->structs->hasNewConsole);
 
 			free(consolaRecv);
 			free(instructions);
@@ -48,7 +48,7 @@ void process_connection(void* void_args) {
 		}
 		// Errores
 		case -1:
-			log_error(args->kernel->kernel_log, "Consola desconectado de kernel...");
+			log_error(args->structs->kernel->kernel_log, "Consola desconectado de kernel...");
 			return;
 		default:;
 			//log_error(logger, "Algo anduvo mal en el %s", kernel_name);
@@ -59,22 +59,23 @@ void process_connection(void* void_args) {
     return;
 }
 
-void create_pthread(t_process_conexion* args){
+void create_pthread(t_structs_process_conexion* structs){
 	// CREACION DE HILO //
 	pthread_t hilo;
 
 	// SE PROCESA LA CONEXION //
-	pthread_create(&hilo, NULL, process_connection, args);
+	pthread_create(&hilo, NULL, process_connection, structs);
 	pthread_detach(hilo);
 }
 
 int bind_kernel(t_kernel* kernel, t_process_conexion* args) {
 
     int console_socket = wait_console(kernel);
-
+    t_structs_process_conexion* structs = malloc(sizeof(t_structs_process_conexion));
+    structs->structs = args;
+    structs->socket = console_socket;
     if (console_socket > 0) {
-    	args->fd = console_socket;
-		create_pthread(args);
+		create_pthread(structs);
         return 1;
     }
     return 0;

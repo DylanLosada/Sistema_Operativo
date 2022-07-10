@@ -80,6 +80,7 @@ void pasar_marco_ocupado_a_marco_libre_global(t_tabla_entradas_primer_nivel* tab
 
 		t_marco* marco_iteracion = list_remove(tabla_primer_nivel->marcos_usados, 0);
 		list_add(memoria->marcos_libres, marco_iteracion);
+		log_info(memoria->memoria_log, "MARCO NUMERO %d OCUPADO PASA A LISTA DE MARCOS LIBRES GLOBALES", marco_iteracion->numero_marco);
 
 	}
 
@@ -108,6 +109,7 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 		marco_asignado->numero_marco = list_remove(memoria->marcos_libres, 0);
 		marco_asignado->pagina = NULL;
 		list_add(tabla_primer_nivel_del_proceso->marcos_libres, marco_asignado);
+		log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL PROCESO %d", marco_asignado->numero_marco, pcb_cliente->id);
 	}
 
 }
@@ -118,12 +120,15 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
     char* path = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
     void* contenido_pagina = malloc(memoria->memoria_config->tamanio_pagina);
 
+    log_info(memoria->memoria_log, "SE EMPIEZA A BUSCAR PAGINA EN ARCHIVO SWAP POR PAGE FAULT DEL PROCESO %d", pcb_id);
+    log_info(memoria->memoria_log, "LA PAGINA QUE SE QUIERE ENCONTRAR ES %d DE LA TABLA DE SEGUNDO NIVEL NUMERO %d", pagina_a_sacar->id_pagina, pagina_a_sacar->tabla_segundo_nivel);
     FILE* archivo_proceso = fopen(path, "rt");
     fseek(archivo_proceso, 0, SEEK_SET);
     int tamanio = tamanio_actual_del_archivo(archivo_proceso);
+    log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO DEL PROCESO %d QUE PESA %d BYTES", pcb_id, tamanio);
 
     void* contenido_archivo = malloc(tamanio);
-    fread(contenido_archivo, tamanio, 1, archivo_proceso);//Ver que lee
+    fread(contenido_archivo, tamanio, 1, archivo_proceso);
 
     int tamanio_pagina_con_ids =(memoria->memoria_config->tamanio_pagina) + sizeof(int) + sizeof(int);
 
@@ -142,7 +147,11 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 		if(id_pagina == pagina_a_sacar->id_pagina && id_tabla_segundo_nivel == pagina_a_sacar->tabla_segundo_nivel){
 			offset -= tamanio_pagina_con_ids;
 
+			log_info(memoria->memoria_log, "SE ENCONTRO LA PAGINA BUSCADA, COPIANDO CONTENIDO");
+
 			memcpy(memoria->espacio_memoria + offset, contenido_pagina_iteracion, (memoria->memoria_config->tamanio_pagina));
+
+			log_info(memoria->memoria_log, "CONTENIDO DE LA PAGINA EN ARCHIVO CARGADA A LA PAGINA QUE RESIDIRA EN MEMORIA");
 			free(contenido_pagina_iteracion);
 			fseek(archivo_proceso, 0, SEEK_SET);
 			fclose(archivo_proceso);

@@ -11,7 +11,7 @@ int dir_logica_a_fisica(t_cpu* cpu, t_pcb* pcb, int dir_logica, op_memoria_messa
 
 
 	int resultado_tlb = consultar_tlb(cpu, numero_pagina);
-	if (resultado_tlb != -1) return resultado_tlb;
+	if (resultado_tlb != -1) return resultado_tlb * mem_config->size_pagina + desplazamiento;
 
 
 	int entrada_tabla_1er_nivel = floor(numero_pagina / mem_config->cant_entradas_por_tabla);
