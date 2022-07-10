@@ -121,12 +121,13 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 			log_info(cpu->cpu_log, "HAY INTERRUPCION");
 			log_info(cpu->cpu_log, "SE INTERRUMPE EJECUCION Y SE ENVIAN LOS DATOS AL KERNEL");
 			log_info(cpu->cpu_log, "SE TERMINA LA EJECUCION");
-			log_info(cpu->cpu_log, "SE DUERME LA CPU");
 			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
-			int op_code = INTERRUPT;
 			pcb->time_excecuted_rafaga += clock() - time_excecuted;
-			send_data_to_kernel(kernel_socket, cpu, pcb, op_code);
+			cpu->args_io_exit->code = INTERRUPT;
+			cpu->args_io_exit->pcb = pcb;
+			pthread_mutex_unlock(cpu->args_io_exit->mutex_has_io_exit);
 			exist_interrupt->is_interrupt = false;
+			pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
 			break;
 		}
 		else {

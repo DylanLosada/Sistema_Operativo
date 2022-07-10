@@ -71,6 +71,7 @@ typedef struct{
 	pthread_mutex_t* has_pcb_suspended_blocked;
 	int TIEMPO_MAX_BLOQUEADO;
 	double ALFA;
+	char* ALGORITMO;
 } t_args_blocked;
 
 typedef struct{
@@ -108,6 +109,7 @@ typedef struct{
 typedef struct{
 	int GRADO_MULTIPROGRAMACION;
 	int ESTIMACION_INICIAL;
+	char* ALGORITMO;
 	int socket_memoria;
 	t_monitor_pcb_to_add_ready* monitor_add_pcb_ready;
 	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;

@@ -47,6 +47,7 @@ int main() {
 	args_io_exit->mutex_has_io_exit = mutex_io_exit;
 	args_io_exit->socket_cpu = start_cpu("9000", cpu->cpu_log, "exit/blocked");
 	args_io_exit->cpu_log = cpu_logger;
+	args_io_exit->cpu = cpu;
 
 	cpu->args_io_exit = args_io_exit;
 

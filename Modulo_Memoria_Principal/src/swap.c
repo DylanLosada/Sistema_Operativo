@@ -39,9 +39,9 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 
 	int cantidad_de_frames_usados = list_size(lista_de_id_de_tablas_de_segundo_nivel);
 
-	for(int index = 0; index < cantidad_de_frames_usados; index++){
+	for(int index = 0; index < list_size(tabla_primer_nivel->marcos_usados); index++){
 
-		t_marco* marco_iteracion = list_get(lista_de_id_de_tablas_de_segundo_nivel, index);
+		t_marco* marco_iteracion = list_get(tabla_primer_nivel->marcos_usados, index);
 
 		t_pagina_segundo_nivel* pagina_iteracion = marco_iteracion->pagina;
 
@@ -55,7 +55,7 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 	}
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
-
+	log_info(memoria->memoria_log, "CANTIDAD DE MARCOS LIBRE GLOBALES ES %d", list_size(memoria->marcos_libres));
 	fclose(archivo_proceso);
 }
 
@@ -75,11 +75,10 @@ void hacer_swap_de_pagina_inicio(t_tabla_entradas_primer_nivel* tabla_primer_niv
 }
 
 void pasar_marco_ocupado_a_marco_libre_global(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria){
-	for(int marco_actual = 0; marco_actual < list_size(tabla_primer_nivel->marcos_usados); marco_actual++){
+	int marcos_usados_size = list_size(tabla_primer_nivel->marcos_usados);
+	for(int marco_actual = 0; marco_actual < marcos_usados_size; marco_actual++){
 
-		t_marco* marco_iteracion = list_get(tabla_primer_nivel->marcos_usados, marco_actual);
-
-		list_remove(tabla_primer_nivel->marcos_usados, marco_actual);
+		t_marco* marco_iteracion = list_remove(tabla_primer_nivel->marcos_usados, 0);
 		list_add(memoria->marcos_libres, marco_iteracion);
 
 	}
@@ -90,10 +89,10 @@ void agregar_frames_libres_del_proceso_a_lista_global(t_tabla_entradas_primer_ni
 
 	t_list* marcos_libres_proceso = tabla_primer_nivel->marcos_libres;
 	int marco_actual;
-
-	for(marco_actual = 0; marco_actual < list_size(marcos_libres_proceso); marco_actual++){
-		t_marco* marco_libre = list_remove(marcos_libres_proceso, marco_actual);
-		list_add(memoria->marcos_libres, marco_libre->numero_marco);
+	int marcos_libres_size = list_size(tabla_primer_nivel->marcos_libres);
+	for(marco_actual = 0; marco_actual < marcos_libres_size; marco_actual++){
+		t_marco* marco_libre = list_remove(marcos_libres_proceso, 0);
+		list_add(memoria->marcos_libres, marco_libre);
 		log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL SISTEMA", marco_libre->numero_marco);
 
 	}
@@ -108,6 +107,7 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 		t_marco* marco_asignado = malloc(sizeof(t_marco));
 		marco_asignado->numero_marco = list_remove(memoria->marcos_libres, 0);
 		marco_asignado->pagina = NULL;
+		list_add(tabla_primer_nivel_del_proceso->marcos_libres, marco_asignado);
 	}
 
 }
