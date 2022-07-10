@@ -8,6 +8,7 @@ int main() {
 	cpu->cpu_log = cpu_logger;
 	cpu->cpu_config = create_config_cpu(cpu_logger);
 	cpu->tlb = list_create();
+	cpu->last_executed_pcb = -1;
 	wait_handshake(cpu, cpu->cpu_config->PUERTO_MEMORIA, cpu->cpu_config->IP_MEMORIA);
 
 	pthread_mutex_t* mutex_io_exit = malloc(sizeof(pthread_mutex_t));

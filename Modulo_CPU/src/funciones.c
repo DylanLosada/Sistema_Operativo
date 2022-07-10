@@ -47,6 +47,12 @@ void execute_dispatch(void* void_args){
 		log_info(cpu->cpu_log, "QUEDO A LA ESPERA DEUN PCB");
 		t_pcb* pcb = deserializate_pcb(kernel_socket, &code);
 		log_info(cpu->cpu_log, "SE RECIBIO EL PCB %d", pcb->id);
+
+		if (pcb->id != cpu->last_executed_pcb) {
+			limpiar_tlb(cpu);
+		}
+		cpu->last_executed_pcb = pcb->id;
+
 		//INICIA EL CICLO DE FETCH AND DECODE
 		fetch_and_decode(kernel_socket, pcb, cpu, cpu->exist_interrupt);
 	}

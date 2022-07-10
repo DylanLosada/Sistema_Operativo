@@ -2,7 +2,7 @@
 #define FUNCIONES_H_
 
 #include "pcb.h"
-#include "check_interrupt.h"
+#include "tlb.h"
 
 void execute_interrupt(void* void_args);
 void execute_dispatch(void* void_args);
