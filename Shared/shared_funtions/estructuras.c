@@ -107,7 +107,7 @@ t_pcb* deserializate_pcb_memoria(int socket){
 
 t_pcb* deserializate_pcb(int socket, int* op_code){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
-	t_pcb* pcb = malloc(sizeof(t_pcb));
+	t_pcb* pcb = malloc(36);
 	pcb->tabla_paginas = malloc(sizeof(int));
 	pcb->time_blocked = malloc(sizeof(clock_t));
 	pcb->instrucciones = list_create();

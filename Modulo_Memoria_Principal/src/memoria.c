@@ -29,7 +29,7 @@ int main(void) {
     memoria->espacio_memoria = malloc(tamanio_memoria);
 
     int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
-    log_info(memoria->memoria_log,"SE TIENEN %d MARCOS DE %d BYTES EN MEMORIA PRINCIPAL", ceil(tamanio_memoria / tamanio_paginas), tamanio_paginas);
+    log_info(memoria->memoria_log,"SE TIENEN %0.f MARCOS DE %d BYTES EN MEMORIA PRINCIPAL", ceil(tamanio_memoria / tamanio_paginas), tamanio_paginas);
 
     //-------------------CREO DIRECTORIO PARA LOS ARCHIVOS SWAP------------------------------
 
@@ -174,7 +174,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 				t_pcb* pcb_actualizado = eliminar_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_cliente->id);
-				responder_pcb_a_cliente(pcb_actualizado, cliente_fd, OPERACION_EXITOSA);
+				responder_pcb_a_cliente(pcb_actualizado, cliente_fd, DELETE);
 
 			} else if(op_code_memoria == SWAP){
 
@@ -182,14 +182,14 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
-				responder_pcb_a_cliente(pcb_cliente, cliente_fd, OPERACION_EXITOSA);
+				responder_pcb_a_cliente(pcb_cliente, cliente_fd, SWAP);
 
 			}else if(op_code_memoria == RE_SWAP){
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_reswap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
 				//Es necesario responder?
-				responder_pcb_a_cliente(pcb_cliente, cliente_fd, OPERACION_EXITOSA);
+				responder_pcb_a_cliente(pcb_cliente, cliente_fd, RE_SWAP);
 
 			}else{
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");

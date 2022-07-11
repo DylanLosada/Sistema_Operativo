@@ -97,6 +97,7 @@ typedef struct{
 	pthread_mutex_t* grado_multiprogramacion;
 	int TIEMPO_MAX_BLOQUEADO;
 	int socket_memoria;
+	sem_t* sem;
 } t_args_suspended_blocked;
 
 typedef struct{

@@ -10,14 +10,12 @@ int dir_logica_a_fisica(t_cpu* cpu, t_pcb* pcb, int dir_logica, op_memoria_messa
 	int numero_pagina = floor(dir_logica / mem_config->size_pagina);
 
 
-	int resultado_tlb = consultar_tlb(cpu, numero_pagina);
-	if (resultado_tlb != -1) return resultado_tlb * mem_config->size_pagina + desplazamiento;
-
-
 	int entrada_tabla_1er_nivel = floor(numero_pagina / mem_config->cant_entradas_por_tabla);
 	int entrada_tabla_2do_nivel = numero_pagina % mem_config->cant_entradas_por_tabla;
 	int desplazamiento = dir_logica - numero_pagina * mem_config->size_pagina;
 
+	int resultado_tlb = consultar_tlb(cpu, numero_pagina);
+	if (resultado_tlb != -1) return resultado_tlb * mem_config->size_pagina + desplazamiento;
 
 	int tabla_2do_nivel = get_tabla_segundo_nivel(cpu, tabla_1er_nivel, entrada_tabla_1er_nivel, instructions_code, pcb->id); // Preguntar a memoria, pasando tabla_1er_nivel y entrada_tabla_1er_nivel como datos.
 	int marco = get_marco(cpu, tabla_2do_nivel, entrada_tabla_2do_nivel, instructions_code, pcb->id); // Preguntar a memoria, pasando tabla_2do_nivel y entrada_tabla_2do_nivel como datos.
