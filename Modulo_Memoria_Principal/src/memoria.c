@@ -108,6 +108,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
 
 			int data = leer_memoria(memoria, dir_fisica);
+			log_info(memoria->memoria_log, "SE LEE EL VALOR: %d EN LA DIRECCION %d", data, dir_fisica);
 			send(cliente_fd, &data, sizeof(int), 0);
 		}
 		else if (op_code_memoria == COPY){
@@ -139,7 +140,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			int marco_to_swap = -1;
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
-			log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+			//log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
 			int tabla_segundo_nivel = get_tabla_segundo_nivel(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
@@ -154,9 +155,10 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
-			log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+			//log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
 			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel, &marco_to_swap, administrar_mmu->instruccion, administrar_mmu->pcb_id);
+			log_info(memoria->memoria_log, "EL MARCO A ACCEDER ES EL %d", marco);
 			void* stream = malloc(sizeof(int)*2);
 			memcpy(stream, &marco, sizeof(int));
 			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
@@ -181,13 +183,13 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap);
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
+				log_info(memoria->memoria_log, "SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, SWAP);
 
 			}else if(op_code_memoria == RE_SWAP){
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_reswap_del_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
+				log_info(memoria->memoria_log, "SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE ARCHIVO A MEMORIA", pcb_cliente->id);
 				//Es necesario responder?
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, RE_SWAP);
 
@@ -488,7 +490,7 @@ t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb
 			t_tabla_entradas_primer_nivel* tabla_primer_nivel_de_la_iteracion = list_get(tablas_primer_nivel_del_sistema, tabla_actual);
 			int id_tabla_de_la_iteracion = tabla_primer_nivel_de_la_iteracion->id_tabla;
 			if(id_tabla_proceso == id_tabla_de_la_iteracion){
-				log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL DEL PROCESO %d es %d", pcb_proceso->id, id_tabla_de_la_iteracion);
+				//log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL DEL PROCESO %d es %d", pcb_proceso->id, id_tabla_de_la_iteracion);
 				return tabla_primer_nivel_de_la_iteracion;
 			}
 		}

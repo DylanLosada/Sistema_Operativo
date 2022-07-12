@@ -9,5 +9,6 @@ void hacer_swap_de_tabla_de_paginas_de_segundo_nivel(t_tabla_entradas_primer_niv
 void hacer_swap_de_pagina_inicio(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_pagina_segundo_nivel* pagina_iteracion, int id_tabla_segundo_nivel, FILE* archivo_proceso, t_memoria* memoria);
 void pasar_marco_ocupado_a_marco_libre_global(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria);
 void agregar_frames_libres_del_proceso_a_lista_global(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria);
-
+int tamanio_actual_del_archivo(FILE* archivo_proceso);
+void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_agregar);
 #endif

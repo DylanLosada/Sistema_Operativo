@@ -55,7 +55,7 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 	}
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
-	log_info(memoria->memoria_log, "CANTIDAD DE MARCOS LIBRE GLOBALES ES %d", list_size(memoria->marcos_libres));
+	//log_info(memoria->memoria_log, "CANTIDAD DE MARCOS LIBRE GLOBALES ES %d", list_size(memoria->marcos_libres));
 	fclose(archivo_proceso);
 }
 
@@ -105,9 +105,7 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel_del_proceso = obtener_tabla_primer_nivel_del_proceso(pcb_cliente, memoria);
 
 	for(int marco_iteracion = 0; marco_iteracion < marcos_por_proceso; marco_iteracion++){
-		t_marco* marco_asignado = malloc(sizeof(t_marco));
-		marco_asignado->numero_marco = list_remove(memoria->marcos_libres, 0);
-		marco_asignado->pagina = NULL;
+		t_marco* marco_asignado = list_remove(memoria->marcos_libres, 0);
 		list_add(tabla_primer_nivel_del_proceso->marcos_libres, marco_asignado);
 		log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL PROCESO %d", marco_asignado->numero_marco, pcb_cliente->id);
 	}
@@ -118,20 +116,20 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 //Esta funcion recibe una pagina y la busca en el archivo del proceso
 void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_sacar) {
     char* path = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
-    void* contenido_pagina = malloc(memoria->memoria_config->tamanio_pagina);
 
     log_info(memoria->memoria_log, "SE EMPIEZA A BUSCAR PAGINA EN ARCHIVO SWAP POR PAGE FAULT DEL PROCESO %d", pcb_id);
-    log_info(memoria->memoria_log, "LA PAGINA QUE SE QUIERE ENCONTRAR ES %d DE LA TABLA DE SEGUNDO NIVEL NUMERO %d", pagina_a_sacar->id_pagina, pagina_a_sacar->tabla_segundo_nivel);
-    FILE* archivo_proceso = fopen(path, "rt");
+    log_info(memoria->memoria_log, "LA PAGINA QUE SE QUIERE ENCONTRAR ES %d", pagina_a_sacar->id_pagina);
+    FILE* archivo_proceso = fopen(path, "rb");
     fseek(archivo_proceso, 0, SEEK_SET);
     int tamanio = tamanio_actual_del_archivo(archivo_proceso);
-    log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO DEL PROCESO %d QUE PESA %d BYTES", pcb_id, tamanio);
+    //log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO DEL PROCESO %d QUE PESA %d BYTES", pcb_id, tamanio);
 
     void* contenido_archivo = malloc(tamanio);
     fread(contenido_archivo, tamanio, 1, archivo_proceso);
 
     int tamanio_pagina_con_ids =(memoria->memoria_config->tamanio_pagina) + sizeof(int) + sizeof(int);
 
+    //0-1..255
 	int offset = 0;
 	while(1) {
 		int id_pagina;
@@ -145,13 +143,12 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 		offset += sizeof(int);
 
 		if(id_pagina == pagina_a_sacar->id_pagina && id_tabla_segundo_nivel == pagina_a_sacar->tabla_segundo_nivel){
-			offset -= tamanio_pagina_con_ids;
 
-			log_info(memoria->memoria_log, "SE ENCONTRO LA PAGINA BUSCADA, COPIANDO CONTENIDO");
+			//log_info(memoria->memoria_log, "SE ENCONTRO LA PAGINA BUSCADA, COPIANDO CONTENIDO");
 
-			memcpy(memoria->espacio_memoria + offset, contenido_pagina_iteracion, (memoria->memoria_config->tamanio_pagina));
+			memcpy(memoria->espacio_memoria + (marco->numero_marco * memoria->memoria_config->tamanio_pagina), contenido_pagina_iteracion, (memoria->memoria_config->tamanio_pagina));
 
-			log_info(memoria->memoria_log, "CONTENIDO DE LA PAGINA EN ARCHIVO CARGADA A LA PAGINA QUE RESIDIRA EN MEMORIA");
+			log_info(memoria->memoria_log, "CONTENIDO DE LA PAGINA EN ARCHIVO CARGADA A MEMORIA");
 			free(contenido_pagina_iteracion);
 			fseek(archivo_proceso, 0, SEEK_SET);
 			fclose(archivo_proceso);
@@ -161,7 +158,6 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 	}
 
     free(contenido_archivo);
-    free(contenido_pagina);
 }
 
 void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_agregar) {
