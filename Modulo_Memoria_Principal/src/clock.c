@@ -19,74 +19,83 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 	sacar_pagina_de_archivo(pcb_id, memoria, marco, pagina);
 }
 
+t_marco* get_marco_puntero(t_tabla_entradas_primer_nivel* tabla_1er_nivel) {
+	return list_get(tabla_1er_nivel->marcos_usados, tabla_1er_nivel->puntero_clock);
+}
+
+void aumentar_puntero(t_tabla_entradas_primer_nivel* tabla_1er_nivel, int marcos_por_proceso) {
+	tabla_1er_nivel->puntero_clock = (tabla_1er_nivel->puntero_clock + 1) % marcos_por_proceso;
+}
 
 void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame, int* marco_to_swap, int pcb_id){
 
 	log_info(memoria->memoria_log, "EL PROCESO OCUPA TODOS LOS MARCOS POR PROCESO DISPONIBLE, INICIANDO ALGORITMO DE REEMPLAZO");
 
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
-	t_marco* marco_usado;
-	t_pagina_segundo_nivel* pagina_a_desalojar;
-
-	while (1) {
-		marco_usado = list_get(tabla_1er_nivel->marcos_usados, tabla_1er_nivel->puntero_clock);
-		pagina_a_desalojar = marco_usado->pagina;
+	t_marco* marco_a_desalojar = get_marco_puntero(tabla_1er_nivel);
 
 
-		if (memoria->memoria_config->algoritmo_reemplazo == CLOCK) {
-
-		log_info(memoria->memoria_log, "EL ALGORITMO DE REEMPLAZO DEL SISTEMA ES CLOCK");
-			// CLOCK NORMAL
-			if (pagina_a_desalojar->uso == 1) pagina_a_desalojar->uso = 0;
-			else break;
-
-
-		} else {
-
-			log_info(memoria->memoria_log, "EL ALGORITMO DE REEMPLAZO DEL SISTEMA ES CLOCK-M");
-			// CLOCK MODIFICADO
-			int encontrado = 0;
-
-
-			// En estos for loops buscamos 0-0 o 0-1 (uso-modificado) 2 vueltas (y modificamos bit de uso cuando buscamos 0-1).
-			for (int vuelta = 0; vuelta < 2; vuelta++) {
-
-
-				for (int i = 0; i < marcos_por_proceso; i++) {
-					if (pagina_a_desalojar->uso == 0 && pagina_a_desalojar->modificado == 0) {
-						encontrado = 1;
-						break;
-					}
-				}
-				if (encontrado) break;
-				for (int i = 0; i < marcos_por_proceso; i++) {
-					if (pagina_a_desalojar->uso == 0) {
-						encontrado = 1;
-						break;
-					}
-					pagina_a_desalojar->uso = 0;
-				}
-				if (encontrado) break;
-
-
+	if (memoria->memoria_config->algoritmo_reemplazo == CLOCK) {
+		// CLOCK
+		while (1) {
+			if (marco_a_desalojar->pagina->uso == 1) marco_a_desalojar->pagina->uso = 0;
+			else {
+				aumentar_puntero(tabla_1er_nivel, marcos_por_proceso);
+				break;
 			}
+
+			aumentar_puntero(tabla_1er_nivel, marcos_por_proceso);
+			marco_a_desalojar = get_marco_puntero(tabla_1er_nivel);
+		}
+
+	} else {
+		// CLOCK-M
+
+		int encontrado = 0;
+
+		// En estos for loops buscamos 0-0 o 0-1 (uso-modificado) 2 vueltas (y modificamos bit de uso cuando buscamos 0-1).
+		for (int vuelta = 0; vuelta < 2; vuelta++) {
+
+
+			for (int i = 0; i < marcos_por_proceso; i++) {
+				if (marco_a_desalojar->pagina->uso == 0 && marco_a_desalojar->pagina->modificado == 0) {
+					encontrado = 1;
+					aumentar_puntero(tabla_1er_nivel, marcos_por_proceso);
+					break;
+				}
+				aumentar_puntero(tabla_1er_nivel, marcos_por_proceso);
+				marco_a_desalojar = get_marco_puntero(tabla_1er_nivel);
+			}
+			if (encontrado) break;
+			for (int i = 0; i < marcos_por_proceso; i++) {
+				if (marco_a_desalojar->pagina->uso == 0) {
+					encontrado = 1;
+					aumentar_puntero(tabla_1er_nivel, marcos_por_proceso);
+					break;
+				}
+				marco_a_desalojar->pagina->uso = 0;
+				aumentar_puntero(tabla_1er_nivel, marcos_por_proceso);
+				marco_a_desalojar = get_marco_puntero(tabla_1er_nivel);
+			}
+			if (encontrado) break;
 
 
 		}
-		// Se le suma 1 al clock y se pone en 0 si alcanza el maximo.
-		tabla_1er_nivel->puntero_clock = (tabla_1er_nivel->puntero_clock + 1) % marcos_por_proceso;
+
+
 	}
 
 
-	if (pagina_a_desalojar->modificado == 1) {
-		swapear_pagina_en_disco(pcb_id, memoria, marco_usado, pagina_a_desalojar);
-		*marco_to_swap = pagina_a_desalojar->marco_usado->numero_marco;
+
+	if (marco_a_desalojar->pagina->modificado == 1) {
+		swapear_pagina_en_disco(pcb_id, memoria, marco_a_desalojar, marco_a_desalojar->pagina);
+		*marco_to_swap = marco_a_desalojar->numero_marco;
 	}
 
 
-	pagina_sin_frame->marco_usado = marco_usado;
-	marco_usado->pagina = pagina_sin_frame;
+	pagina_sin_frame->marco_usado = marco_a_desalojar;
+	marco_a_desalojar->pagina = pagina_sin_frame;
 
 	//CARGAR LA PAG A MEMORIA
-	sacar_pagina_de_archivo(pcb_id, memoria, marco_usado, pagina_sin_frame);
+	sacar_pagina_de_archivo(pcb_id, memoria, marco_a_desalojar, pagina_sin_frame);
 }
