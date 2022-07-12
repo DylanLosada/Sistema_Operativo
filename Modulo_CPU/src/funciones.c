@@ -44,7 +44,8 @@ void execute_dispatch(void* void_args){
 		int code;
 		//SE RECIBE EL PCB DEL KERNEL
 		log_info(cpu->cpu_log, "QUEDO A LA ESPERA DE UN PCB");
-		t_pcb* pcb = deserializate_pcb(kernel_socket, &code);
+		t_pcb* pcb = malloc(sizeof(t_pcb));
+		pcb = deserializate_pcb(kernel_socket, &code);
 		log_info(cpu->cpu_log, "SE RECIBIO EL PCB %d", pcb->id);
 
 		if (pcb->id != cpu->last_executed_pcb) {

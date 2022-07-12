@@ -31,8 +31,6 @@ void loggear_pcb(t_pcb* pcb){
 t_pcb* deserializate_pcb_memoria(int socket){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
 	t_pcb* pcb = malloc(sizeof(t_pcb));
-	pcb->tabla_paginas = malloc(sizeof(int));
-	pcb->time_blocked = malloc(sizeof(clock_t));
 	pcb->instrucciones = list_create();
 	int offset = 0;
 
@@ -82,6 +80,9 @@ t_pcb* deserializate_pcb_memoria(int socket){
 	memcpy(&pcb->time_blocked, buffer->stream, sizeof(clock_t));
 	buffer->stream += sizeof(clock_t);
 
+	// time_ready
+	memcpy(&pcb->time_in_ready, buffer->stream, sizeof(clock_t));
+	buffer->stream += sizeof(clock_t);
 
 	// (cant instrucciones)
 	int cant;
@@ -107,9 +108,7 @@ t_pcb* deserializate_pcb_memoria(int socket){
 
 t_pcb* deserializate_pcb(int socket, int* op_code){
 	t_buffer* buffer = malloc(sizeof(t_buffer));
-	t_pcb* pcb = malloc(36);
-	pcb->tabla_paginas = malloc(sizeof(int));
-	pcb->time_blocked = malloc(sizeof(clock_t));
+	t_pcb* pcb = malloc(sizeof(t_pcb));
 	pcb->instrucciones = list_create();
 	int offset = 0;
 
@@ -161,6 +160,9 @@ t_pcb* deserializate_pcb(int socket, int* op_code){
 	memcpy(&pcb->time_blocked, buffer->stream, sizeof(clock_t));
 	buffer->stream += sizeof(clock_t);
 
+	// time_ready
+	memcpy(&pcb->time_in_ready, buffer->stream, sizeof(clock_t));
+	buffer->stream += sizeof(clock_t);
 
 	// (cant instrucciones)
 	int cant;
@@ -209,6 +211,7 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 			+ sizeof(int)		// time_excecuted_rafaga
 			+ sizeof(clock_t) 	// time_blocked
 			+ sizeof(int)		// (cant instrucciones)
+			+ sizeof(clock_t)
 			+ size;				// (largo inst + inst) x cada inst.
 
 	buffer->stream = malloc(buffer->size);
@@ -251,6 +254,10 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 
 	// time_blocked
 	memcpy(buffer->stream + offset, &pcb->time_blocked, sizeof(clock_t));
+	offset += sizeof(clock_t);
+
+	// time_ready
+	memcpy(buffer->stream + offset, &pcb->time_in_ready, sizeof(clock_t));
 	offset += sizeof(clock_t);
 
 

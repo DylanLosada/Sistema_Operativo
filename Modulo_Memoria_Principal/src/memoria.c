@@ -194,6 +194,8 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			}else{
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");
 			}
+			//list_destroy(pcb_cliente->instrucciones);
+			//free(pcb_cliente);
 		}
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
 	}

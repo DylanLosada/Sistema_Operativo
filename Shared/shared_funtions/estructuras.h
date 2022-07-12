@@ -59,6 +59,7 @@ typedef struct{
 	int time_io;
 	int time_excecuted_rafaga;
 	clock_t time_blocked;
+	clock_t time_in_ready;
 	t_list* instrucciones;
 } t_pcb;
 
