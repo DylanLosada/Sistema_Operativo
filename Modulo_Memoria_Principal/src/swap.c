@@ -33,12 +33,6 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 
-	t_list* paginas_con_marcos_asignados = tabla_primer_nivel->marcos_usados;
-
-	t_list* lista_de_id_de_tablas_de_segundo_nivel = tabla_primer_nivel->entradas;
-
-	int cantidad_de_frames_usados = list_size(lista_de_id_de_tablas_de_segundo_nivel);
-
 	for(int index = 0; index < list_size(tabla_primer_nivel->marcos_usados); index++){
 
 		t_marco* marco_iteracion = list_get(tabla_primer_nivel->marcos_usados, index);
@@ -127,8 +121,6 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
     void* contenido_archivo = malloc(tamanio);
     fread(contenido_archivo, tamanio, 1, archivo_proceso);
 
-    int tamanio_pagina_con_ids =(memoria->memoria_config->tamanio_pagina) + sizeof(int) + sizeof(int);
-
     //0-1..255
 	int offset = 0;
 	while(1) {
@@ -152,6 +144,7 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 			free(contenido_pagina_iteracion);
 			fseek(archivo_proceso, 0, SEEK_SET);
 			fclose(archivo_proceso);
+			marco->pagina = pagina_a_sacar;
 			break;
 		}
 		free(contenido_pagina_iteracion);
@@ -210,5 +203,5 @@ int tamanio_actual_del_archivo(FILE* archivo_proceso) {    // en bytes
 }
 
 int obtener_espacio_de_memoria_a_acceder(t_memoria* memoria, int frame){
-	return (memoria->espacio_memoria) + (frame * memoria->memoria_config->tamanio_pagina);
+	return (int)(memoria->espacio_memoria) + (frame * memoria->memoria_config->tamanio_pagina);
 }

@@ -175,12 +175,12 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			}else if (op_code_memoria == DELETE){
 
 				t_pcb* pcb_actualizado = eliminar_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_cliente->id);
+				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS Y ARCHIVO SWAP DEL PROCESO %d EN MEMORIA", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_actualizado, cliente_fd, DELETE);
 
 			} else if(op_code_memoria == SWAP){
 
-				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap);
+				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap / 1000);
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
@@ -190,13 +190,11 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_reswap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE ARCHIVO A MEMORIA", pcb_cliente->id);
-				//Es necesario responder?
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, RE_SWAP);
 
 			}else{
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");
 			}
-			//list_destroy(pcb_cliente->instrucciones);
 			//free(pcb_cliente);
 		}
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
@@ -230,11 +228,11 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
 
     if(pcb_actualizado->tabla_paginas >= 0){
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, NEW);
-    		log_info(memoria->memoria_log, "SE GUARDA EL PROCESO [%d] EN MEMORIA\n", id_proceso);
+    		log_info(memoria->memoria_log, "SE GUARDA EL PROCESO %d EN MEMORIA", id_proceso);
 
     	}else{
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, ERROR);
-    		log_info(memoria->memoria_log, "NO HAY LUGAR PARA GUARDAR EL PROCESO [%d] EN MEMORIA\n", id_proceso);
+    		log_info(memoria->memoria_log, "NO HAY LUGAR PARA GUARDAR EL PROCESO %d EN MEMORIA", id_proceso);
 
     	}
     //free(pcb_actualizado->tabla_paginas);
@@ -271,8 +269,6 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	int paginas_necesarias = ceil((double) tamanio_proceso / (double) memoria->memoria_config->tamanio_pagina);
 
-	//obtengo la cantidad de tabla de paginas de segundo nivel necesarias ==> CANTIDAD DE ENTRADAS DE TABLA #1
-	//ej: pag_necesarias = 16, marcos_por_proceso= 4 --> cant_tablas #2 = 4 --> cant_entradas #1 = 4
 	int cant_tablas_segundo_necesarias = ceil(sqrt((double) paginas_necesarias));
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_entradas_primer_nivel));
@@ -405,75 +401,9 @@ t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 
 	// ELIMINAR SWAP
 	eliminar_archivo_swap(memoria, pcb_proceso);
-	log_info(memoria->memoria_log,"ELIMINAMOS ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
+	//log_info(memoria->memoria_log,"ELIMINAMOS ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
 
 	return pcb_proceso;
-}
-
-void eliminar_tablas_de_segundo_nivel(t_pcb* pcb_proceso, t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria){
-
-	t_list* entradas_de_tabla = tabla_primer_nivel->entradas;
-
-	int recorrido_entradas = 0;
-
-	int tamanio_lista_segundo_nivel = list_size(entradas_de_tabla);
-
-	for(recorrido_entradas = 0 ; recorrido_entradas < tamanio_lista_segundo_nivel ; recorrido_entradas++){ //elimina las tablas de nivel dos de a una
-
-		t_tabla_paginas_segundo_nivel* tabla_segundo_nivel = list_get(entradas_de_tabla, recorrido_entradas);
-		int id_tabla_segundo_nivel = tabla_segundo_nivel->id_tabla;
-
-		eliminar_paginas_de_memoria(tabla_segundo_nivel, memoria);
-
-		eliminar_tabla_de_la_lista_de_tablas_del_sistema(memoria, tabla_segundo_nivel);
-
-		log_info(memoria->memoria_log, "TABLA DE SEGUNDO NIVEL %d DEL PROCESO %d ELIMINADA", id_tabla_segundo_nivel, pcb_proceso->id);
-	}
-
-}
-
-void eliminar_tabla_de_la_lista_de_tablas_del_sistema(t_memoria* memoria, t_tabla_paginas_segundo_nivel* tabla_segundo_nivel){
-
-	t_list* tablas_actuales_de_segundo_nivel = memoria->tablas_segundo_nivel;
-
-	int tamanio_lista_segundo_nivel = list_size(tablas_actuales_de_segundo_nivel);
-
-	int tabla_a_eliminar = tabla_segundo_nivel->id_tabla;
-
-	int recorrido_lista;
-
-		for(recorrido_lista = 0 ; recorrido_lista < tamanio_lista_segundo_nivel ; recorrido_lista++){
-
-				if(list_get(tablas_actuales_de_segundo_nivel, recorrido_lista)!= NULL){
-					t_tabla_paginas_segundo_nivel* tabla_segundo_nivel_de_lista = list_get(tablas_actuales_de_segundo_nivel, recorrido_lista);
-					int id_tabla = tabla_segundo_nivel_de_lista->id_tabla;
-
-						if(tabla_a_eliminar == id_tabla){
-
-							list_remove_and_destroy_element(tablas_actuales_de_segundo_nivel, recorrido_lista, tabla_segundo_nivel); //ver como funciona esto
-						}
-				}
-
-		}
-
-}
-
-void eliminar_paginas_de_memoria(t_tabla_paginas_segundo_nivel* tabla_segundo_nivel, t_memoria* memoria){
-
-//Si las tablas contienen paginas con bit de presencia en 1 ==> liberar espacio de memoria es decir, poner espacio de memoria en 0
-
-}
-
-void eliminar_tabla_de_primer_nivel(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_memoria* memoria, int posicion_tabla_en_lista){
-
-// Eliminar tabla de primer nivel de lista de tablas de primer nivel
-
-	t_list* lista_de_tablas_primer_nivel = memoria->tablas_primer_nivel;
-	list_remove_and_destroy_element(lista_de_tablas_primer_nivel, posicion_tabla_en_lista, tabla_primer_nivel); //ver como funciona esto
-
-//obtener id archivo del proceso
-
-
 }
 
 t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){

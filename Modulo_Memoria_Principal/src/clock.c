@@ -86,9 +86,8 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 	}
 
 
-
-	if (marco_a_desalojar->pagina->modificado == 1) {
-		swapear_pagina_en_disco(pcb_id, memoria, marco_a_desalojar, marco_a_desalojar->pagina);
+	if(marco_a_desalojar->pagina->modificado == 1){
+		swapear_pagina_en_disco(pcb_id, memoria, marco_a_desalojar, pagina_sin_frame);
 		*marco_to_swap = marco_a_desalojar->numero_marco;
 	}
 
