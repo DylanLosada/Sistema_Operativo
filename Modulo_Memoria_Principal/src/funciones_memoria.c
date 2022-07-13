@@ -84,8 +84,3 @@ void liberar_memoria(t_memoria* memoria){
     log_destroy(memoria->memoria_log);
     free(memoria);
 }
-
-void agregar_marco_de_memoria_a_lista(t_memoria* memoria, int marco){
-	t_list* marcos_libres = memoria->marcos_libres;
-	list_add(marcos_libres, marco);
-}
