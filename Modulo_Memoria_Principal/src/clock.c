@@ -29,7 +29,11 @@ void aumentar_puntero(t_tabla_entradas_primer_nivel* tabla_1er_nivel, int marcos
 
 void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame, int* marco_to_swap, int pcb_id){
 
-	log_info(memoria->memoria_log, "EL PROCESO OCUPA TODOS LOS MARCOS POR PROCESO DISPONIBLE, INICIANDO ALGORITMO DE REEMPLAZO");
+	if(memoria->memoria_config->algoritmo_reemplazo == CLOCK){
+		log_info(memoria->memoria_log, "EL PROCESO OCUPA TODOS LOS MARCOS POR PROCESO DISPONIBLE, INICIANDO CLOCK");
+	}else{
+		log_info(memoria->memoria_log, "EL PROCESO OCUPA TODOS LOS MARCOS POR PROCESO DISPONIBLE, INICIANDO CLOCK MODIFICADO");
+	}
 
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
 	t_marco* marco_a_desalojar = get_marco_puntero(tabla_1er_nivel);

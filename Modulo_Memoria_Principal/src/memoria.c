@@ -33,7 +33,7 @@ int main(void) {
 
     //-------------------CREO DIRECTORIO PARA LOS ARCHIVOS SWAP------------------------------
 
-	int directorio = mkdir(memoria->memoria_config->path_swap, 0777);
+	mkdir(memoria->memoria_config->path_swap, 0777);
 
 	log_info(memoria->memoria_log,"SE CREA EL DIRECTORIO SWAP EN LA RUTA %s", memoria->memoria_config->path_swap);
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
@@ -105,10 +105,10 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			// ESTE ESTA BIEN
 			int dir_fisica;
 			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
-			log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
+			//log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
 
 			int data = leer_memoria(memoria, dir_fisica);
-			log_info(memoria->memoria_log, "SE LEE EL VALOR: %d EN LA DIRECCION %d", data, dir_fisica);
+			log_info(memoria->memoria_log, "SE LEE EL VALOR: %d EN LA DIRECCION %d\n", data, dir_fisica);
 			send(cliente_fd, &data, sizeof(int), 0);
 		}
 		else if (op_code_memoria == COPY){
@@ -120,7 +120,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			int valor_copiado = copiar_memoria(memoria, direccion_desde, direccion_hacia);
 
-			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DEL VALOR %d DE %d A %d", valor_copiado, direccion_desde, direccion_hacia);
+			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DEL VALOR %d DE %d A %d\n", valor_copiado, direccion_desde, direccion_hacia);
 			send(cliente_fd, &op_code, sizeof(int), 0);
 		}
 		else if (op_code_memoria == WRITE){
@@ -132,7 +132,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			escribir_memoria(memoria, direccion, valor);
 
-			log_info(memoria->memoria_log, "SE EJECUTO LA ESCRITURA EN LA DIR. %d, VALOR: %d", direccion, valor);
+			log_info(memoria->memoria_log, "SE EJECUTO LA ESCRITURA DEL VALOR: %d EN LA DIR: %d\n", valor, direccion);
 			send(cliente_fd, &op_code, sizeof(int), 0);
 		}
 		else if (op_code_memoria == TABLA_SEGUNDO_NIVEL){
@@ -175,7 +175,7 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			}else if (op_code_memoria == DELETE){
 
 				t_pcb* pcb_actualizado = eliminar_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS Y ARCHIVO SWAP DEL PROCESO %d EN MEMORIA", pcb_cliente->id);
+				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS Y ARCHIVO SWAP DEL PROCESO %d EN MEMORIA\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_actualizado, cliente_fd, DELETE);
 
 			} else if(op_code_memoria == SWAP){
@@ -183,13 +183,13 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap / 1000);
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO", pcb_cliente->id);
+				log_info(memoria->memoria_log, "SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, SWAP);
 
 			}else if(op_code_memoria == RE_SWAP){
 				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_reswap_del_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE ARCHIVO A MEMORIA", pcb_cliente->id);
+				log_info(memoria->memoria_log, "SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE ARCHIVO A MEMORIA\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, RE_SWAP);
 
 			}else{
@@ -316,9 +316,8 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 				list_add(tabla_segundo_nivel->paginas_segundo_nivel, pagina_segundo_nivel);
 				hacer_swap_de_pagina_inicio(tabla_primer_nivel, pagina_segundo_nivel, tabla_segundo_nivel->id_tabla, archivo_proceso, memoria);
 
-				//Para probar cuanto va subiendo tamaño del archivo
-				int tamanio = tamanio_actual_del_archivo(archivo_proceso);
-				log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
+				//int tamanio = tamanio_actual_del_archivo(archivo_proceso);
+				//log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
 			}
 
 		} else {
@@ -337,9 +336,8 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 				hacer_swap_de_pagina_inicio(tabla_primer_nivel, pagina_segundo_nivel, tabla_segundo_nivel->id_tabla, archivo_proceso, memoria);
 				paginas_necesarias--;
 
-				//Para probar cuanto va subiendo tamaño del archivo
-				int tamanio = tamanio_actual_del_archivo(archivo_proceso);
-				log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
+				//int tamanio = tamanio_actual_del_archivo(archivo_proceso);
+				//log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
 
 			}
 		}
@@ -357,7 +355,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	//_________________CERRADO DE ARCHIVO DEL PROCESO_____________________
 
 	fclose(archivo_proceso);
-	log_info(memoria->memoria_log, "SE CIERRA EL ARCHIVO SWAP DEL PROCESO %d DE LA RUTA %s", pcb_cliente->id, path_archivo);
+	//log_info(memoria->memoria_log, "SE CIERRA EL ARCHIVO SWAP DEL PROCESO %d DE LA RUTA %s", pcb_cliente->id, path_archivo);
 
 	return pcb_cliente;
 
@@ -393,11 +391,11 @@ t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 	// PASAR MARCOS OCUPADOS A LIBRES GLOBALES
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
-	log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS OCUPADOS LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
+	//log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS OCUPADOS LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
 
 	// PASAR LIBRES A LIBRES GLOBALES
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
-	log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS LIBRES LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
+	//log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS LIBRES LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
 
 	// ELIMINAR SWAP
 	eliminar_archivo_swap(memoria, pcb_proceso);

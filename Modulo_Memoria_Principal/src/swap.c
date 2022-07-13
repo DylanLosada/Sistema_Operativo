@@ -60,7 +60,7 @@ void hacer_swap_de_pagina_inicio(t_tabla_entradas_primer_nivel* tabla_primer_niv
 	void* contenido_de_pagina = malloc(memoria->memoria_config->tamanio_pagina);
 	memcpy(contenido_de_pagina, memoria->espacio_memoria, memoria->memoria_config->tamanio_pagina);//No nos importa que escriba, solo que ocupe los bytes que ocupa una pag
 
-	log_info(memoria->memoria_log, "SE SUBE AL ARCHIVO SWAP LA PAGINA %d DE LA TABLA %d DE SEGUNDO NIVEL", id_pagina, id_tabla_segundo_nivel);
+	//log_info(memoria->memoria_log, "SE SUBE AL ARCHIVO SWAP LA PAGINA %d DE LA TABLA %d DE SEGUNDO NIVEL", id_pagina, id_tabla_segundo_nivel);
 	fwrite(&contenido_de_pagina, memoria->memoria_config->tamanio_pagina, 1, archivo_proceso);
 	fwrite(&id_pagina, sizeof(int), 1, archivo_proceso);
 	fwrite(&id_tabla_segundo_nivel, sizeof(int), 1, archivo_proceso);
@@ -74,7 +74,7 @@ void pasar_marco_ocupado_a_marco_libre_global(t_tabla_entradas_primer_nivel* tab
 
 		t_marco* marco_iteracion = list_remove(tabla_primer_nivel->marcos_usados, 0);
 		list_add(memoria->marcos_libres, marco_iteracion);
-		log_info(memoria->memoria_log, "MARCO NUMERO %d OCUPADO PASA A LISTA DE MARCOS LIBRES GLOBALES", marco_iteracion->numero_marco);
+		//log_info(memoria->memoria_log, "MARCO NUMERO %d OCUPADO PASA A LISTA DE MARCOS LIBRES GLOBALES", marco_iteracion->numero_marco);
 
 	}
 
@@ -88,7 +88,7 @@ void agregar_frames_libres_del_proceso_a_lista_global(t_tabla_entradas_primer_ni
 	for(marco_actual = 0; marco_actual < marcos_libres_size; marco_actual++){
 		t_marco* marco_libre = list_remove(marcos_libres_proceso, 0);
 		list_add(memoria->marcos_libres, marco_libre);
-		log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL SISTEMA", marco_libre->numero_marco);
+		//log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL SISTEMA", marco_libre->numero_marco);
 
 	}
 }
@@ -101,7 +101,7 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 	for(int marco_iteracion = 0; marco_iteracion < marcos_por_proceso; marco_iteracion++){
 		t_marco* marco_asignado = list_remove(memoria->marcos_libres, 0);
 		list_add(tabla_primer_nivel_del_proceso->marcos_libres, marco_asignado);
-		log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL PROCESO %d", marco_asignado->numero_marco, pcb_cliente->id);
+		//log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL PROCESO %d", marco_asignado->numero_marco, pcb_cliente->id);
 	}
 
 }
@@ -111,8 +111,10 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_sacar) {
     char* path = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
 
-    log_info(memoria->memoria_log, "SE EMPIEZA A BUSCAR PAGINA EN ARCHIVO SWAP POR PAGE FAULT DEL PROCESO %d", pcb_id);
+    log_info(memoria->memoria_log, "SE EMPIEZA A BUSCAR PAGINA EN ARCHIVO POR PAGE FAULT DEL PROCESO %d", pcb_id);
     log_info(memoria->memoria_log, "LA PAGINA QUE SE QUIERE ENCONTRAR ES %d", pagina_a_sacar->id_pagina);
+    log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR PAGE FAULT", memoria->memoria_config->retardo_memoria/1000);
+    sleep(memoria->memoria_config->retardo_memoria/1000);
     FILE* archivo_proceso = fopen(path, "rb");
     fseek(archivo_proceso, 0, SEEK_SET);
     int tamanio = tamanio_actual_del_archivo(archivo_proceso);
@@ -140,7 +142,7 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 
 			memcpy(memoria->espacio_memoria + (marco->numero_marco * memoria->memoria_config->tamanio_pagina), contenido_pagina_iteracion, (memoria->memoria_config->tamanio_pagina));
 
-			log_info(memoria->memoria_log, "CONTENIDO DE LA PAGINA EN ARCHIVO CARGADA A MEMORIA");
+			//log_info(memoria->memoria_log, "CONTENIDO DE LA PAGINA EN ARCHIVO CARGADA A MEMORIA");
 			free(contenido_pagina_iteracion);
 			fseek(archivo_proceso, 0, SEEK_SET);
 			fclose(archivo_proceso);
