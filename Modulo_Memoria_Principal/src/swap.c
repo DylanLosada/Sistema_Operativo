@@ -42,7 +42,8 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 		pagina_iteracion->presencia = 0;
 		pagina_iteracion->uso = 0;
 		pagina_iteracion->modificado = 0;
-
+		log_info(memoria->memoria_log, "EMULAMOS RETARDO DE SWAP DE %d SEGUNDOS POR SWAP PROCESO DE PAGINA %d", memoria->memoria_config->retardo_swap/1000, pagina_iteracion->id_pagina);
+		sleep(memoria->memoria_config->retardo_swap/1000);
 		swapear_pagina_en_disco(pcb_proceso->id, memoria, marco_iteracion, pagina_iteracion);
 
 		marco_iteracion->pagina = NULL;
@@ -113,8 +114,8 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 
     log_info(memoria->memoria_log, "SE EMPIEZA A BUSCAR PAGINA EN ARCHIVO POR PAGE FAULT DEL PROCESO %d", pcb_id);
     log_info(memoria->memoria_log, "LA PAGINA QUE SE QUIERE ENCONTRAR ES %d", pagina_a_sacar->id_pagina);
-    log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR PAGE FAULT", memoria->memoria_config->retardo_memoria/1000);
-    sleep(memoria->memoria_config->retardo_memoria/1000);
+    log_info(memoria->memoria_log, "EMULAMOS RETARDO DE SWAP DE %d SEGUNDOS POR PAGE FAULT", memoria->memoria_config->retardo_swap/1000);
+    sleep(memoria->memoria_config->retardo_swap/1000);
     FILE* archivo_proceso = fopen(path, "rb");
     fseek(archivo_proceso, 0, SEEK_SET);
     int tamanio = tamanio_actual_del_archivo(archivo_proceso);

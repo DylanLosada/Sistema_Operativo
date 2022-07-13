@@ -95,10 +95,22 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 		*marco_to_swap = marco_a_desalojar->numero_marco;
 	}
 
-
+	log_info(memoria->memoria_log, "PAGINA %d REEMPLAZADA POR PAGINA %d", get_numero_pagina_real(marco_a_desalojar->pagina), get_numero_pagina_real(pagina_sin_frame));
 	pagina_sin_frame->marco_usado = marco_a_desalojar;
 	marco_a_desalojar->pagina = pagina_sin_frame;
 
 	//CARGAR LA PAG A MEMORIA
 	sacar_pagina_de_archivo(pcb_id, memoria, marco_a_desalojar, pagina_sin_frame);
+}
+
+int get_numero_pagina_real(t_pagina_segundo_nivel* pagina){
+	int numero_pagina = pagina->id_pagina;
+	int numero_tabla_segundo_nivel = pagina->tabla_segundo_nivel;
+
+	while(numero_tabla_segundo_nivel>0){
+		numero_pagina = numero_pagina + 4;
+		numero_tabla_segundo_nivel = numero_tabla_segundo_nivel-1;
+	}
+
+	return numero_pagina;
 }

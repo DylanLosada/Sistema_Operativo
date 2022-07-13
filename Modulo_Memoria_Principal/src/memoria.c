@@ -180,8 +180,8 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			} else if(op_code_memoria == SWAP){
 
-				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap / 1000);
-				sleep(memoria->memoria_config->retardo_swap/1000);
+				//log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap / 1000);
+				//sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, SWAP);

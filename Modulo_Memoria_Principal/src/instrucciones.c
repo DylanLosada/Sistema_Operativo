@@ -2,11 +2,15 @@
 
 int leer_memoria(t_memoria* memoria, int direccion) {
 	int valor;
+	//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR READ", memoria->memoria_config->retardo_memoria/1000);
+	sleep(memoria->memoria_config->retardo_memoria/1000);
 	memcpy(&valor, memoria->espacio_memoria + direccion, sizeof(int));
 	return valor;
 }
 
 void escribir_memoria(t_memoria* memoria, int direccion, int valor) {
+	//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR WRITE", memoria->memoria_config->retardo_memoria/1000);
+	sleep(memoria->memoria_config->retardo_memoria/1000);
 	memcpy(memoria->espacio_memoria + direccion, &valor, sizeof(int));
 }
 

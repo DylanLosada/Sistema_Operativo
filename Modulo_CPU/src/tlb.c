@@ -15,11 +15,12 @@ int consultar_tlb(t_cpu* cpu, int pagina) {
 				list_remove(tlb, i);
 				list_add(tlb, entry);
 			}
+			log_info(cpu->cpu_log, "TLB HIT PAGINA %d | MARCO %d", pagina, entry->marco);
 
 			return entry->marco;
 		}
 	}
-
+	log_info(cpu->cpu_log, "TLB MISS DE PAGINA %d", pagina);
 	return -1;
 }
 
