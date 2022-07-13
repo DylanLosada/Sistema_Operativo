@@ -81,8 +81,12 @@ t_pcb* deserializate_pcb_memoria(int socket){
 	buffer->stream += sizeof(clock_t);
 
 	// time_ready
-	memcpy(&pcb->time_in_ready, buffer->stream, sizeof(clock_t));
-	buffer->stream += sizeof(clock_t);
+	memcpy(&pcb->time_in_ready, buffer->stream, sizeof(time_t ));
+	buffer->stream += sizeof(time_t );
+
+	// ESTA SUSPENDIDO ?
+	memcpy(&pcb->is_suspended, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
 
 	// (cant instrucciones)
 	int cant;
@@ -160,9 +164,12 @@ t_pcb* deserializate_pcb(int socket, int* op_code){
 	memcpy(&pcb->time_blocked, buffer->stream, sizeof(clock_t));
 	buffer->stream += sizeof(clock_t);
 
-	// time_ready
-	memcpy(&pcb->time_in_ready, buffer->stream, sizeof(clock_t));
-	buffer->stream += sizeof(clock_t);
+	memcpy(&pcb->time_in_ready, buffer->stream, sizeof(time_t ));
+	buffer->stream += sizeof(time_t );
+
+	// ESTA SUSPENDIDO ?
+	memcpy(&pcb->is_suspended, buffer->stream, sizeof(int));
+	buffer->stream += sizeof(int);
 
 	// (cant instrucciones)
 	int cant;
@@ -209,9 +216,10 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 			+ sizeof(int) 		// rafaga
 			+ sizeof(int) 		// time_io
 			+ sizeof(int)		// time_excecuted_rafaga
-			+ sizeof(clock_t) 	// time_blocked
+			+ sizeof(time_t) 	// time_blocked
 			+ sizeof(int)		// (cant instrucciones)
-			+ sizeof(clock_t)
+			+ sizeof(time_t)    // tiempo en ready
+			+ sizeof(int)		// esta suspendido ?
 			+ size;				// (largo inst + inst) x cada inst.
 
 	buffer->stream = malloc(buffer->size);
@@ -257,8 +265,12 @@ void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 	offset += sizeof(clock_t);
 
 	// time_ready
-	memcpy(buffer->stream + offset, &pcb->time_in_ready, sizeof(clock_t));
-	offset += sizeof(clock_t);
+	memcpy(buffer->stream + offset, &pcb->time_in_ready, sizeof(time_t ));
+	offset += sizeof(time_t );
+
+	// ESTA SUSPENDIDO ?
+	memcpy(buffer->stream, &pcb->is_suspended, sizeof(int));
+	offset += sizeof(int);
 
 
 	// (cant instrucciones)
