@@ -83,21 +83,24 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 			}
 			if (encontrado) break;
 
-
 		}
-
 
 	}
 
 
 	if(marco_a_desalojar->pagina->modificado == 1){
-		swapear_pagina_en_disco(pcb_id, memoria, marco_a_desalojar, pagina_sin_frame);
+
+		swapear_pagina_en_disco(pcb_id, memoria, marco_a_desalojar, marco_a_desalojar->pagina);
 		*marco_to_swap = marco_a_desalojar->numero_marco;
 	}
+
+	marco_a_desalojar->pagina->presencia = 0;
 
 	log_info(memoria->memoria_log, "PAGINA %d REEMPLAZADA POR PAGINA %d", get_numero_pagina_real(marco_a_desalojar->pagina), get_numero_pagina_real(pagina_sin_frame));
 	pagina_sin_frame->marco_usado = marco_a_desalojar;
 	marco_a_desalojar->pagina = pagina_sin_frame;
+
+	pagina_sin_frame->presencia = 1;
 
 	//CARGAR LA PAG A MEMORIA
 	sacar_pagina_de_archivo(pcb_id, memoria, marco_a_desalojar, pagina_sin_frame);

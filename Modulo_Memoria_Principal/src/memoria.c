@@ -108,6 +108,8 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			//log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
 
 			int data = leer_memoria(memoria, dir_fisica);
+			//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR READ", memoria->memoria_config->retardo_memoria/1000);
+			sleep(memoria->memoria_config->retardo_memoria/1000);
 			log_info(memoria->memoria_log, "SE LEE EL VALOR: %d EN LA DIRECCION %d\n", data, dir_fisica);
 			send(cliente_fd, &data, sizeof(int), 0);
 		}
@@ -118,6 +120,8 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			recv(cliente_fd, &direccion_hacia, sizeof(int), MSG_WAITALL);
 			recv(cliente_fd, &direccion_desde, sizeof(int), MSG_WAITALL);
 
+			//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR COPY", memoria->memoria_config->retardo_memoria/1000);
+			sleep(memoria->memoria_config->retardo_memoria/1000);
 			int valor_copiado = copiar_memoria(memoria, direccion_desde, direccion_hacia);
 
 			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DEL VALOR %d DE %d A %d\n", valor_copiado, direccion_desde, direccion_hacia);
@@ -130,6 +134,8 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			recv(cliente_fd, &valor, sizeof(int), MSG_WAITALL);
 			recv(cliente_fd, &direccion, sizeof(int), MSG_WAITALL);
 
+			//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR WRITE", memoria->memoria_config->retardo_memoria/1000);
+			sleep(memoria->memoria_config->retardo_memoria/1000);
 			escribir_memoria(memoria, direccion, valor);
 
 			log_info(memoria->memoria_log, "SE EJECUTO LA ESCRITURA DEL VALOR: %d EN LA DIR: %d\n", valor, direccion);
@@ -180,8 +186,8 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			} else if(op_code_memoria == SWAP){
 
-				//log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap / 1000);
-				//sleep(memoria->memoria_config->retardo_swap/1000);
+				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap / 1000);
+				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, SWAP);

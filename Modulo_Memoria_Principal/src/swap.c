@@ -42,8 +42,8 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 		pagina_iteracion->presencia = 0;
 		pagina_iteracion->uso = 0;
 		pagina_iteracion->modificado = 0;
-		log_info(memoria->memoria_log, "EMULAMOS RETARDO DE SWAP DE %d SEGUNDOS POR SWAP PROCESO DE PAGINA %d", memoria->memoria_config->retardo_swap/1000, pagina_iteracion->id_pagina);
-		sleep(memoria->memoria_config->retardo_swap/1000);
+		//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE SWAP DE %d SEGUNDOS POR SWAP PROCESO DE PAGINA %d", memoria->memoria_config->retardo_swap/1000, pagina_iteracion->id_pagina);
+		//sleep(memoria->memoria_config->retardo_swap/1000);
 		swapear_pagina_en_disco(pcb_proceso->id, memoria, marco_iteracion, pagina_iteracion);
 
 		marco_iteracion->pagina = NULL;
@@ -107,11 +107,11 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 
 }
 
-//CARGAR TODAS LAS PAGS EN EL ARCHIVO DE ENTRADA PARA QUE ESTA FUNCION SIEMPRE!!! ENCUENTRE LA PAG EN EL ARCHIVO
-//Esta funcion recibe una pagina y la busca en el archivo del proceso
+
 void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_sacar) {
     char* path = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
-
+    //log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS", memoria->memoria_config->retardo_memoria/1000);
+    sleep(memoria->memoria_config->retardo_memoria/1000);
     log_info(memoria->memoria_log, "SE EMPIEZA A BUSCAR PAGINA EN ARCHIVO POR PAGE FAULT DEL PROCESO %d", pcb_id);
     log_info(memoria->memoria_log, "LA PAGINA QUE SE QUIERE ENCONTRAR ES %d", pagina_a_sacar->id_pagina);
     log_info(memoria->memoria_log, "EMULAMOS RETARDO DE SWAP DE %d SEGUNDOS POR PAGE FAULT", memoria->memoria_config->retardo_swap/1000);
@@ -124,7 +124,6 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
     void* contenido_archivo = malloc(tamanio);
     fread(contenido_archivo, tamanio, 1, archivo_proceso);
 
-    //0-1..255
 	int offset = 0;
 	while(1) {
 		int id_pagina;

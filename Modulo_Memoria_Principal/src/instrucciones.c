@@ -2,15 +2,11 @@
 
 int leer_memoria(t_memoria* memoria, int direccion) {
 	int valor;
-	//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR READ", memoria->memoria_config->retardo_memoria/1000);
-	sleep(memoria->memoria_config->retardo_memoria/1000);
 	memcpy(&valor, memoria->espacio_memoria + direccion, sizeof(int));
 	return valor;
 }
 
 void escribir_memoria(t_memoria* memoria, int direccion, int valor) {
-	//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR WRITE", memoria->memoria_config->retardo_memoria/1000);
-	sleep(memoria->memoria_config->retardo_memoria/1000);
 	memcpy(memoria->espacio_memoria + direccion, &valor, sizeof(int));
 }
 
@@ -37,9 +33,11 @@ int get_marco(t_memoria* memoria, int id_tabla_segundo_nivel, int entrada, int* 
 	t_tabla_paginas_segundo_nivel* tabla= list_get(memoria->tablas_segundo_nivel, id_tabla_segundo_nivel);
 	t_pagina_segundo_nivel* pagina = list_get(tabla->paginas_segundo_nivel, entrada);
 
+
 	if (pagina->presencia == 0) {
 		asignar_frame_a_pagina(memoria, tabla->tabla_1er_nivel, pagina, marco_to_swap, pcb_id);
 	}
+	pagina->uso = 1;
 
 	if (INSTRUCCION == WRITE || INSTRUCCION == COPY) {
 		pagina->modificado = 1;
