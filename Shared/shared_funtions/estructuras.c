@@ -188,7 +188,6 @@ t_pcb* deserializate_pcb(int socket, int* op_code){
 
 void* serializate_pcb(t_pcb* pcb, t_cpu_paquete* paquete, int MENSSAGE){
 	paquete->buffer = malloc(sizeof(t_buffer));
-	loggear_pcb(pcb);
 
 	const int pcb_list_size = list_size(pcb->instrucciones);
 	int size = 0;
