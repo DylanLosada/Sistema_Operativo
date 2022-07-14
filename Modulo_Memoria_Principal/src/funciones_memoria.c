@@ -19,7 +19,7 @@ t_config_memoria* create_config(t_log* log){
 	memoria_config->retardo_swap = config_get_int_value(config, "RETARDO_SWAP");
 	memoria_config->path_swap = strcat(config_get_string_value(config, "PATH_SWAP"), "/");
 
-	log_info(log, "ARCHIVO DE CONFIGURACION CARGADO CON EXITO");
+	log_info(log, "CONFIG: cargada con exito");
 
 	return memoria_config;
 

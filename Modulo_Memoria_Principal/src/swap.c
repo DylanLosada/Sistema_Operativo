@@ -29,7 +29,7 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 	FILE* archivo_proceso;
 
 	archivo_proceso = fopen(path_archivo, "rb");
-	log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO SWAP DEL PROCESO %d CON EL NOMBRE %s", pcb_proceso->id, path_archivo);
+	log_info(memoria->memoria_log, "SWAP (proceso %d): Guardando TODAS las PAGINAS MODIFICADAS", pcb_proceso->id);
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 
@@ -42,26 +42,27 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 		pagina_iteracion->presencia = 0;
 		pagina_iteracion->uso = 0;
 		pagina_iteracion->modificado = 0;
-		//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE SWAP DE %d SEGUNDOS POR SWAP PROCESO DE PAGINA %d", memoria->memoria_config->retardo_swap/1000, pagina_iteracion->id_pagina);
-		//sleep(memoria->memoria_config->retardo_swap/1000);
+
 		swapear_pagina_en_disco(pcb_proceso->id, memoria, marco_iteracion, pagina_iteracion);
 
 		marco_iteracion->pagina = NULL;
 	}
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
-	//log_info(memoria->memoria_log, "CANTIDAD DE MARCOS LIBRE GLOBALES ES %d", list_size(memoria->marcos_libres));
+
 	fclose(archivo_proceso);
 }
 
-//Solamente se usa al principio! Esta funcion solo escribe
+
 void hacer_swap_de_pagina_inicio(t_tabla_entradas_primer_nivel* tabla_primer_nivel, t_pagina_segundo_nivel* pagina_iteracion, int id_tabla_segundo_nivel, FILE* archivo_proceso, t_memoria* memoria){
+	// Solamente se usa al principio! Esta funcion solo escribe. No se simula RETARDO ya que es una interaccion con kernel y no CPU (issue 2730).
+
 	fseek(archivo_proceso, 0 , SEEK_END);
 	int id_pagina = pagina_iteracion->id_pagina;
 	void* contenido_de_pagina = malloc(memoria->memoria_config->tamanio_pagina);
-	memcpy(contenido_de_pagina, memoria->espacio_memoria, memoria->memoria_config->tamanio_pagina);//No nos importa que escriba, solo que ocupe los bytes que ocupa una pag
+	memcpy(contenido_de_pagina, memoria->espacio_memoria, memoria->memoria_config->tamanio_pagina); // No nos importa que escriba, solo que ocupe los bytes que ocupa una pagina.
 
-	//log_info(memoria->memoria_log, "SE SUBE AL ARCHIVO SWAP LA PAGINA %d DE LA TABLA %d DE SEGUNDO NIVEL", id_pagina, id_tabla_segundo_nivel);
+
 	fwrite(&contenido_de_pagina, memoria->memoria_config->tamanio_pagina, 1, archivo_proceso);
 	fwrite(&id_pagina, sizeof(int), 1, archivo_proceso);
 	fwrite(&id_tabla_segundo_nivel, sizeof(int), 1, archivo_proceso);
@@ -75,8 +76,6 @@ void pasar_marco_ocupado_a_marco_libre_global(t_tabla_entradas_primer_nivel* tab
 
 		t_marco* marco_iteracion = list_remove(tabla_primer_nivel->marcos_usados, 0);
 		list_add(memoria->marcos_libres, marco_iteracion);
-		//log_info(memoria->memoria_log, "MARCO NUMERO %d OCUPADO PASA A LISTA DE MARCOS LIBRES GLOBALES", marco_iteracion->numero_marco);
-
 	}
 
 }
@@ -89,37 +88,34 @@ void agregar_frames_libres_del_proceso_a_lista_global(t_tabla_entradas_primer_ni
 	for(marco_actual = 0; marco_actual < marcos_libres_size; marco_actual++){
 		t_marco* marco_libre = list_remove(marcos_libres_proceso, 0);
 		list_add(memoria->marcos_libres, marco_libre);
-		//log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL SISTEMA", marco_libre->numero_marco);
-
 	}
 }
 
-//El reswap del proceso lo unico q hace es reservarle frames al proceso
+
 void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
+	// Reserva de frames para el proceso (mover de marcos libres globales a marcos libres del proceso).
+
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel_del_proceso = obtener_tabla_primer_nivel_del_proceso(pcb_cliente, memoria);
 
 	for(int marco_iteracion = 0; marco_iteracion < marcos_por_proceso; marco_iteracion++){
 		t_marco* marco_asignado = list_remove(memoria->marcos_libres, 0);
 		list_add(tabla_primer_nivel_del_proceso->marcos_libres, marco_asignado);
-		//log_info(memoria->memoria_log, "MARCO NUMERO %d AGREGADO A FRAMES LIBRES DEL PROCESO %d", marco_asignado->numero_marco, pcb_cliente->id);
 	}
 
 }
 
 
 void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_sacar) {
+    log_info(memoria->memoria_log, "RESWAP PAGINA (page fault): buscando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina_a_sacar->id_pagina, pcb_id);
+    sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
+
+
     char* path = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
-    //log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS", memoria->memoria_config->retardo_memoria/1000);
-    sleep(memoria->memoria_config->retardo_memoria/1000);
-    log_info(memoria->memoria_log, "SE EMPIEZA A BUSCAR PAGINA EN ARCHIVO POR PAGE FAULT DEL PROCESO %d", pcb_id);
-    log_info(memoria->memoria_log, "LA PAGINA QUE SE QUIERE ENCONTRAR ES %d", pagina_a_sacar->id_pagina);
-    log_info(memoria->memoria_log, "EMULAMOS RETARDO DE SWAP DE %d SEGUNDOS POR PAGE FAULT", memoria->memoria_config->retardo_swap/1000);
-    sleep(memoria->memoria_config->retardo_swap/1000);
+
     FILE* archivo_proceso = fopen(path, "rb");
     fseek(archivo_proceso, 0, SEEK_SET);
     int tamanio = tamanio_actual_del_archivo(archivo_proceso);
-    //log_info(memoria->memoria_log, "SE ABRE EL ARCHIVO DEL PROCESO %d QUE PESA %d BYTES", pcb_id, tamanio);
 
     void* contenido_archivo = malloc(tamanio);
     fread(contenido_archivo, tamanio, 1, archivo_proceso);
@@ -137,18 +133,15 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 		offset += sizeof(int);
 
 		if(id_pagina == pagina_a_sacar->id_pagina && id_tabla_segundo_nivel == pagina_a_sacar->tabla_segundo_nivel){
-
-			//log_info(memoria->memoria_log, "SE ENCONTRO LA PAGINA BUSCADA, COPIANDO CONTENIDO");
-
 			memcpy(memoria->espacio_memoria + (marco->numero_marco * memoria->memoria_config->tamanio_pagina), contenido_pagina_iteracion, (memoria->memoria_config->tamanio_pagina));
 
-			//log_info(memoria->memoria_log, "CONTENIDO DE LA PAGINA EN ARCHIVO CARGADA A MEMORIA");
 			free(contenido_pagina_iteracion);
 			fseek(archivo_proceso, 0, SEEK_SET);
 			fclose(archivo_proceso);
 			marco->pagina = pagina_a_sacar;
 			break;
 		}
+
 		free(contenido_pagina_iteracion);
 	}
 
@@ -156,6 +149,10 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 }
 
 void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_agregar) {
+    log_info(memoria->memoria_log, "SWAP PAGINA: actualizando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina_a_agregar->id_pagina, pcb_id);
+    sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
+
+
     char* path_proceso = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
     void* contenido_pagina = malloc(memoria->memoria_config->tamanio_pagina);
     memcpy(contenido_pagina, memoria->espacio_memoria + marco->numero_marco * (memoria->memoria_config->tamanio_pagina), memoria->memoria_config->tamanio_pagina);
@@ -197,7 +194,7 @@ void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 	free(contenido_pagina);
 }
 
-int tamanio_actual_del_archivo(FILE* archivo_proceso) {    // en bytes
+int tamanio_actual_del_archivo(FILE* archivo_proceso) {
     fseek(archivo_proceso, 0, SEEK_END);
     int tamanio = ftell(archivo_proceso);
     fseek(archivo_proceso, 0, SEEK_SET);

@@ -29,13 +29,13 @@ int main(void) {
     memoria->espacio_memoria = malloc(tamanio_memoria);
 
     int tamanio_paginas = memoria->memoria_config->tamanio_pagina;
-    log_info(memoria->memoria_log,"SE TIENEN %0.f MARCOS DE %d BYTES EN MEMORIA PRINCIPAL", ceil(tamanio_memoria / tamanio_paginas), tamanio_paginas);
+    log_info(memoria->memoria_log,"Se tienen %0.f MARCOS de %d BYTES en MEMORIA PRINCIPAL", ceil(tamanio_memoria / tamanio_paginas), tamanio_paginas);
 
     //-------------------CREO DIRECTORIO PARA LOS ARCHIVOS SWAP------------------------------
 
 	mkdir(memoria->memoria_config->path_swap, 0777);
 
-	log_info(memoria->memoria_log,"SE CREA EL DIRECTORIO SWAP EN LA RUTA %s", memoria->memoria_config->path_swap);
+	log_info(memoria->memoria_log,"SWAP: directorio creado en %s", memoria->memoria_config->path_swap);
     //Creo un hilo para lo q es manejar conexiones, el otro flujo puede seguir para pedirle cosas a la memoria desde consola
 	pthread_t hilo_servidor;
 	pthread_create(&hilo_servidor, NULL, manejar_conexion,(void*)memoria);
@@ -59,7 +59,6 @@ void inicializar_lista_de_marcos_libres(int cantidad_de_frames, t_memoria* memor
 		list_add(marcos_libres_para_asignar, marco);
 	}
 	memoria->marcos_libres = marcos_libres_para_asignar;
-	log_info(memoria->memoria_log,"SE COLOCAN TODOS LOS MARCOS DE MEMORIA COMO MARCOS LIBRES");
 }
 
 
@@ -75,7 +74,7 @@ t_memoria* memoria = (t_memoria*) void_args;
 		t_args_administrar_cliente* args_administrar_cliente = malloc(sizeof(t_args_administrar_cliente));
 		args_administrar_cliente->semaforo_conexion = semaforo_conexion;
 		int cliente_fd = wait_client(server_fd, memoria->memoria_log, "Cliente", "Memoria");
-		log_info(memoria->memoria_log,"LLEGA UN CLIENTE A MEMORIA...");
+		log_info(memoria->memoria_log,"REQUEST: LLEGA UN CLIENTE");
 		args_administrar_cliente->socket = cliente_fd;
 		args_administrar_cliente->memoria = memoria;
 		pthread_t hilo_servidor;
@@ -94,23 +93,20 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 		pthread_mutex_lock(args_administrar_cliente->semaforo_conexion);
 		op_memoria_message op_code_memoria = op_code;
 
-
 		if(op_code_memoria == HANDSHAKE){
-
 			hacer_handshake_con_cpu(cliente_fd, memoria);
-
 		}
-		// CPU Y SUS PEDIDOS
+
+
+		// Pedidos de CPU:
 		else if (op_code_memoria == READ){
-			// ESTE ESTA BIEN
 			int dir_fisica;
 			recv(cliente_fd, &dir_fisica, sizeof(int), MSG_WAITALL);
-			//log_info(memoria->memoria_log, "LA DIRECCION DE MEMORIA LEIDA: %d", dir_fisica);
 
-			int data = leer_memoria(memoria, dir_fisica);
-			//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR READ", memoria->memoria_config->retardo_memoria/1000);
 			sleep(memoria->memoria_config->retardo_memoria/1000);
-			log_info(memoria->memoria_log, "SE LEE EL VALOR: %d EN LA DIRECCION %d\n", data, dir_fisica);
+			int data = leer_memoria(memoria, dir_fisica);
+			log_info(memoria->memoria_log, "READ (direccion % d): VALOR %d. Retardo simulado.\n", dir_fisica, data);
+
 			send(cliente_fd, &data, sizeof(int), 0);
 		}
 		else if (op_code_memoria == COPY){
@@ -120,11 +116,10 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			recv(cliente_fd, &direccion_hacia, sizeof(int), MSG_WAITALL);
 			recv(cliente_fd, &direccion_desde, sizeof(int), MSG_WAITALL);
 
-			//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR COPY", memoria->memoria_config->retardo_memoria/1000);
 			sleep(memoria->memoria_config->retardo_memoria/1000);
 			int valor_copiado = copiar_memoria(memoria, direccion_desde, direccion_hacia);
+			log_info(memoria->memoria_log, "COPY (direccion %d a %d): VALOR %d. Retardo simulado.\n", direccion_desde, direccion_hacia, valor_copiado);
 
-			log_info(memoria->memoria_log, "SE EJECUTO EL COPIADO DEL VALOR %d DE %d A %d\n", valor_copiado, direccion_desde, direccion_hacia);
 			send(cliente_fd, &op_code, sizeof(int), 0);
 		}
 		else if (op_code_memoria == WRITE){
@@ -134,25 +129,26 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 			recv(cliente_fd, &valor, sizeof(int), MSG_WAITALL);
 			recv(cliente_fd, &direccion, sizeof(int), MSG_WAITALL);
 
-			//log_info(memoria->memoria_log, "EMULAMOS RETARDO DE MEMORIA DE %d SEGUNDOS POR WRITE", memoria->memoria_config->retardo_memoria/1000);
 			sleep(memoria->memoria_config->retardo_memoria/1000);
 			escribir_memoria(memoria, direccion, valor);
+			log_info(memoria->memoria_log, "WRITE (direccion %d): VALOR %d. Retardo simulado.\n", direccion, valor);
 
-			log_info(memoria->memoria_log, "SE EJECUTO LA ESCRITURA DEL VALOR: %d EN LA DIR: %d\n", valor, direccion);
 			send(cliente_fd, &op_code, sizeof(int), 0);
 		}
 		else if (op_code_memoria == TABLA_SEGUNDO_NIVEL){
-			// ESTA BIEN ESTO
 			int marco_to_swap = -1;
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
-			//log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL: %d Y LA ENTRADA DE PRIMER NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+
+			sleep(memoria->memoria_config->retardo_memoria/1000);
 
 			int tabla_segundo_nivel = get_tabla_segundo_nivel(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
 
 			void* stream = malloc(sizeof(int)*2);
 			memcpy(stream, &tabla_segundo_nivel, sizeof(int));
 			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
+			log_info(memoria->memoria_log, "PEDIDO (tabla de segundo nivel %d). Retardo simulado.\n", tabla_segundo_nivel);
+
 			send(cliente_fd, stream, 2*sizeof(int), 0);
 		}
 		else if (op_code_memoria == MARCO){
@@ -161,46 +157,44 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 			t_administrar_mmu* administrar_mmu = malloc(sizeof(t_administrar_mmu));
 			deserialize_mmu_memoria(administrar_mmu, cliente_fd);
-			//log_info(memoria->memoria_log, "LA TABLA DE SEGUNDO NIVEL: %d Y LA ENTRADA DE SEGUNDO NIVEL %d", administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel);
+
+			sleep(memoria->memoria_config->retardo_memoria/1000);
 
 			int marco = get_marco(memoria, administrar_mmu->tabla_nivel, administrar_mmu->entrada_nivel, &marco_to_swap, administrar_mmu->instruccion, administrar_mmu->pcb_id);
-			log_info(memoria->memoria_log, "EL MARCO A ACCEDER ES EL %d", marco);
 			void* stream = malloc(sizeof(int)*2);
 			memcpy(stream, &marco, sizeof(int));
 			memcpy(stream + sizeof(int), &marco_to_swap, sizeof(int));
+			log_info(memoria->memoria_log, "PEDIDO (numero de marco %d). Retardo simulado.\n", marco);
+
 			send(cliente_fd, stream, 2*sizeof(int), 0);
 		}
 		// KERNEL
 		else{
 			t_pcb* pcb_cliente = deserializate_pcb_memoria(cliente_fd);
 
-			if(op_code_memoria == NEW){
+			if (op_code_memoria == NEW){
 
 				iniciar_proceso(pcb_cliente, cliente_fd, memoria);
 
-			}else if (op_code_memoria == DELETE){
+			} else if (op_code_memoria == DELETE){
 
 				t_pcb* pcb_actualizado = eliminar_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE ELIMINAN TODAS LAS ESTRUCTURAS Y ARCHIVO SWAP DEL PROCESO %d EN MEMORIA\n", pcb_cliente->id);
+				log_info(memoria->memoria_log, "PROCESO %d ELIMINADO: estructuras y archivo SWAP elimilado.\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_actualizado, cliente_fd, DELETE);
 
-			} else if(op_code_memoria == SWAP){
+			} else if (op_code_memoria == SWAP){
 
-				log_info(memoria->memoria_log, "EMULAMOS EL RETARDO DE SWAP %d SEGUNDOS", memoria->memoria_config->retardo_swap / 1000);
-				sleep(memoria->memoria_config->retardo_swap/1000);
 				hacer_swap_del_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE HACE SWAP DEL PROCESO %d PASANDO LAS PAGINAS DE MEMORIA A SU ARCHIVO\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, SWAP);
 
-			}else if(op_code_memoria == RE_SWAP){
-				sleep(memoria->memoria_config->retardo_swap/1000);
+			} else if (op_code_memoria == RE_SWAP){
 				hacer_reswap_del_proceso(pcb_cliente, memoria);
-				log_info(memoria->memoria_log, "SE HACE RESWAP DEL PROCESO %d PASANDO LAS PAGINAS DE ARCHIVO A MEMORIA\n", pcb_cliente->id);
 				responder_pcb_a_cliente(pcb_cliente, cliente_fd, RE_SWAP);
 
-			}else{
+			} else {
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");
 			}
+
 			//free(pcb_cliente);
 		}
 		pthread_mutex_unlock(args_administrar_cliente->semaforo_conexion);
@@ -213,12 +207,13 @@ void hacer_handshake_con_cpu(int cliente_fd, t_memoria* memoria){
 	int tamanio_pagina = memoria->memoria_config->tamanio_pagina;
 	int entradas_por_tabla = memoria->memoria_config->entradas_por_tabla;
 
-	log_info(memoria->memoria_log, "CONECTADO A CPU, REALIZANDO HANDSHAKE.");
-	void* a_enviar = malloc(2*sizeof(int));
+	log_info(memoria->memoria_log, "HANDSHAKE CPU: conectado, realizando handshake.");
+	void* a_enviar = malloc(2 * sizeof(int));
 	memcpy(a_enviar, &tamanio_pagina, sizeof(int));
 	memcpy(a_enviar + sizeof(int), &entradas_por_tabla, sizeof(int));
-	send_data_to_server(cliente_fd, a_enviar, 2*sizeof(int));
-	log_info(memoria->memoria_log, "DATOS ENVIADOS A CPU.");
+	send_data_to_server(cliente_fd, a_enviar, 2 * sizeof(int));
+
+	log_info(memoria->memoria_log, "HANDSHAKE CPU: finalizado CORRECTAMENTE.");
 }
 
 void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
@@ -227,20 +222,18 @@ void iniciar_proceso(t_pcb* pcb_cliente, int cliente_fd, t_memoria* memoria){
     int tamanio_proceso = pcb_cliente->processSize;
 
 
-    log_info(memoria->memoria_log, "INICIANDO PROCESO %d QUE PESA %d BYTES", id_proceso, tamanio_proceso);
-
     t_pcb* pcb_actualizado = guardar_proceso_en_paginacion(pcb_cliente, memoria);
-
 
     if(pcb_actualizado->tabla_paginas >= 0){
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, NEW);
-    		log_info(memoria->memoria_log, "SE GUARDA EL PROCESO %d EN MEMORIA", id_proceso);
+    		log_info(memoria->memoria_log, "PROCESO %d INICIADO y guardado en memoria (%d bytes).", id_proceso, tamanio_proceso);
 
     	}else{
     		responder_pcb_a_cliente(pcb_actualizado , cliente_fd, ERROR);
-    		log_info(memoria->memoria_log, "NO HAY LUGAR PARA GUARDAR EL PROCESO %d EN MEMORIA", id_proceso);
+    		log_info(memoria->memoria_log, "NO HAY LUGAR PARA GUARDAR EL PROCESO %d EN MEMORIA (%d bytes).", id_proceso, tamanio_proceso);
 
     	}
+
     //free(pcb_actualizado->tabla_paginas);
     free(pcb_actualizado);
 }
@@ -255,6 +248,7 @@ void responder_pcb_a_cliente(t_pcb* pcb_actualizado , int cliente_fd, op_memoria
 			error_show("OCURRIO UN PROBLEMA INTENTANDO RESPONDERLE AL CLIENTE, ERROR: IMPOSIBLE RESPONDER");
 			exit(1);
 		}
+
 		free(pcb_serializate);
 	}
 }
@@ -268,7 +262,7 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	FILE* archivo_proceso;
 
 	archivo_proceso = fopen(path_archivo, "wt");
-	log_info(memoria->memoria_log, "SE CREA EL ARCHIVO SWAP DEL PROCESO %d EN LA RUTA %s", pcb_cliente->id, path_archivo);
+	log_info(memoria->memoria_log, "ARCHIVO CREADO: Proceso %d en RUTA %s", pcb_cliente->id, path_archivo);
 
 	//_____________________CREACION DE TABLAS______________________________
 	int tamanio_proceso = pcb_cliente->processSize;
@@ -321,9 +315,6 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 				list_add(tabla_segundo_nivel->paginas_segundo_nivel, pagina_segundo_nivel);
 				hacer_swap_de_pagina_inicio(tabla_primer_nivel, pagina_segundo_nivel, tabla_segundo_nivel->id_tabla, archivo_proceso, memoria);
-
-				//int tamanio = tamanio_actual_del_archivo(archivo_proceso);
-				//log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
 			}
 
 		} else {
@@ -342,12 +333,10 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 				hacer_swap_de_pagina_inicio(tabla_primer_nivel, pagina_segundo_nivel, tabla_segundo_nivel->id_tabla, archivo_proceso, memoria);
 				paginas_necesarias--;
 
-				//int tamanio = tamanio_actual_del_archivo(archivo_proceso);
-				//log_info(memoria->memoria_log, "EL ARCHIVO PESA %d BYTES", tamanio);
-
 			}
 		}
-		//Aca agregamos el id de la tabla de segundo nivel
+
+		// Agregamos el ID de la tabla de segundo nivel.
 		list_add(tabla_primer_nivel->entradas, tabla_segundo_nivel->id_tabla);
 
 		agregar_tabla_de_segundo_nivel_a_memoria(memoria, tabla_segundo_nivel);
@@ -361,7 +350,6 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 	//_________________CERRADO DE ARCHIVO DEL PROCESO_____________________
 
 	fclose(archivo_proceso);
-	//log_info(memoria->memoria_log, "SE CIERRA EL ARCHIVO SWAP DEL PROCESO %d DE LA RUTA %s", pcb_cliente->id, path_archivo);
 
 	return pcb_cliente;
 
@@ -392,20 +380,15 @@ void aumentar_contador_tablas_segundo_nivel(t_memoria* memoria){
 //-------------------------------ELIMINAR PROCESO----------------------------------------------------
 t_pcb* eliminar_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 
-	log_info(memoria->memoria_log, "INICIO A BORRAR LAS ESTRUCTURAS DEL PROCESO %d EN MEMORIA", pcb_proceso->id);
-
 	// PASAR MARCOS OCUPADOS A LIBRES GLOBALES
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
-	//log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS OCUPADOS LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
 
 	// PASAR LIBRES A LIBRES GLOBALES
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
-	//log_info(memoria->memoria_log,"TERMINAMOS DE PASAR TODOS LOS MARCOS LIBRES LOCALES DEL PROCESO %d A LIBRES GLOBALES", pcb_proceso->id);
 
 	// ELIMINAR SWAP
 	eliminar_archivo_swap(memoria, pcb_proceso);
-	//log_info(memoria->memoria_log,"ELIMINAMOS ARCHIVO SWAP DEL PROCESO %d", pcb_proceso->id);
 
 	return pcb_proceso;
 }
@@ -424,7 +407,6 @@ t_tabla_entradas_primer_nivel* obtener_tabla_primer_nivel_del_proceso(t_pcb* pcb
 			t_tabla_entradas_primer_nivel* tabla_primer_nivel_de_la_iteracion = list_get(tablas_primer_nivel_del_sistema, tabla_actual);
 			int id_tabla_de_la_iteracion = tabla_primer_nivel_de_la_iteracion->id_tabla;
 			if(id_tabla_proceso == id_tabla_de_la_iteracion){
-				//log_info(memoria->memoria_log, "LA TABLA DE PRIMER NIVEL DEL PROCESO %d es %d", pcb_proceso->id, id_tabla_de_la_iteracion);
 				return tabla_primer_nivel_de_la_iteracion;
 			}
 		}

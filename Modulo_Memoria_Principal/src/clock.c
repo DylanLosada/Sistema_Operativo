@@ -30,9 +30,9 @@ void aumentar_puntero(t_tabla_entradas_primer_nivel* tabla_1er_nivel, int marcos
 void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1er_nivel, t_pagina_segundo_nivel* pagina_sin_frame, int* marco_to_swap, int pcb_id){
 
 	if(memoria->memoria_config->algoritmo_reemplazo == CLOCK){
-		log_info(memoria->memoria_log, "EL PROCESO OCUPA TODOS LOS MARCOS POR PROCESO DISPONIBLE, INICIANDO CLOCK");
+		log_info(memoria->memoria_log, "CLOCK: iniciado");
 	}else{
-		log_info(memoria->memoria_log, "EL PROCESO OCUPA TODOS LOS MARCOS POR PROCESO DISPONIBLE, INICIANDO CLOCK MODIFICADO");
+		log_info(memoria->memoria_log, "CLOCK-M: iniciado");
 	}
 
 	int marcos_por_proceso = memoria->memoria_config->marcos_proceso;
@@ -96,7 +96,7 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 	marco_a_desalojar->pagina->presencia = 0;
 
-	log_info(memoria->memoria_log, "PAGINA %d REEMPLAZADA POR PAGINA %d", get_numero_pagina_real(marco_a_desalojar->pagina), get_numero_pagina_real(pagina_sin_frame));
+	log_info(memoria->memoria_log, "CLOCK: PAGINA %d REEMPLAZADA POR PAGINA %d", get_numero_pagina_real(marco_a_desalojar->pagina), get_numero_pagina_real(pagina_sin_frame));
 	pagina_sin_frame->marco_usado = marco_a_desalojar;
 	marco_a_desalojar->pagina = pagina_sin_frame;
 
