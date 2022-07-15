@@ -73,7 +73,7 @@ typedef struct{
 	sem_t* has_pcb_blocked;
 	pthread_mutex_t* hasPcb;
 	sem_t* has_pcb_suspended_blocked;
-	pthread_mutex_t* has_pcb_in_io;
+	sem_t* has_pcb_in_io;
 	int TIEMPO_MAX_BLOQUEADO;
 	double ALFA;
 	char* ALGORITMO;
@@ -94,6 +94,7 @@ typedef struct{
 	int socket_memoria;
 	int socket_interrupt;
 	sem_t* sem;
+	sem_t* sem_suspended_ready;
 } t_args_suspended_ready;
 
 typedef struct{
@@ -103,7 +104,7 @@ typedef struct{
 	sem_t* has_pcb_suspended_blocked;
 	sem_t* has_pcb_suspended_ready;
 	pthread_mutex_t* grado_multiprogramacion;
-	pthread_mutex_t* has_pcb_in_io;
+	sem_t* has_pcb_in_io;
 	int TIEMPO_MAX_BLOQUEADO;
 	int socket_memoria;
 	sem_t* sem;
@@ -139,6 +140,7 @@ typedef struct{
 	t_monitor_log* monitor_logger;
 	pthread_mutex_t* grado_multiprogramacion;
 	sem_t* sem;
+	sem_t* sem_suspended_ready;
 	t_queue* pre_pcbs;
 	t_states* states;
 } t_args_long_term_planner;
@@ -169,6 +171,7 @@ typedef struct{
 	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
 	t_sockets_cpu* sockets_cpu;
 	sem_t* sem;
+	sem_t* sem_suspended_ready;
 	t_config_kernel* config_kernel;
 	t_states* states;
 } t_args_short_term_planner;
@@ -184,6 +187,7 @@ typedef struct{
 	pthread_mutex_t* pre_pcbs_mutex;
 	pthread_mutex_t* hasPcb;
 	sem_t* sem;
+	sem_t* sem_suspended_ready;
 	int ESTIMACION_INICIAL;
 	char* ALGORITMO;
 	int socket_interrupt;
