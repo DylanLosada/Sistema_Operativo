@@ -15,7 +15,9 @@ void asignar_frame_a_pagina(t_memoria* memoria, t_tabla_entradas_primer_nivel* t
 	pagina->marco_usado = marco;
 	pagina->presencia = 1;
 
-	//CARGAR LA PAG A MEMORIA
+	//CARGAR LA PAG A MEMORIA pongo el sleep aca para solucionar el tema de que solo haya un sleep de swap por swap de proceso entero
+	log_info(memoria->memoria_log, "RESWAP PAGINA (page fault): buscando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina->id_pagina, pcb_id);
+	sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
 	sacar_pagina_de_archivo(pcb_id, memoria, marco, pagina);
 }
 
@@ -90,6 +92,9 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 	if(marco_a_desalojar->pagina->modificado == 1){
 
+		//pongo el sleep aca para solucionar el tema de que solo haya un sleep de swap por swap de proceso entero
+		log_info(memoria->memoria_log, "SWAP PAGINA: actualizando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", marco_a_desalojar->pagina->id_pagina, pcb_id);
+		sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
 		swapear_pagina_en_disco(pcb_id, memoria, marco_a_desalojar, marco_a_desalojar->pagina);
 		*marco_to_swap = marco_a_desalojar->numero_marco;
 	}
@@ -102,7 +107,9 @@ void clock_algoritmo(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_1e
 
 	pagina_sin_frame->presencia = 1;
 
-	//CARGAR LA PAG A MEMORIA
+	//CARGAR LA PAG A MEMORIA pongo el sleep aca para solucionar el tema de que solo haya un sleep de swap por swap de proceso entero
+	log_info(memoria->memoria_log, "RESWAP PAGINA (page fault): buscando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina_sin_frame->id_pagina, pcb_id);
+	sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
 	sacar_pagina_de_archivo(pcb_id, memoria, marco_a_desalojar, pagina_sin_frame);
 }
 

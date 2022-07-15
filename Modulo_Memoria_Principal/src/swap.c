@@ -24,12 +24,13 @@ char* obtener_path_swap_del_archivo_del_proceso(int pcb_id, t_memoria* memoria){
 
 void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 
-	char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_proceso->id, memoria);
+	//char* path_archivo = obtener_path_swap_del_archivo_del_proceso(pcb_proceso->id, memoria);
 
-	FILE* archivo_proceso;
+	//FILE* archivo_proceso;
 
-	archivo_proceso = fopen(path_archivo, "rb");
-	log_info(memoria->memoria_log, "SWAP (proceso %d): Guardando TODAS las PAGINAS MODIFICADAS", pcb_proceso->id);
+	//archivo_proceso = fopen(path_archivo, "rb");
+	log_info(memoria->memoria_log, "SWAP (proceso %d): Guardando TODAS las PAGINAS MODIFICADAS. Simulando retardo.", pcb_proceso->id);
+	sleep(memoria->memoria_config->retardo_swap/1000);
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = obtener_tabla_primer_nivel_del_proceso(pcb_proceso, memoria);
 
@@ -50,7 +51,7 @@ void hacer_swap_del_proceso(t_pcb* pcb_proceso, t_memoria* memoria){
 	pasar_marco_ocupado_a_marco_libre_global(tabla_primer_nivel, memoria);
 	agregar_frames_libres_del_proceso_a_lista_global(tabla_primer_nivel, memoria);
 
-	fclose(archivo_proceso);
+	//fclose(archivo_proceso);
 }
 
 
@@ -107,8 +108,8 @@ void hacer_reswap_del_proceso(t_pcb* pcb_cliente, t_memoria* memoria){
 
 
 void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_sacar) {
-    log_info(memoria->memoria_log, "RESWAP PAGINA (page fault): buscando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina_a_sacar->id_pagina, pcb_id);
-    sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
+    //log_info(memoria->memoria_log, "RESWAP PAGINA (page fault): buscando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina_a_sacar->id_pagina, pcb_id);
+    //sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
 
 
     char* path = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
@@ -149,8 +150,8 @@ void sacar_pagina_de_archivo(int pcb_id, t_memoria* memoria, t_marco* marco, t_p
 }
 
 void swapear_pagina_en_disco(int pcb_id, t_memoria* memoria, t_marco* marco, t_pagina_segundo_nivel* pagina_a_agregar) {
-    log_info(memoria->memoria_log, "SWAP PAGINA: actualizando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina_a_agregar->id_pagina, pcb_id);
-    sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
+    //log_info(memoria->memoria_log, "SWAP PAGINA: actualizando PAGINA %d EN ARCHIVO (proceso %d). Simulando retardo.", pagina_a_agregar->id_pagina, pcb_id);
+    //sleep(memoria->memoria_config->retardo_memoria/1000 + memoria->memoria_config->retardo_swap/1000);
 
 
     char* path_proceso = obtener_path_swap_del_archivo_del_proceso(pcb_id, memoria);
