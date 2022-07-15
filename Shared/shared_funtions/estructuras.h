@@ -6,6 +6,7 @@
 #include <commons/log.h>
 #include <commons/string.h>
 #include<sys/socket.h>
+#include<time.h>
 
 typedef struct{
 	int processSize;
@@ -58,8 +59,9 @@ typedef struct{
 	int rafaga;
 	int time_io;
 	int time_excecuted_rafaga;
-	clock_t time_blocked;
-	clock_t time_in_ready;
+	time_t  time_blocked;
+	time_t  time_in_ready;
+	int is_suspended;
 	t_list* instrucciones;
 } t_pcb;
 
