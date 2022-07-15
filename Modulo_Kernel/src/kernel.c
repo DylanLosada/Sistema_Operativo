@@ -1,7 +1,7 @@
 #include "kernel.h"
 
 
-int main(void) {
+int main(int argc, char** argv) {
 	pthread_mutex_t* mutex_logger = malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init(mutex_logger, NULL);
 	pthread_mutex_t* mutex = malloc(sizeof(pthread_mutex_t));
@@ -18,7 +18,7 @@ int main(void) {
 
 	kernel->kernel_log = kernel_logger;
 
-	kernel->kernel_config = create_config(kernel_logger);
+	kernel->kernel_config = create_config(kernel_logger, argv[1]);
 
 	kernel->kernel_socket = start_kernel(kernel);
 

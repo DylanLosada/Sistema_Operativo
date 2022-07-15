@@ -1,12 +1,12 @@
 #include "cpu.h"
 
-int main() {
+int main(int argc, char** argv) {
 
 	t_cpu* cpu = malloc(sizeof(t_cpu));
 	t_log* cpu_logger = log_create("cpu.log", "CPU_MAIN", 1, LOG_LEVEL_DEBUG);
 
 	cpu->cpu_log = cpu_logger;
-	cpu->cpu_config = create_config_cpu(cpu_logger);
+	cpu->cpu_config = create_config_cpu(cpu_logger, argv[1]);
 	cpu->tlb = list_create();
 	cpu->last_executed_pcb = -1;
 	wait_handshake(cpu, cpu->cpu_config->PUERTO_MEMORIA, cpu->cpu_config->IP_MEMORIA);

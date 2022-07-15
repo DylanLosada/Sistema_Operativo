@@ -39,6 +39,6 @@ typedef struct{
 	int kernel_socket;
 }t_kernel;
 
-t_config_kernel* create_config(t_log* log);
+t_config_kernel* create_config(t_log* log, char* path_config);
 
 #endif

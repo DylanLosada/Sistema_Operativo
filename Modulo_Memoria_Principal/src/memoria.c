@@ -1,12 +1,12 @@
 #include "memoria.h"
 
-int main(void) {
+int main(int argc, char** argv) {
 	t_memoria* memoria = malloc(sizeof(t_memoria));
 
 	memoria->memoria_log = log_create("memoria.log", "Modulo_Memoria", 1, LOG_LEVEL_DEBUG);
 	log_info(memoria->memoria_log, "--------------------------------------------\n");
 
-	t_config_memoria* config_memoria = create_config(memoria->memoria_log);
+	t_config_memoria* config_memoria = create_config(memoria->memoria_log, argv[1]);
 
 	memoria->memoria_config= config_memoria;
 

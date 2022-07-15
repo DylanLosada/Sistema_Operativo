@@ -79,7 +79,7 @@ void hacer_handshake_con_cpu(int cliente_fd, t_memoria* memoria);
 t_list* guardar_proceso(int idProceso, int tamanio_proceso);
 t_list* guardar_proceso_en_paginas(int idProceso, int tamanio);
 int start_memoria(t_memoria* memoria);
-t_config_memoria* create_config(t_log* log);
+t_config_memoria* create_config(t_log* log, char* path_config);
 void aumentar_contador_tablas_primer_nivel(t_memoria* memoria);
 void aumentar_contador_tablas_segundo_nivel(t_memoria* memoria);
 void agregar_tabla_de_primer_nivel_a_memoria(t_memoria* memoria, t_tabla_entradas_primer_nivel* tabla_primer_nivel);
