@@ -10,6 +10,7 @@ int main(void) {
 
 	memoria->memoria_config= config_memoria;
 
+
     int server_fd = start_memoria(memoria);
 
     memoria->server_fd = server_fd;
@@ -261,7 +262,8 @@ t_pcb* guardar_proceso_en_paginacion(t_pcb* pcb_cliente, t_memoria* memoria){
 
 	int paginas_necesarias = ceil((double) tamanio_proceso / (double) memoria->memoria_config->tamanio_pagina);
 
-	int cant_tablas_segundo_necesarias = ceil(sqrt((double) paginas_necesarias));
+	// int cant_tablas_segundo_necesarias = ceil(sqrt((double) paginas_necesarias));
+	int cant_tablas_segundo_necesarias = memoria->memoria_config->entradas_por_tabla;
 
 	t_tabla_entradas_primer_nivel* tabla_primer_nivel = malloc(sizeof(t_tabla_entradas_primer_nivel));
 

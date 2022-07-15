@@ -370,7 +370,7 @@ void short_term_planner(void* args_short_planner){
 					list_add(args->states->state_blocked->state, pcb_excecuted);
 					pcb_excecuted->time_blocked = time(NULL);
 					sem_post(has_pcb_blocked);
-					//sem_post(has_pcb_in_io);
+					log_info(logger_short, "EL PROCESO %d TIENE SUSPENDED: %d", pcb_excecuted->id, pcb_excecuted->is_suspended);
 				}
 				else if (!list_is_empty(wait_queue->state)) {
 					list_add(wait_queue->state, pcb_excecuted);
@@ -634,6 +634,7 @@ void update_pcb_with_cpu_data(int socket_kernel_interrupt_cpu, t_pcb* pcb, bool*
 			pcb->time_io = pcb_excecuted->time_io;
 		}
 
+		pcb->is_suspended = pcb_excecuted->is_suspended;
 		pcb->program_counter = pcb_excecuted->program_counter;
 	}
 }
@@ -709,7 +710,6 @@ void state_blocked (t_args_blocked* args) {
 			int spleep_time = pcb_blocked->time_io/1000;
 			log_info(logger_blocked, "SE REALIZA UN SLEEP DE %d SEGUNDOS",  spleep_time);
 			sleep(spleep_time);
-
 
 			if (pcb_blocked->is_suspended) {
 				pthread_mutex_lock(args->state_suspended_blocked->mutex);
@@ -827,6 +827,7 @@ void state_suspended_blocked (t_args_suspended_blocked* args) {
 		pthread_mutex_unlock(args->state_suspended_blocked->mutex);
 
 		if (pcb_blocked->time_blocked == 0 && pcb_blocked->is_suspended == 0) {
+			pcb_blocked->is_suspended = 1;
 			log_info(logger_suspend_blocked, "EL PROCESO %d ESTA EN SUSPENDED BLOCKED", pcb_blocked->id);
 			send_pcb_to_memoria(pcb_blocked, args->socket_memoria, SWAP);
 			sem_post(args->sem);

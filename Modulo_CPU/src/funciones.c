@@ -48,10 +48,15 @@ void execute_dispatch(void* void_args){
 		pcb = deserializate_pcb(kernel_socket, &code);
 		log_info(cpu->cpu_log, "SE RECIBIO EL PCB %d", pcb->id);
 
-		if (pcb->id != cpu->last_executed_pcb && cpu->last_executed_pcb != -1) {
+		if (pcb->is_suspended) {
+			pcb->is_suspended = 0;
+			log_info(cpu->cpu_log, "TLB LIMPIADA POR SUSPENCION DE PROCESO %d", pcb->id);
+			limpiar_tlb(cpu);
+		}else if (pcb->id != cpu->last_executed_pcb && cpu->last_executed_pcb != -1) {
 			log_info(cpu->cpu_log, "TLB LIMPIADA por cambio de proceso %d a %d", cpu->last_executed_pcb, pcb->id);
 			limpiar_tlb(cpu);
 		}
+
 		cpu->last_executed_pcb = pcb->id;
 
 		//INICIA EL CICLO DE FETCH AND DECODE

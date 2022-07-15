@@ -78,7 +78,7 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 
 	t_instruct* instruct = malloc(sizeof(t_instruct));
 
-	clock_t time_excecuted = clock();
+	time_t time_excecuted = time(NULL);
 	log_info(cpu->cpu_log, "SE COMIENZA EL CILO DE INSTRUCCIONES");
 	while(pcb->program_counter < list_size(pcb->instrucciones)){
 		//FETCH
@@ -88,7 +88,7 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 		// DECODE / FETCH OPERANDS
 		log_info(cpu->cpu_log, "ES UNA INSTRUCCION BLOQUEANTE O DE SALIDA ?");
 		if(instruct->instructions_code == EXIT || instruct->instructions_code == I_O){
-			pcb->time_excecuted_rafaga += clock() - time_excecuted;
+			pcb->time_excecuted_rafaga += time(NULL) - time_excecuted;
 			pcb->program_counter++;
 			if(instruct->instructions_code == I_O){
 				pcb->time_io = instruct->param1;
@@ -121,7 +121,7 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 			log_info(cpu->cpu_log, "SE INTERRUMPE EJECUCION Y SE ENVIAN LOS DATOS AL KERNEL");
 			log_info(cpu->cpu_log, "SE TERMINA LA EJECUCION");
 			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
-			pcb->time_excecuted_rafaga += clock() - time_excecuted;
+			pcb->time_excecuted_rafaga += time(NULL) - time_excecuted;
 			cpu->args_io_exit->code = INTERRUPT;
 			cpu->args_io_exit->pcb = pcb;
 			pthread_mutex_unlock(cpu->args_io_exit->mutex_has_io_exit);
