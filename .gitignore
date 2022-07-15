@@ -64,17 +64,7 @@ Modulo_CPU/.settings/
 Modulo_Memoria/.settings/
 Shared/.settings/
 
-Modulo_Consola/Default/
-Modulo_Kernel/Default/
-Modulo_CPU/Default/
-Modulo_Memoria/Default/
-Shared/Default/
-
 Modulo_Consola/Debug/
-Modulo_Kernel/Debug/
-Modulo_CPU/Debug/
-Modulo_Memoria/Debug/
-Shared/Debug/
 
 Modulo_Consola/.cproject/
 Modulo_Kernel/.cproject/
