@@ -8,6 +8,7 @@
 #include<unistd.h>
 #include <stdlib.h>
 #include <semaphore.h>
+#include <shared_funtions/estructuras.h>
 
 typedef enum{
 	FIFO,
@@ -69,9 +70,10 @@ typedef struct{
 	t_state_list_hanndler* state_suspended_blocked;
 	t_state_queue_hanndler* state_running;
 	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
-	pthread_mutex_t* has_pcb_blocked;
+	sem_t* has_pcb_blocked;
 	pthread_mutex_t* hasPcb;
-	pthread_mutex_t* has_pcb_suspended_blocked;
+	sem_t* has_pcb_suspended_blocked;
+	pthread_mutex_t* has_pcb_in_io;
 	int TIEMPO_MAX_BLOQUEADO;
 	double ALFA;
 	char* ALGORITMO;
@@ -87,7 +89,7 @@ typedef struct{
 	t_state_queue_hanndler* state_running;
 	pthread_mutex_t* hasPcb;
 	pthread_mutex_t* grado_multiprogramacion;
-	pthread_mutex_t* has_pcb_suspended_ready;
+	sem_t* has_pcb_suspended_ready;
 	t_monitor_is_new_pcb_in_ready* monitor_is_new_pcb_in_ready;
 	int socket_memoria;
 	int socket_interrupt;
@@ -98,9 +100,10 @@ typedef struct{
 	t_state_list_hanndler* blocked;
 	t_state_list_hanndler* state_suspended_blocked;
 	t_state_list_hanndler* state_suspended_ready;
-	pthread_mutex_t* has_pcb_suspended_blocked;
-	pthread_mutex_t* has_pcb_suspended_ready;
+	sem_t* has_pcb_suspended_blocked;
+	sem_t* has_pcb_suspended_ready;
 	pthread_mutex_t* grado_multiprogramacion;
+	pthread_mutex_t* has_pcb_in_io;
 	int TIEMPO_MAX_BLOQUEADO;
 	int socket_memoria;
 	sem_t* sem;
@@ -185,6 +188,16 @@ typedef struct{
 	char* ALGORITMO;
 	int socket_interrupt;
 } t_args_add_pcbs;
+
+typedef struct{
+	int TIEMPO_MAX_BLOQUEADO;
+	t_state_list_hanndler* blocked;
+	t_state_list_hanndler* wait_queue;
+	t_state_list_hanndler* suspended_blocked;
+	sem_t* has_pcb_blocked;
+	sem_t* has_pcb_suspended_blocked;
+	pthread_mutex_t* has_wait_pcb;
+} t_args_wait_queue;
 
 void long_term_planner(void* args_long_term_planner);
 void mid_term_planner(void* args_mid_term_planner);
