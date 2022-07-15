@@ -180,16 +180,13 @@ int administrar_cliente(t_args_administrar_cliente* args_administrar_cliente){
 
 				t_pcb* pcb_actualizado = eliminar_proceso(pcb_cliente, memoria);
 				log_info(memoria->memoria_log, "PROCESO %d ELIMINADO: estructuras y archivo SWAP eliminado.\n", pcb_cliente->id);
-				//responder_pcb_a_cliente(pcb_actualizado, cliente_fd, DELETE);
 
 			} else if (op_code_memoria == SWAP){
 
 				hacer_swap_del_proceso(pcb_cliente, memoria);
-				//responder_pcb_a_cliente(pcb_cliente, cliente_fd, SWAP);
 
 			} else if (op_code_memoria == RE_SWAP){
 				hacer_reswap_del_proceso(pcb_cliente, memoria);
-				//responder_pcb_a_cliente(pcb_cliente, cliente_fd, RE_SWAP);
 
 			} else {
 				log_warning(memoria->memoria_log, "Operacion desconocida\n");
