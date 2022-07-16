@@ -69,7 +69,7 @@ void send_data_to_kernel(int kernel_socket, t_cpu* cpu, t_pcb* pcb, int mensaje)
 		exit(1);
 	}
 
-	log_info(cpu->cpu_log, "SE HA ENVIADO EL PCB AL KERNEL, ID: %d", pcb->id);
+	log_info(cpu->cpu_log, "CONEXION KERNEL: enviado PCB con ID %d", pcb->id);
 }
 
 void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_message* exist_interrupt){
@@ -79,47 +79,41 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 	t_instruct* instruct = malloc(sizeof(t_instruct));
 
 	time_t time_excecuted = time(NULL);
-	log_info(cpu->cpu_log, "SE COMIENZA EL CILO DE INSTRUCCIONES");
+	log_info(cpu->cpu_log, "PCB: ciclo de instrucciones en marcha!\n");
 	while(pcb->program_counter < list_size(pcb->instrucciones)){
 		//FETCH
 		instruct = list_get(instruccionesDestokenizadas,pcb->program_counter);
-		log_info(cpu->cpu_log, "INSTRUCCION LEIDA");
 
 		// DECODE / FETCH OPERANDS
-		log_info(cpu->cpu_log, "ES UNA INSTRUCCION BLOQUEANTE O DE SALIDA ?");
 		if(instruct->instructions_code == EXIT || instruct->instructions_code == I_O){
 			pcb->time_excecuted_rafaga += time(NULL) - time_excecuted;
 			pcb->program_counter++;
 			if(instruct->instructions_code == I_O){
 				pcb->time_io = instruct->param1;
-				log_info(cpu->cpu_log, "ES UNA I_O");
+				log_info(cpu->cpu_log, "INSTRUCCION LEIDA: es una I_O, se le avisa a KERNEL...");
 			}else {
-				log_info(cpu->cpu_log, "ES UNA SALIDA");
+				log_info(cpu->cpu_log, "INSTRUCCION LEIDA: es UNA SALIDA, se le avisa a KERNEL...");
 			}
 
 			cpu->args_io_exit->code = instruct->instructions_code;
 			cpu->args_io_exit->pcb = pcb;
 
 			pthread_mutex_unlock(cpu->args_io_exit->mutex_has_io_exit);
-			log_info(cpu->cpu_log, "SE LE AVISA AL KERNEL");
 			break;
 		}
 		else {
-			log_info(cpu->cpu_log, "ES UNA INSTRUCCION NO BLOQUEANTE NI DE SALIDA");
+			log_info(cpu->cpu_log, "INSTRUCCION LEIDA: no es bloqueante ni de salida");
 		}
 
 		// EXECUTE
-		log_info(cpu->cpu_log, "SE EJECUTA LA INSTRUCCION: ");
 		execute(instruct, cpu, pcb);
 		pcb->program_counter++;
 
 		// CHECK INTERRUPT
-		log_info(cpu->cpu_log, "CHECKEAMOS SI HAY INTERRUPCION");
 		pthread_mutex_lock(exist_interrupt->mutex_has_interrupt);
 		if(exist_interrupt->is_interrupt){
-			log_info(cpu->cpu_log, "HAY INTERRUPCION");
-			log_info(cpu->cpu_log, "SE INTERRUMPE EJECUCION Y SE ENVIAN LOS DATOS AL KERNEL");
-			log_info(cpu->cpu_log, "SE TERMINA LA EJECUCION");
+			log_info(cpu->cpu_log, "INTERRUPCION: interrumpiendo ejecucion y enviando datos a KERNEL");
+
 			//SE ENVIA EL PCB ACTUALIZADO AL KERNEL
 			pcb->time_excecuted_rafaga += time(NULL) - time_excecuted;
 			cpu->args_io_exit->code = INTERRUPT;
@@ -130,10 +124,9 @@ void fetch_and_decode(int kernel_socket, t_pcb* pcb, t_cpu* cpu, t_interrupt_mes
 			break;
 		}
 		else {
-			log_info(cpu->cpu_log, "NO HAY INTERRUPCION");
+			log_info(cpu->cpu_log, "NO HAY INTERRUPCION, ejecutando instruccion...");
 		}
 		pthread_mutex_unlock(exist_interrupt->mutex_has_interrupt);
-		log_info(cpu->cpu_log, "COMIENZA EL CICLO");
 	}
 	free(instruct);
 	list_destroy(instruccionesDestokenizadas);

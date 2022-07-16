@@ -15,12 +15,12 @@ int consultar_tlb(t_cpu* cpu, int pagina) {
 				list_remove(tlb, i);
 				list_add(tlb, entry);
 			}
-			log_info(cpu->cpu_log, "TLB HIT PAGINA %d | MARCO %d", pagina, entry->marco);
+			log_info(cpu->cpu_log, "TLB: HIT PAGINA %d | MARCO %d", pagina, entry->marco);
 
 			return entry->marco;
 		}
 	}
-	log_info(cpu->cpu_log, "TLB MISS DE PAGINA %d", pagina);
+	log_info(cpu->cpu_log, "TLB: MISS de PAGINA %d", pagina);
 	return -1;
 }
 
@@ -34,8 +34,11 @@ void agregar_entry_tlb(t_cpu* cpu, int pagina, int marco) {
 	// Checkeamos si agregar un elemento haria que nos pasemos del maximo de entradas permitidas, y en ese caso eliminamos el primero.
 	if (list_size(tlb) >= cpu->cpu_config->ENTRADAS_TLB) {
 		t_tlb_entry* first_entry = list_remove(tlb, 0);
+        log_info(cpu->cpu_log, "TLB: entry de pagina %d agregado (reemplaza a pagina %d)", pagina, first_entry->pagina);
 		free(first_entry);
-	}
+	} else {
+        log_info(cpu->cpu_log, "TLB: entry de pagina %d agregado", pagina);
+    }
 
 	list_add(tlb, entry);
 }

@@ -13,7 +13,7 @@ int wait_console(t_kernel* kernel){
 
 	int socket_consola = accept(kernel->kernel_socket, NULL, NULL);
 
-	log_info(kernel->kernel_log, "SE CONECTO UNA CONSOLA AL KERNEL, ID: %d", socket_consola);
+	log_info(kernel->kernel_log, "CONSOLA: nueva conexion (ID: %d)", socket_consola);
 
 	return socket_consola;
 }
@@ -56,10 +56,10 @@ char* recive_buffer(int socket_cliente, t_consola* consolaRecv)
 int recive_operation(int socket_cliente, t_log* logger){
 	int cod_op;
     if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
-        log_info(logger, "INFORMACION RECIBIDA CORRECTAMENTE");
+        log_info(logger, "CONEXION CONSOLA: informacion recibida correctamente");
     else
     {
-        log_info(logger, "INFORMACION RECIBIDA INCORRECTAMENTE");
+        log_error(logger, "CONEXION CONSOLA: informacion recibida INCORRECTAMENTE!!!!!!");
     }
     return cod_op;
 }

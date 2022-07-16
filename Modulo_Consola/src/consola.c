@@ -10,28 +10,26 @@ int main(int argc, char** argv){
 	t_log* logger = iniciar_logger();
 	t_config* config = config_create(argv[3]);
 
-	log_info(logger, "INICIANDO CONSOLA.....");
+	log_info(logger, "CONFIG: Leyendo archivo...");
 
 	/* ---------------- ARCHIVOS DE CONFIGURACION ---------------- */
 	ip = config_get_string_value(config,"IP_KERNEL");
 	puerto = config_get_string_value(config,"PUERTO_KERNEL");
 
-	log_info(logger, "CONSOLA INICIADA");
-	log_info(logger, "LEYENDO ARCHIVO DE PSEUDOCIDIGO.......");
+	log_info(logger, "CONFIG: cargada");
+	log_info(logger, "INSTRUCCIONES: leyendo...");
 	// Armamos y enviamos el paquete (depuramos)
-	log_info(logger, "INSTRUCCIONES CREADAS");
 	char* instructions = generateInstructiosnString(argv[2], logger);
 
 	// Creamos una conexión hacia el servidor
 	connection = crear_conexion(ip, puerto);
-	log_info(logger, "CONSOLA CONECTADA A KERNEL");
 
-	log_info(logger, "INTENTANDO ENVIAR DATA AL KERNEL");
+    log_info(logger, "CONEXION KERNEL: enviando paquete...");
 	if(send_instructions(instructions, connection, strtol(argv[1], &argv[1], 10)) < 0){
 		error_show("IMPOSIBLE ENVIAR DATA AL KERNEL, CERRANDO CONSOLA.");
 		exit(1);
 	}
-	log_info(logger, "INSTRUCCIONES ENVIADAS CORRECTAMENTE, ESPERANDO FINALIZACION DEL PROCESO.......");
+	log_info(logger, "CONEXION KERNEL: instrucciones enviadas CORRECTAMENTE, esperando finalizacion del proceso...");
 
 	// Esperamos por la terminacion del proceso
 	waitForResponse(connection, logger, config);
@@ -103,8 +101,7 @@ void waitForResponse(int conexion, t_log* logger, t_config* config)
 {
 	int signal;
 	recv(conexion, &signal, sizeof(int), 0);
-	log_info(logger, "PROCESO FINALIZANDO, CERRANDO CONSOLA...");
-	log_info(logger, "CONSOLA CERRADA.");
+	log_info(logger, "CONEXION KERNEL: proceso FINALIZADO, cerrando consola");
 	close(conexion);
 	log_destroy(logger);
 	config_destroy(config);

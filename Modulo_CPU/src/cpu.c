@@ -72,15 +72,15 @@ t_mem_config* deserialize_handshake(t_cpu* cpu, int socket){
 	t_mem_config* handshake = malloc(sizeof(t_mem_config));
 	handshake->socket = socket;
 	int op_code = HANDSHAKE;
-	log_info(cpu->cpu_log, "CONECTADO A MEMORIA, ESPERAMOS HANDSHAKE.");
+	log_info(cpu->cpu_log, "CONEXION MEMORIA: esperando handshake...");
 	sleep(2);
 	void* a_enviar = malloc(sizeof(int));
 	memcpy(a_enviar, &op_code, sizeof(int));
 	send_data_to_server(socket, a_enviar, sizeof(int));
-	log_info(cpu->cpu_log, "HANDSHAKE REALIZADO, ESPERAMOS DATOS.");
+
 	recv(socket, &handshake->size_pagina, sizeof(int), MSG_WAITALL);
 	recv(socket, &handshake->cant_entradas_por_tabla, sizeof(int), MSG_WAITALL);
-	log_info(cpu->cpu_log, "DATOS RECIBIDOS.");
+    log_info(cpu->cpu_log, "CONEXION MEMORIA: handshake REALIZADO y datos recibidos correctamente");
 	return handshake;
 }
 

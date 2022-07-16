@@ -39,21 +39,21 @@ void execute_dispatch(void* void_args){
 	int kernel_socket = wait_kernel(cpu->cpu_log, cpu->dispatch->socket, cpu->dispatch->puerto);
 
 	cpu->args_io_exit->socket_cpu = kernel_socket;
-	log_info(cpu->cpu_log, "SE CONECTO EL KERNEL AL PUERTO DISPATCH");
+	log_info(cpu->cpu_log, "CONEXION KERNEL: conectado a puerto DISPATCH");
 	while(1){
 		int code;
 		//SE RECIBE EL PCB DEL KERNEL
-		log_info(cpu->cpu_log, "QUEDO A LA ESPERA DE UN PCB");
+		log_info(cpu->cpu_log, "CONEXION KERNEL: a la espera de un PCB...");
 		t_pcb* pcb = malloc(sizeof(t_pcb));
 		pcb = deserializate_pcb(kernel_socket, &code);
-		log_info(cpu->cpu_log, "SE RECIBIO EL PCB %d", pcb->id);
+		log_info(cpu->cpu_log, "CONEXION KERNEL: PCB %d recibido!", pcb->id);
 
 		if (pcb->is_suspended) {
 			pcb->is_suspended = 0;
-			log_info(cpu->cpu_log, "TLB LIMPIADA POR SUSPENCION DE PROCESO %d", pcb->id);
+			log_info(cpu->cpu_log, "TLB: LIMPIADA por SUSPENSION de proceso %d", pcb->id);
 			limpiar_tlb(cpu);
 		}else if (pcb->id != cpu->last_executed_pcb && cpu->last_executed_pcb != -1) {
-			log_info(cpu->cpu_log, "TLB LIMPIADA por cambio de proceso %d a %d", cpu->last_executed_pcb, pcb->id);
+			log_info(cpu->cpu_log, "TLB: LIMPIADA por CAMBIO de proceso %d a %d", cpu->last_executed_pcb, pcb->id);
 			limpiar_tlb(cpu);
 		}
 
@@ -69,11 +69,11 @@ void execute_dispatch(void* void_args){
 int start_cpu(char* puerto, t_log* logger, char* conexion){
 	char* mensaje;
 	if(strcmp(conexion, "dispatch") == 0){
-		mensaje = "PUERTO DISPATCH LISTO PARA RECIBIR INSTRUCCIONES";
+		mensaje = "CONEXION KERNEL: puerto DISPATCH a la espera de instrucciones";
 	}else if (strcmp(conexion, "interrupt") == 0){
-		mensaje = "PUERTO INTERRUPT LISTO PARA RECIBIR INTERRUPCIONES";
+		mensaje = "CONEXION KERNEL: puerto INTERRUPT LISTO PARA RECIBIR INTERRUPCIONES";
 	}else{
-		mensaje = "PUERTO INTERRUPT LISTO PARA RECIBIR EXIT/BLOCKED";
+		mensaje = "CONEXION KERNEL: puerto INTERRUPT LISTO PARA RECIBIR INTERRUPCIONES";
 	}
 
 	return create_server_connection(puerto, logger, mensaje);
@@ -85,7 +85,7 @@ int wait_kernel(t_log* log, int socket, char* puerto){
 	int socket_kernel = accept(socket, NULL, NULL);
 
 	if(socket_kernel > 0){
-		log_info(log,"KERNEL CONECTADO A PUERTO %s", puerto);
+		log_info(log, "CONEXION KERNEL: KERNEL conectado a PUERTO %s", puerto);
 	}
 
 	return socket_kernel;
