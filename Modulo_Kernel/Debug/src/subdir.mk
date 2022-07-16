@@ -9,6 +9,7 @@ C_SRCS += \
 ../src/funciones.c \
 ../src/kernel.c \
 ../src/pcb.c \
+../src/planificadores.c \
 ../src/procesamiento.c 
 
 OBJS += \
@@ -17,6 +18,7 @@ OBJS += \
 ./src/funciones.o \
 ./src/kernel.o \
 ./src/pcb.o \
+./src/planificadores.o \
 ./src/procesamiento.o 
 
 C_DEPS += \
@@ -25,6 +27,7 @@ C_DEPS += \
 ./src/funciones.d \
 ./src/kernel.d \
 ./src/pcb.d \
+./src/planificadores.d \
 ./src/procesamiento.d 
 
 
@@ -35,4 +38,5 @@ src/%.o: ../src/%.c
 	gcc -O0 -g3 -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
+
 

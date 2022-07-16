@@ -1,7 +1,7 @@
 #ifndef PLANIFICADORES_H_
 #define PLANIFICADORES_H_
 
-#include "../conexion.h"
+#include "conexion.h"
 #include <commons/error.h>
 #include <stdbool.h>
 #include <time.h>
